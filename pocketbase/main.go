@@ -14,12 +14,35 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/security"
 
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
 var unauthorizedErr = apis.NewUnauthorizedError("Invalid or expired OTP token", nil)
+var notFoundErr = apis.NewNotFoundError("User not found", nil)
+var badRequestErr = apis.NewBadRequestError("Invalid request", nil)
+
+func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record, error) {
+	collection, err := app.Dao().FindCollectionByNameOrId("otp")
+
+	if err != nil {
+		return nil, err
+	}
+
+	record := models.NewRecord(collection)
+
+	record.Set("user", user.Id)
+	record.Set("expiration", time.Now().Add(5*time.Minute))
+	record.Set("attempts", 0)
+	record.Set("password", security.RandomStringWithAlphabet(6, "0123456789"))
+
+	if err := app.Dao().SaveRecord(record); err != nil {
+		return nil, err
+	}
+	return record, nil
+}
 
 func main() {
 
@@ -34,6 +57,30 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.Use(middleware.Decompress())
 		e.Router.Use(middleware.BodyLimit(100 * 1024 * 1024))
+
+		e.Router.POST("/otp-create", func(c echo.Context) error {
+			data := struct {
+				PhoneNumber string `json:"phoneNumber"`
+			}{}
+
+			if err := c.Bind(&data); err != nil {
+				log.Println("bind error", err)
+				return badRequestErr
+			}
+
+			user, err := app.Dao().FindFirstRecordByData("users", "phoneNumber", data.PhoneNumber)
+			if err != nil {
+				return notFoundErr
+			}
+
+			record, err := createOtp(app, user)
+
+			if err != nil {
+				return badRequestErr
+			}
+
+			return c.JSON(200, record)
+		})
 
 		e.Router.POST("/otp-verify", func(c echo.Context) error {
 			data := struct {
