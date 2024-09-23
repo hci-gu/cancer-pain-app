@@ -1,14 +1,20 @@
 package main
 
 import (
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
 	_ "app/migrations"
 
-	"github.com/google/uuid"
+	_ "github.com/joho/godotenv/autoload"
+
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/pocketbase/pocketbase"
@@ -44,8 +50,53 @@ func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record,
 	return record, nil
 }
 
-func main() {
+func sendText(phoneNumber string, otp string) error {
+	// replace 0 with +46 for phoneNumber
+	phoneNumber = strings.Replace(phoneNumber, "0", "+46", 1)
 
+	apiUsername := os.Getenv("46ELKS_API_USERNAME")
+	apiPassword := os.Getenv("46ELKS_API_PASSWORD")
+	auth := base64.StdEncoding.EncodeToString([]byte(apiUsername + ":" + apiPassword))
+
+	// Prepare data
+	data := url.Values{}
+	data.Set("from", "Sahlgrenska")
+	data.Set("to", phoneNumber)
+	data.Set("message", "Your OTP is: "+otp)
+
+	// Create HTTP request
+	req, err := http.NewRequest("POST", "https://api.46elks.com/a1/sms", strings.NewReader(data.Encode()))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return err
+	}
+
+	// Set headers
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return err
+	}
+
+	// Print response
+	fmt.Println(string(body))
+	return nil
+}
+
+func main() {
 	app := pocketbase.New()
 
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
@@ -78,6 +129,8 @@ func main() {
 			if err != nil {
 				return badRequestErr
 			}
+
+			sendText(data.PhoneNumber, record.GetString("password"))
 
 			return c.JSON(200, record)
 		})
@@ -131,13 +184,6 @@ func main() {
 			defer app.Dao().DeleteRecord(record)
 			return apis.RecordAuthResponse(app, c, user, nil)
 		})
-
-		return nil
-	})
-
-	app.OnRecordBeforeCreateRequest("users").Add(func(e *core.RecordCreateEvent) error {
-		uuid, _ := uuid.NewRandom()
-		e.Record.Set("token", uuid)
 
 		return nil
 	})

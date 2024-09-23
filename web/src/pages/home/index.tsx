@@ -1,31 +1,24 @@
-import { Button } from '@/components/ui/button'
-import Pocketbase from 'pocketbase'
+import { useAtom } from 'jotai'
+import { authAtom, pb } from '../../state'
 
 function HomePage() {
-  const auth = async () => {
-    const pb = new Pocketbase('http://localhost:8090')
+  const [, setAuth] = useAtom(authAtom)
 
-    const response = await fetch('http://localhost:8090/otp-verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        otp: '',
-        verifyToken: '',
-      }),
-    })
-
-    const data = await response.json()
-    pb.authStore.save(data.token, data.record)
-
-    const users = await pb.collection('users').getFullList()
-    console.log('users', users)
+  const handleLogout = () => {
+    pb.authStore.clear()
+    setAuth(null)
   }
 
   return (
-    <div className="flex flex-col items-center justify-center mt-24">
-      <Button onClick={() => auth()}>Test auth</Button>
+    <div className="container mx-auto mt-8 p-4">
+      <h1 className="text-3xl font-bold mb-4">Welcome to Your Dashboard</h1>
+      <p className="mb-4">You are now signed in and can access this page.</p>
+      <button
+        onClick={handleLogout}
+        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+      >
+        Logout
+      </button>
     </div>
   )
 }

@@ -17,6 +17,9 @@ specifiers:
   eslint-plugin-react-hooks: ^5.1.0-rc.0
   eslint-plugin-react-refresh: ^0.4.9
   globals: ^15.9.0
+  input-otp: ^1.2.4
+  jotai: ^2.9.3
+  js-cookie: ^3.0.5
   lucide-react: ^0.438.0
   pocketbase: ^0.21.5
   postcss: ^8.4.44
@@ -39,6 +42,9 @@ dependencies:
   '@radix-ui/react-slot': 1.1.0_vhfblam3newwcpiwkw3tsgpmum
   class-variance-authority: 0.7.0
   clsx: 2.1.1
+  input-otp: 1.2.4_nnrd3gsncyragczmpvfhocinkq
+  jotai: 2.9.3_vhfblam3newwcpiwkw3tsgpmum
+  js-cookie: 3.0.5
   lucide-react: 0.438.0_react@18.3.1
   pocketbase: 0.21.5
   react: 18.3.1
@@ -1595,6 +1601,16 @@ packages:
     engines: {node: '>=0.8.19'}
     dev: true
 
+  /input-otp/1.2.4_nnrd3gsncyragczmpvfhocinkq:
+    resolution: {integrity: sha512-md6rhmD+zmMnUh5crQNSQxq3keBRYvE3odbr4Qb9g2NWzQv9azi+t1a3X4TBTbh98fsGHgEEJlzbe1q860uGCA==}
+    peerDependencies:
+      react: ^16.8 || ^17.0 || ^18.0
+      react-dom: ^16.8 || ^17.0 || ^18.0
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1_react@18.3.1
+    dev: false
+
   /is-binary-path/2.1.0:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
@@ -1643,6 +1659,27 @@ packages:
   /jiti/1.21.6:
     resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
+
+  /jotai/2.9.3_vhfblam3newwcpiwkw3tsgpmum:
+    resolution: {integrity: sha512-IqMWKoXuEzWSShjd9UhalNsRGbdju5G2FrqNLQJT+Ih6p41VNYe2sav5hnwQx4HJr25jq9wRqvGSWGviGG6Gjw==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=17.0.0'
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      react:
+        optional: true
+    dependencies:
+      '@types/react': 18.3.5
+      react: 18.3.1
+    dev: false
+
+  /js-cookie/3.0.5:
+    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
+    engines: {node: '>=14'}
+    dev: false
 
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
