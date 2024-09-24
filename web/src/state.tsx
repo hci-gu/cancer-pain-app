@@ -1,7 +1,9 @@
 import Pocketbase, { AuthModel } from 'pocketbase'
-import { atomFamily, atomWithStorage, loadable } from 'jotai/utils'
+import { atomFamily, atomWithStorage, unwrap } from 'jotai/utils'
+// @ts-ignore
 import Cookies from 'js-cookie'
 import { atom } from 'jotai'
+import { z } from 'zod'
 
 export const pb = new Pocketbase('http://localhost:8090')
 
@@ -42,9 +44,12 @@ export const authAtom = atomWithStorage<AuthModel | null>(
 )
 
 export type Question = {
+  id: string
   text: string
-  type: 'text' | 'painScale'
+  type: 'text' | 'painScale' | 'singleChoice' | 'multipleChoice'
+  required: boolean
   placeholder?: string
+  options: string[]
 }
 
 export type Questionnaire = {
@@ -55,18 +60,82 @@ export type Questionnaire = {
   questions: Question[]
 }
 
+const mapQuestion = (question: any): Question => {
+  return {
+    id: question.id,
+    text: question.text,
+    type: question.type,
+    required: question.required,
+    placeholder: question.placeholder,
+    options: question.expand?.options.value,
+  }
+}
+
+const mapQuestionnaire = (questionnaire: any): Questionnaire => {
+  return {
+    id: questionnaire.id,
+    name: questionnaire.name,
+    description: questionnaire.description,
+    occurrence: questionnaire.occurrence,
+    questions: questionnaire.expand?.questions.map(mapQuestion) ?? [],
+  }
+}
+
 const questionnairesBaseAtom = atom<Promise<Questionnaire[]>>(async () => {
   const response = await pb.collection('questionnaires').getFullList({
     expand: 'questions',
   })
 
-  return response.map((questionnaire) => ({
-    id: questionnaire.id,
-    name: questionnaire.name,
-    description: questionnaire.description,
-    occurrence: questionnaire.occurrence,
-    questions: questionnaire.expand?.questions as Question[],
-  })) as Questionnaire[]
+  return response.map(mapQuestionnaire)
 })
 
-export const questionnairesAtom = loadable(questionnairesBaseAtom)
+export const questionnairesAtom = unwrap(questionnairesBaseAtom)
+
+export const questionnaireAtom = atomFamily((id: string) =>
+  atom(async () => {
+    const response = await pb.collection('questionnaires').getOne(id, {
+      expand: 'questions,questions.options',
+    })
+
+    return mapQuestionnaire(response)
+  })
+)
+
+export const formStateAtom = atomFamily((id: string) =>
+  atom(async (get) => {
+    const questionnaire = await get(questionnaireAtom(id))
+
+    const formSchema = z.object(
+      questionnaire.questions.reduce((acc, q) => {
+        if (q.type === 'singleChoice' || q.type === 'multipleChoice') {
+          acc[q.id] = z.enum([q.options[0], ...q.options.slice(1)])
+        } else {
+          acc[q.id] = q.type === 'text' ? z.string() : z.string().nullable()
+        }
+
+        if (!q.required) {
+          acc[q.id] = acc[q.id].optional()
+        }
+        return acc
+      }, {} as Record<string, z.ZodType<any>>)
+    )
+
+    return formSchema
+  })
+)
+
+export const submitQuestionnaire = async (
+  questionnaireId: string,
+  answers: any
+) => {
+  console.log({
+    user: pb.authStore.model?.id,
+    questionnaire: questionnaireId,
+    answers,
+  })
+  const response = await pb.collection('answers').create({
+    user: pb.authStore.model?.id,
+    questionnaire: questionnaireId,
+    answers,
+  })
+}

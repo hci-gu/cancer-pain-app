@@ -58,18 +58,13 @@ function OTPPage() {
       const data = await response.json()
       pb.authStore.save(data.token, data.record)
 
-      // Set the cookie
-      console.log('Setting cookie:', pb.authStore.exportToCookie())
       document.cookie = pb.authStore.exportToCookie()
 
-      // Update the auth state
       setAuth(pb.authStore.model)
 
-      // Redirect to home page
       navigate('/')
     } catch (error) {
       console.error('Login error:', error)
-      // Handle error (e.g., show error message to user)
     }
   }
 
