@@ -40,7 +40,7 @@ function OTPPage() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
-      const response = await fetch('http://localhost:8090/otp-verify', {
+      const response = await fetch('http://192.168.10.107:8090/otp-verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

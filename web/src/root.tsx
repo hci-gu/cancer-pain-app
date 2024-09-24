@@ -16,7 +16,7 @@ const RootPage = () => {
         </nav>
       </header>
       <div className="flex flex-col items-center justify-center mt-8">
-        <div className="w-1/2">
+        <div className="w-11/12 md:w-1/2">
           <Outlet />
         </div>
       </div>

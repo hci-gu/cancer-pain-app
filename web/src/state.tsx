@@ -5,7 +5,7 @@ import Cookies from 'js-cookie'
 import { atom } from 'jotai'
 import { z } from 'zod'
 
-export const pb = new Pocketbase('http://localhost:8090')
+export const pb = new Pocketbase('http://192.168.10.107:8090')
 
 export const authAtom = atomWithStorage<AuthModel | null>(
   'auth',
@@ -32,7 +32,6 @@ export const authAtom = atomWithStorage<AuthModel | null>(
         }
         Cookies.set(key, JSON.stringify(authData), {
           secure: true,
-          sameSite: 'strict',
         })
       } else {
         Cookies.remove(key)
@@ -60,6 +59,15 @@ export type Questionnaire = {
   questions: Question[]
 }
 
+export type Answer = {
+  id: string
+  user: string
+  questionnaire: string
+  answers: Record<string, any>
+  created: string
+  date: string
+}
+
 const mapQuestion = (question: any): Question => {
   return {
     id: question.id,
@@ -78,6 +86,17 @@ const mapQuestionnaire = (questionnaire: any): Questionnaire => {
     description: questionnaire.description,
     occurrence: questionnaire.occurrence,
     questions: questionnaire.expand?.questions.map(mapQuestion) ?? [],
+  }
+}
+
+const mapAnswer = (answer: any): Answer => {
+  return {
+    id: answer.id,
+    user: answer.user,
+    questionnaire: answer.questionnaire,
+    answers: answer.answers,
+    created: answer.created,
+    date: answer.date,
   }
 }
 
@@ -124,18 +143,24 @@ export const formStateAtom = atomFamily((id: string) =>
   })
 )
 
+export const answersForQuestionnaireAtom = atomFamily((id: string) =>
+  atom(async () => {
+    const response = await pb.collection('answers').getList(0, 100, {
+      filter: `questionnaire = "${id}"`,
+    })
+
+    return response.items.map(mapAnswer)
+  })
+)
+
 export const submitQuestionnaire = async (
   questionnaireId: string,
   answers: any
 ) => {
-  console.log({
-    user: pb.authStore.model?.id,
-    questionnaire: questionnaireId,
-    answers,
-  })
   const response = await pb.collection('answers').create({
     user: pb.authStore.model?.id,
     questionnaire: questionnaireId,
     answers,
   })
+  return response
 }
