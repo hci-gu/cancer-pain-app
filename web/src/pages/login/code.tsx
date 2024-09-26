@@ -40,16 +40,19 @@ function OTPPage() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
-      const response = await fetch('http://192.168.10.107:8090/otp-verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          otp: values.password,
-          verifyToken: token,
-        }),
-      })
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/otp-verify`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            otp: values.password,
+            verifyToken: token,
+          }),
+        }
+      )
 
       if (!response.ok) {
         throw new Error('OTP verification failed')

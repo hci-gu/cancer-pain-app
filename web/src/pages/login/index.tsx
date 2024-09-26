@@ -28,7 +28,7 @@ const LoginPage = () => {
   })
 
   async function onSubmit(values: z.infer<typeof resetSchema>) {
-    const response = await fetch('http://192.168.10.107:8090/otp-create', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/otp-create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

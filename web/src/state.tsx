@@ -5,7 +5,7 @@ import Cookies from 'js-cookie'
 import { atom } from 'jotai'
 import { z } from 'zod'
 
-export const pb = new Pocketbase('http://192.168.10.107:8090')
+export const pb = new Pocketbase(import.meta.env.VITE_API_URL)
 
 export const authAtom = atomWithStorage<AuthModel | null>(
   'auth',
@@ -126,10 +126,16 @@ export const formStateAtom = atomFamily((id: string) =>
 
     const formSchema = z.object(
       questionnaire.questions.reduce((acc, q) => {
-        if (q.type === 'singleChoice' || q.type === 'multipleChoice') {
-          acc[q.id] = z.enum([q.options[0], ...q.options.slice(1)])
-        } else {
-          acc[q.id] = q.type === 'text' ? z.string() : z.string().nullable()
+        switch (q.type) {
+          case 'singleChoice':
+          case 'multipleChoice':
+            acc[q.id] = z.enum([q.options[0], ...q.options.slice(1)])
+            break
+          case 'painScale':
+            acc[q.id] = z.number().int().min(0).max(10)
+            break
+          default:
+            acc[q.id] = q.type === 'text' ? z.string() : z.string().nullable()
         }
 
         if (!q.required) {

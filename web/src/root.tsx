@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { Toaster } from './components/ui/toaster'
 
 const RootPage = () => {
   const location = useLocation()
@@ -19,6 +20,7 @@ const RootPage = () => {
         <div className="w-11/12 md:w-1/2">
           <Outlet />
         </div>
+        <Toaster />
       </div>
     </>
   )

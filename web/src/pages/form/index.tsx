@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useSpring } from 'framer-motion'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAtomValue } from 'jotai'
 import {
   formStateAtom,
@@ -22,6 +22,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import useCurrentQuestion from './hooks/useCurrentQuestion'
 import FormStateDebugger from './components/FormDebugger'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  UpdateIcon,
+} from '@radix-ui/react-icons'
+import { useToast } from '@/hooks/use-toast'
 
 const ProgressBar = ({ questions }: { questions: number }) => {
   const { scrollYProgress } = useScroll()
@@ -59,36 +65,31 @@ const NavigationButtons = ({
 }: {
   questionRefs: React.MutableRefObject<(HTMLElement | null)[]>
 }) => {
-  const scrollToQuestion = (index: number) => {
-    const target = questionRefs.current[index]
+  const currentQuestion = useCurrentQuestion()
+
+  const scrollToQuestion = (questionNumber: number) => {
+    const target = questionRefs.current[questionNumber - 1]
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
-  const handleNext = () => {
-    scrollToQuestion(1)
-  }
-
-  // Handle Previous button click
-  const handlePrevious = () => {
-    scrollToQuestion(0)
-  }
-
   return (
     <div className="fixed bottom-4 right-4 flex space-x-2">
-      <button
-        className="bg-gray-500 text-white px-4 py-2 rounded shadow-md"
-        onClick={handlePrevious}
+      <Button
+        className="bg-blue-500 text-white py-6 rounded shadow-md"
+        disabled={currentQuestion === 1}
+        onClick={() => scrollToQuestion(currentQuestion - 1)}
       >
-        Previous
-      </button>
-      <button
-        className="bg-blue-500 text-white px-4 py-2 rounded shadow-md"
-        onClick={handleNext}
+        <ChevronUpIcon />
+      </Button>
+      <Button
+        className="bg-blue-500 text-white py-6 rounded shadow-md"
+        disabled={currentQuestion === questionRefs.current.length}
+        onClick={() => scrollToQuestion(currentQuestion + 1)}
       >
-        Next
-      </button>
+        <ChevronDownIcon />
+      </Button>
     </div>
   )
 }
@@ -105,13 +106,38 @@ const LoadedForm = ({
   questionnaire: Questionnaire
   formSchema: any
 }) => {
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   })
   const questionRefs = useRef<(HTMLElement | null)[]>([])
 
-  const onSubmit = (data: any) => {
-    submitQuestionnaire(questionnaire.id, data)
+  const onSubmit = async (data: any) => {
+    setLoading(true)
+    try {
+      await Promise.allSettled([
+        await submitQuestionnaire(questionnaire.id, data),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ])
+    } catch (e) {
+      console.error(e)
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: 'There was a problem with your request.',
+      })
+      setLoading(false)
+      return
+    }
+    navigate('/forms')
+    toast({
+      title: 'Submitted',
+      description: 'The questionnaire was submitted successfully.',
+    })
+
+    setLoading(false)
   }
 
   return (
@@ -134,7 +160,10 @@ const LoadedForm = ({
             />
           ))}
           <section className="h-screen flex items-center justify-center snap-start">
-            <Button type="submit">Submit</Button>
+            <Button type="submit" disabled={loading}>
+              {loading && <UpdateIcon className="animate-spin mr-2" />}
+              Submit
+            </Button>
           </section>
         </div>
       </form>

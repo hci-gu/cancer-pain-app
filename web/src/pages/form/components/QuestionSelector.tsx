@@ -6,9 +6,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { RadioGroup } from '@/components/ui/radio-group'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Question } from '@/state'
-import { RadioGroupItem } from '@radix-ui/react-radio-group'
 import { useRef } from 'react'
 import {
   ControllerRenderProps,
@@ -16,6 +15,7 @@ import {
   useForm,
   useFormContext,
 } from 'react-hook-form'
+import { RadioGroupForm } from './Test'
 
 const renderQuestionType = (
   question: Question,
@@ -26,13 +26,20 @@ const renderQuestionType = (
       return <Input placeholder={question.placeholder} {...field} />
     case 'painScale':
       return (
-        <Input
-          placeholder={question.placeholder}
-          {...field}
-          type="range"
-          min="0"
-          max="10"
-        />
+        <RadioGroup
+          onValueChange={field.onChange}
+          defaultValue={field.value}
+          className="flex"
+        >
+          {Array.from({ length: 11 }).map((_, index) => (
+            <FormItem className="flex items-center space-x-3 space-y-0">
+              <FormControl>
+                <RadioGroupItem value={index} />
+              </FormControl>
+              <FormLabel className="font-normal">{index}</FormLabel>
+            </FormItem>
+          ))}
+        </RadioGroup>
       )
     case 'singleChoice':
       return (
@@ -46,17 +53,6 @@ const renderQuestionType = (
             </FormItem>
           ))}
         </RadioGroup>
-      )
-
-      return (
-        <ul>
-          {question.options.map((option, index) => (
-            <li key={index}>
-              <input type="radio" id={option} {...field} />
-              <label htmlFor={option}>{option}</label>
-            </li>
-          ))}
-        </ul>
       )
     default:
       break
@@ -88,12 +84,16 @@ const QuestionSelector = ({
           name={question.id}
           render={({ field }) => (
             <FormItem>
-              {question.required && <span className="text-red-500">*</span>}
-              <FormLabel
-                dangerouslySetInnerHTML={{
-                  __html: `${question.text}`,
-                }}
-              />
+              <div className="flex gap-2">
+                <FormLabel className="text-xl">{questionNumber}.</FormLabel>
+                {question.required && <span className="text-red-500">*</span>}
+                <FormLabel
+                  className="text-xl"
+                  dangerouslySetInnerHTML={{
+                    __html: `${question.text}`,
+                  }}
+                />
+              </div>
               <FormControl>{renderQuestionType(question, field)}</FormControl>
               <FormMessage />
             </FormItem>
