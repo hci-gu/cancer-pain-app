@@ -28,7 +28,7 @@ export const canProceedAtom = atomFamily(
       const canScrollUpTo = Math.min(...indexesForRemainingQuestions)
       console.log('canScrollUpTo', canScrollUpTo)
 
-      return page >= canScrollUpTo
+      return page >= canScrollUpTo || page === questions.length
     }),
   (a, b) =>
     a.questions.length === b.questions.length &&

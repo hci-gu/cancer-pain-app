@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { motion, interpolate } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAtom, useAtomValue } from 'jotai'
@@ -25,10 +25,10 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
   const page = useAtomValue(formPageAtom)
   const scaleX = interpolate([0, questions.length - 1], [0.01, 1])
-  const [textColor, setTextColor] = useState('black')
-  useEffect(() => {
-    setTextColor(page > questions.length / 2 ? 'white' : 'black')
-  }, [page])
+  const textColor = interpolate(
+    [0, questions.length / 2 - 1, questions.length / 2, questions.length],
+    ['#000', '#000', '#fff', '#fff']
+  )
 
   return (
     <>
@@ -38,11 +38,12 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
         transition={{ type: 'spring', duration: 0.4 }}
         style={{ originX: 0 }}
       />
-      <span
-        className={`fixed top-1 left-1/2 font-semibold z-10 text-${textColor}`}
+      <motion.span
+        animate={{ color: textColor(page) }}
+        className={`fixed top-1 left-1/2 font-semibold z-10`}
       >
         {Math.min(page + 1, questions.length)} / {questions.length}
-      </span>
+      </motion.span>
     </>
   )
 }
@@ -108,7 +109,10 @@ const Questions = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   }
 
   return (
-    <div className="w-screen h-screen">
+    <div
+      className="w-screen h-screen"
+      style={{ position: 'absolute', overflow: 'hidden' }}
+    >
       <ReactPageScroller
         pageOnChange={handlePageChange}
         onBeforePageScroll={handleBeforePageChange}

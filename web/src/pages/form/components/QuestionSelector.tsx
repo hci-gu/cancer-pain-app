@@ -94,10 +94,11 @@ const QuestionSelector = ({
   return (
     <section
       className="h-full w-full flex items-center justify-center"
-      style={{
-        paddingBottom: keyboardOpen ? 'calc(var(--vh, 1vh) * 50)' : '0',
-        transition: 'padding 100ms, height 100ms',
-      }}
+      // style={{
+      //   paddingBottom: keyboardOpen ? 'calc(var(--vh, 1vh) * 50)' : '0',
+      //   transition: 'padding 100ms, height 100ms',
+      //   border: '1px solid red',
+      // }}
     >
       <FormField
         control={control}

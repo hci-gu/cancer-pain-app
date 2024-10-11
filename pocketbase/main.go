@@ -60,9 +60,9 @@ func sendText(phoneNumber string, otp string) error {
 
 	// Prepare data
 	data := url.Values{}
-	data.Set("from", "Sahlgrenska")
+	data.Set("from", "Sahlgrenska forskningsprojekt")
 	data.Set("to", phoneNumber)
-	data.Set("message", "Your OTP is: "+otp)
+	data.Set("message", "Din engångskod är: "+otp)
 
 	// Create HTTP request
 	req, err := http.NewRequest("POST", "https://api.46elks.com/a1/sms", strings.NewReader(data.Encode()))

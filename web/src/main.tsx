@@ -12,6 +12,8 @@ import WelcomePage from './pages/welcome/index.tsx'
 import LoginLayout from './pages/login/layout.tsx'
 import OTPPage from './pages/login/code.tsx'
 import FormPage from './pages/form/index.tsx'
+import ProfilePage from './pages/profile/index.tsx'
+import FormHistoryPage from './pages/form/history/index.tsx'
 
 const WithAuthLayout = ({ children }: { children: any }) => {
   const auth = useAtomValue(authAtom)
@@ -48,6 +50,22 @@ const router = createBrowserRouter([
         element: (
           <WithAuthLayout>
             <FormPage />
+          </WithAuthLayout>
+        ),
+      },
+      {
+        path: 'forms/:id/history',
+        element: (
+          <WithAuthLayout>
+            <FormHistoryPage />
+          </WithAuthLayout>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <WithAuthLayout>
+            <ProfilePage />
           </WithAuthLayout>
         ),
       },

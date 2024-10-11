@@ -12,7 +12,7 @@ import {
   questionnairesAtom,
 } from '@/state'
 import { useAtomValue } from 'jotai'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { startTransition } from 'react'
 
 const QuestionnaireCard = ({
@@ -24,7 +24,7 @@ const QuestionnaireCard = ({
   const navigate = useNavigate()
 
   return (
-    <Card>
+    <Card className="mb-4">
       <CardHeader className="text-xl">{questionaire.name}</CardHeader>
       <CardContent>
         <div className="flex justify-between">
@@ -40,12 +40,24 @@ const QuestionnaireCard = ({
               })
             }}
           >
-            Start
+            Svara
           </Button>
         </div>
       </CardContent>
       <CardFooter>
-        <p>{answers.length} svar</p>
+        <div className="flex w-full justify-between items-end">
+          <p>{answers.length} svar</p>
+          <Button
+            variant={'secondary'}
+            onClick={() => {
+              startTransition(() => {
+                navigate(`/forms/${questionaire.id}/history`)
+              })
+            }}
+          >
+            Se tidigare svar
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   )
