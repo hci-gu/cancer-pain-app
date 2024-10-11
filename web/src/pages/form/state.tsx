@@ -7,9 +7,6 @@ export const formPageAtom = atom(0)
 export const canProceedAtom = atomFamily(
   ({ questions, answers }: { questions: Question[]; answers: any }) =>
     atom((get) => {
-      console.log('questions', questions)
-      console.log('answers', answers)
-
       const page = get(formPageAtom)
 
       const requiredQuestions = questions
@@ -26,7 +23,6 @@ export const canProceedAtom = atomFamily(
         questions.findIndex((q) => q.id === question)
       )
       const canScrollUpTo = Math.min(...indexesForRemainingQuestions)
-      console.log('canScrollUpTo', canScrollUpTo)
 
       return page >= canScrollUpTo || page === questions.length
     }),

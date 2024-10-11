@@ -22,6 +22,7 @@ import { useParams } from 'react-router-dom'
 import { useSetAtom } from 'jotai'
 import { authAtom, pb } from '../../state'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 const loginSchema = z.object({
   password: z.string().min(6).max(6),
@@ -37,6 +38,16 @@ function OTPPage() {
   })
   const setAuth = useSetAtom(authAtom)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // get query params
+    const urlParams = new URLSearchParams(window.location.search)
+
+    if (urlParams.has('code')) {
+      const code = urlParams.get('code')
+      onSubmit({ password: code ?? '' })
+    }
+  }, [])
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {

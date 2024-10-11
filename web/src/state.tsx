@@ -46,7 +46,7 @@ export const authAtom = atomWithStorage<AuthModel | null>(
 export type Question = {
   id: string
   text: string
-  type: 'text' | 'painScale' | 'singleChoice' | 'multipleChoice'
+  type: 'text' | 'painScale' | 'singleChoice' | 'multipleChoice' | 'date'
   required: boolean
   placeholder?: string
   options: string[]
@@ -109,7 +109,6 @@ const questionnairesBaseAtom = atom<Promise<Questionnaire[]>>(async () => {
   const response = await pb.collection('questionnaires').getFullList({
     expand: 'questions',
   })
-  console.log('response', response)
 
   return response.map(mapQuestionnaire)
 })
@@ -139,6 +138,9 @@ export const formStateAtom = atomFamily((id: string) =>
             break
           case 'painScale':
             acc[q.id] = z.number().int().min(0).max(10)
+            break
+          case 'date':
+            acc[q.id] = z.date()
             break
           default:
             acc[q.id] = q.type === 'text' ? z.string() : z.string().nullable()

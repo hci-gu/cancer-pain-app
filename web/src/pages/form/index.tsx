@@ -175,7 +175,7 @@ const LoadedForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <ProgressBar questionnaire={questionnaire} />
-        {/* <FormStateDebugger /> */}
+        <FormStateDebugger />
         <Questions questionnaire={questionnaire} />
         <NavigationButtons questionnaire={questionnaire} />
       </form>

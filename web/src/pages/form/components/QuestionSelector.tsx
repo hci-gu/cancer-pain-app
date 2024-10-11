@@ -16,6 +16,7 @@ import {
 import useIsKeyboardOpen from '@/hooks/use-is-keyboard-open'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
+import { DatePicker } from '@/components/ui/date-picker'
 
 const renderQuestionType = (
   question: Question,
@@ -71,6 +72,8 @@ const renderQuestionType = (
           ))}
         </RadioGroup>
       )
+    case 'date':
+      return <DatePicker date={field.value} onChange={field.onChange} />
     default:
       break
   }

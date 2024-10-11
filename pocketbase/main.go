@@ -50,7 +50,7 @@ func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record,
 	return record, nil
 }
 
-func sendText(phoneNumber string, otp string) error {
+func sendText(phoneNumber string, text string) error {
 	// replace 0 with +46 for phoneNumber
 	phoneNumber = strings.Replace(phoneNumber, "0", "+46", 1)
 
@@ -60,9 +60,9 @@ func sendText(phoneNumber string, otp string) error {
 
 	// Prepare data
 	data := url.Values{}
-	data.Set("from", "Sahlgrenska forskningsprojekt")
+	data.Set("from", "Sahlgrenska")
 	data.Set("to", phoneNumber)
-	data.Set("message", "Din engångskod är: "+otp)
+	data.Set("message", text)
 
 	// Create HTTP request
 	req, err := http.NewRequest("POST", "https://api.46elks.com/a1/sms", strings.NewReader(data.Encode()))
@@ -91,8 +91,8 @@ func sendText(phoneNumber string, otp string) error {
 		return err
 	}
 
-	// Print response
-	fmt.Println(string(body))
+	fmt.Println("Response:", string(body))
+
 	return nil
 }
 
@@ -130,12 +130,13 @@ func main() {
 				return badRequestErr
 			}
 
-			sendText(data.PhoneNumber, record.GetString("password"))
+			sendText(data.PhoneNumber, "Din engångskod är: "+record.GetString("password"))
 
 			return c.JSON(200, record)
 		})
 
 		e.Router.POST("/otp-verify", func(c echo.Context) error {
+			println("/POST otp-verify")
 			data := struct {
 				VerifyToken string `json:"verifyToken"`
 				OTP         string `json:"otp"`
@@ -184,6 +185,22 @@ func main() {
 			defer app.Dao().DeleteRecord(record)
 			return apis.RecordAuthResponse(app, c, user, nil)
 		})
+
+		return nil
+	})
+
+	app.OnRecordAfterCreateRequest("users").Add(func(e *core.RecordCreateEvent) error {
+		phoneNumber := e.Record.GetString("phoneNumber")
+
+		otp, err := createOtp(app, e.Record)
+
+		if err != nil {
+			return badRequestErr
+		}
+
+		link := "http://192.168.0.33:5173/login/" + otp.Id + "?code=" + otp.GetString("password")
+
+		sendText(phoneNumber, "Välkommen till Sahlgrenska forskningsprojekt! vänligen fyll i formuläret på "+link)
 
 		return nil
 	})

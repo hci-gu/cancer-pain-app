@@ -23,9 +23,11 @@ const QuestionnaireCard = ({
   const answers = useAtomValue(answersForQuestionnaireAtom(questionaire.id))
   const navigate = useNavigate()
 
+  const answered = questionaire.occurrence == 'once' && answers.length > 0
+
   return (
     <Card className="mb-4">
-      <CardHeader className="text-xl">{questionaire.name}</CardHeader>
+      <CardHeader className="text-xl font-bold">{questionaire.name}</CardHeader>
       <CardContent>
         <div className="flex justify-between">
           <p
@@ -34,6 +36,7 @@ const QuestionnaireCard = ({
             }}
           ></p>
           <Button
+            disabled={answered}
             onClick={() => {
               startTransition(() => {
                 navigate(`/forms/${questionaire.id}`)
@@ -46,17 +49,23 @@ const QuestionnaireCard = ({
       </CardContent>
       <CardFooter>
         <div className="flex w-full justify-between items-end">
-          <p>{answers.length} svar</p>
-          <Button
-            variant={'secondary'}
-            onClick={() => {
-              startTransition(() => {
-                navigate(`/forms/${questionaire.id}/history`)
-              })
-            }}
-          >
-            Se tidigare svar
-          </Button>
+          {questionaire.occurrence != 'once' ? (
+            <p>{answers.length} svar</p>
+          ) : (
+            <p>{answers.length ? 'Svarat' : 'Inte svarat'}</p>
+          )}
+          {questionaire.occurrence != 'once' && (
+            <Button
+              variant={'secondary'}
+              onClick={() => {
+                startTransition(() => {
+                  navigate(`/forms/${questionaire.id}/history`)
+                })
+              }}
+            >
+              Se tidigare svar
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>
