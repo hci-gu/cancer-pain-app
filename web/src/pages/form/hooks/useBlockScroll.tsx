@@ -30,12 +30,10 @@ export default function useBlockScroll() {
     if (questionNumber >= canScrollUpTo + 1 && e.deltaY > 0) {
       e.preventDefault()
     }
-    // e.preventDefault()
   }
 
   const handleKeydown = (e: KeyboardEvent) => {
     if (questionNumber >= canScrollUpTo + 1 && e.key === 'Tab' && !e.shiftKey) {
-      // Prevent tabbing to the next element
       e.preventDefault()
     }
   }

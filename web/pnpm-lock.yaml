@@ -14,6 +14,7 @@ specifiers:
   '@types/react-dom': ^18.3.0
   '@vitejs/plugin-react': ^4.3.1
   autoprefixer: ^10.4.20
+  babel-polyfill: ^6.26.0
   class-variance-authority: ^0.7.0
   clsx: ^2.1.1
   eslint: ^9.9.0
@@ -27,9 +28,11 @@ specifiers:
   lucide-react: ^0.438.0
   pocketbase: ^0.21.5
   postcss: ^8.4.44
+  prop-types: ^15.8.1
   react: ^18.3.1
   react-dom: ^18.3.1
   react-hook-form: ^7.53.0
+  react-page-scroller: ^3.0.1
   react-router-dom: ^6.26.1
   tailwind-merge: ^2.5.2
   tailwindcss: ^3.4.10
@@ -58,6 +61,7 @@ dependencies:
   react: 18.3.1
   react-dom: 18.3.1_react@18.3.1
   react-hook-form: 7.53.0_react@18.3.1
+  react-page-scroller: 3.0.1_zip72gcydkfrs7tuc7obns4glu
   react-router-dom: 6.26.1_nnrd3gsncyragczmpvfhocinkq
   tailwind-merge: 2.5.2
   tailwindcss-animate: 1.0.7_tailwindcss@3.4.10
@@ -70,11 +74,13 @@ devDependencies:
   '@types/react-dom': 18.3.0
   '@vitejs/plugin-react': 4.3.1_vite@5.4.2
   autoprefixer: 10.4.20_postcss@8.4.44
+  babel-polyfill: 6.26.0
   eslint: 9.9.1
   eslint-plugin-react-hooks: 5.1.0-rc-fb9a90fa48-20240614_eslint@9.9.1
   eslint-plugin-react-refresh: 0.4.11_eslint@9.9.1
   globals: 15.9.0
   postcss: 8.4.44
+  prop-types: 15.8.1
   tailwindcss: 3.4.10
   typescript: 5.5.4
   typescript-eslint: 8.3.0_4eqx2wzcxkzv7jqkyxnxhgzrfm
@@ -1456,6 +1462,19 @@ packages:
       postcss-value-parser: 4.2.0
     dev: true
 
+  /babel-polyfill/6.26.0:
+    resolution: {integrity: sha512-F2rZGQnAdaHWQ8YAoeRbukc7HS9QgdgeyJ0rQDd485v9opwuPvjpPFcOOT/WmkKTdgy9ESgSPXDcTNpzrGr6iQ==}
+    dependencies:
+      babel-runtime: 6.26.0
+      core-js: 2.6.12
+      regenerator-runtime: 0.10.5
+
+  /babel-runtime/6.26.0:
+    resolution: {integrity: sha512-ITKNuq2wKlW1fJg9sSW52eepoYgZBggvOAHC0u/CYu/qxQ9EVzThCgR69BnSXLHjy2f7SY5zaQ4yt7H9ZVxY2g==}
+    dependencies:
+      core-js: 2.6.12
+      regenerator-runtime: 0.11.1
+
   /balanced-match/1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
@@ -1582,6 +1601,11 @@ packages:
   /convert-source-map/2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
     dev: true
+
+  /core-js/2.6.12:
+    resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
+    requiresBuild: true
 
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -2132,7 +2156,6 @@ packages:
     hasBin: true
     dependencies:
       js-tokens: 4.0.0
-    dev: false
 
   /lru-cache/10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -2361,6 +2384,13 @@ packages:
     engines: {node: '>= 0.8.0'}
     dev: true
 
+  /prop-types/15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
+
   /punycode/2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -2386,6 +2416,25 @@ packages:
       react: ^16.8.0 || ^17 || ^18 || ^19
     dependencies:
       react: 18.3.1
+    dev: false
+
+  /react-is/16.13.1:
+    resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+
+  /react-page-scroller/3.0.1_zip72gcydkfrs7tuc7obns4glu:
+    resolution: {integrity: sha512-1OTlUHOSFCG8wmYzy3wo4dUIugXORzgZZ/Pj4BbkxN3n+Nv5tynfo7kygUiLYgE0QhDJslzZ4lntpCONAlv/vA==}
+    peerDependencies:
+      babel-polyfill: ^6.26.0
+      prop-types: ^15.6.2
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      react-router-dom: ^4.3.1
+    dependencies:
+      babel-polyfill: 6.26.0
+      prop-types: 15.8.1
+      react: 18.3.1
+      react-dom: 18.3.1_react@18.3.1
+      react-router-dom: 6.26.1_nnrd3gsncyragczmpvfhocinkq
     dev: false
 
   /react-refresh/0.14.2:
@@ -2433,6 +2482,12 @@ packages:
     engines: {node: '>=8.10.0'}
     dependencies:
       picomatch: 2.3.1
+
+  /regenerator-runtime/0.10.5:
+    resolution: {integrity: sha512-02YopEIhAgiBHWeoTiA8aitHDt8z6w+rQqNuIftlM+ZtvSl/brTouaU7DW6GO/cHtvxJvS4Hwv2ibKdxIRi24w==}
+
+  /regenerator-runtime/0.11.1:
+    resolution: {integrity: sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==}
 
   /resolve-from/4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}

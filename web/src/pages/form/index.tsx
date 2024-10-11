@@ -1,92 +1,86 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
-import { motion, useScroll, useSpring } from 'framer-motion'
+import { Suspense, useEffect, useState } from 'react'
+import { motion, interpolate } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAtomValue } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import {
   formStateAtom,
   Questionnaire,
   questionnaireAtom,
   submitQuestionnaire,
 } from '@/state'
-import useBlockScroll from './hooks/useBlockScroll'
 import QuestionSelector from './components/QuestionSelector'
 import { Form } from '@/components/ui/form'
-import {
-  useForm,
-  useFormContext,
-  useFormState,
-  useWatch,
-} from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import useCurrentQuestion from './hooks/useCurrentQuestion'
 import FormStateDebugger from './components/FormDebugger'
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  UpdateIcon,
-} from '@radix-ui/react-icons'
+import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
 import { useToast } from '@/hooks/use-toast'
+import useQuestions from './hooks/useQuestions'
+import ReactPageScroller from 'react-page-scroller'
+import { canProceedAtom, formPageAtom } from './state'
 
-const ProgressBar = ({ questions }: { questions: number }) => {
-  const { scrollYProgress } = useScroll()
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  })
-  const page = useCurrentQuestion()
+const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
+  const questions = useQuestions(questionnaire)
+  const page = useAtomValue(formPageAtom)
+  const scaleX = interpolate([0, questions.length - 1], [0.01, 1])
   const [textColor, setTextColor] = useState('black')
   useEffect(() => {
-    setTimeout(
-      () => setTextColor(page > questions / 2 ? 'white' : 'black'),
-      100
-    )
+    setTextColor(page > questions.length / 2 ? 'white' : 'black')
   }, [page])
 
   return (
     <>
       <motion.div
         className="fixed top-0 left-0 h-8 w-screen bg-blue-500 z-10"
-        style={{ scaleX, originX: 0 }}
+        animate={{ scaleX: scaleX(page) }}
+        transition={{ type: 'spring', duration: 0.4 }}
+        style={{ originX: 0 }}
       />
       <span
         className={`fixed top-1 left-1/2 font-semibold z-10 text-${textColor}`}
       >
-        {page} / {questions}
+        {Math.min(page + 1, questions.length)} / {questions.length}
       </span>
     </>
   )
 }
 
 const NavigationButtons = ({
-  questionRefs,
+  questionnaire,
 }: {
-  questionRefs: React.MutableRefObject<(HTMLElement | null)[]>
+  questionnaire: Questionnaire
 }) => {
-  const currentQuestion = useCurrentQuestion()
-
-  const scrollToQuestion = (questionNumber: number) => {
-    const target = questionRefs.current[questionNumber - 1]
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
+  const questions = useQuestions(questionnaire)
+  const [page, setPage] = useAtom(formPageAtom)
+  const answers = useWatch()
+  const canProceed = useAtomValue(
+    canProceedAtom({
+      questions,
+      answers,
+    })
+  )
 
   return (
     <div className="fixed bottom-4 right-4 flex space-x-2">
       <Button
         className="bg-blue-500 text-white py-6 rounded shadow-md"
-        disabled={currentQuestion === 1}
-        onClick={() => scrollToQuestion(currentQuestion - 1)}
+        disabled={page === 0}
+        onClick={(e) => {
+          e.preventDefault()
+          setPage(page - 1)
+        }}
       >
         <ChevronUpIcon />
       </Button>
       <Button
         className="bg-blue-500 text-white py-6 rounded shadow-md"
-        disabled={currentQuestion === questionRefs.current.length}
-        onClick={() => scrollToQuestion(currentQuestion + 1)}
+        disabled={canProceed}
+        onClick={(e) => {
+          e.preventDefault()
+          setPage(page + 1)
+        }}
       >
         <ChevronDownIcon />
       </Button>
@@ -94,9 +88,43 @@ const NavigationButtons = ({
   )
 }
 
-const ScrollBlocker = () => {
-  useBlockScroll()
-  return null
+const Questions = ({ questionnaire }: { questionnaire: Questionnaire }) => {
+  const [currentPage, setCurrentPage] = useAtom(formPageAtom)
+  const questions = useQuestions(questionnaire)
+  const answers = useWatch()
+  const canProceed = useAtomValue(
+    canProceedAtom({
+      questions,
+      answers,
+    })
+  )
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleBeforePageChange = (page: number) => {
+    console.log(page)
+  }
+
+  return (
+    <div className="w-screen h-screen">
+      <ReactPageScroller
+        pageOnChange={handlePageChange}
+        onBeforePageScroll={handleBeforePageChange}
+        customPageNumber={currentPage}
+        blockScrollDown={canProceed}
+        animationTimer={600}
+      >
+        {questions.map((q, i) => (
+          <QuestionSelector question={q} questionNumber={i + 1} />
+        ))}
+        <div className="h-full w-full flex items-center justify-center">
+          <Button type="submit">Skicka in</Button>
+        </div>
+      </ReactPageScroller>
+    </div>
+  )
 }
 
 const LoadedForm = ({
@@ -108,11 +136,10 @@ const LoadedForm = ({
 }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
+  const [_, setLoading] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   })
-  const questionRefs = useRef<(HTMLElement | null)[]>([])
 
   const onSubmit = async (data: any) => {
     setLoading(true)
@@ -143,29 +170,10 @@ const LoadedForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div
-          className="h-screen w-screen snap-y snap-mandatory scrollbar-hide"
-          style={{ scrollBehavior: 'smooth' }}
-        >
-          <ScrollBlocker />
-          <ProgressBar questions={questionnaire.questions.length + 1} />
-          <FormStateDebugger />
-          <NavigationButtons questionRefs={questionRefs} />
-          {questionnaire.questions.map((q, i) => (
-            <QuestionSelector
-              key={`Question_${q.id}`}
-              question={q}
-              questionNumber={i + 1}
-              refCallback={(el) => (questionRefs.current[i] = el)}
-            />
-          ))}
-          <section className="h-screen flex items-center justify-center snap-start">
-            <Button type="submit" disabled={loading}>
-              {loading && <UpdateIcon className="animate-spin mr-2" />}
-              Submit
-            </Button>
-          </section>
-        </div>
+        <ProgressBar questionnaire={questionnaire} />
+        {/* <FormStateDebugger /> */}
+        <Questions questionnaire={questionnaire} />
+        <NavigationButtons questionnaire={questionnaire} />
       </form>
     </Form>
   )

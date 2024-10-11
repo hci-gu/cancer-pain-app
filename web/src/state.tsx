@@ -6,6 +6,7 @@ import { atom } from 'jotai'
 import { z } from 'zod'
 
 export const pb = new Pocketbase(import.meta.env.VITE_API_URL)
+pb.autoCancellation(false)
 
 export const authAtom = atomWithStorage<AuthModel | null>(
   'auth',
@@ -31,7 +32,7 @@ export const authAtom = atomWithStorage<AuthModel | null>(
           model: pb.authStore.model,
         }
         Cookies.set(key, JSON.stringify(authData), {
-          secure: true,
+          secure: false,
         })
       } else {
         Cookies.remove(key)
@@ -49,6 +50,8 @@ export type Question = {
   required: boolean
   placeholder?: string
   options: string[]
+  dependency?: string
+  dependencyValue?: any
 }
 
 export type Questionnaire = {
@@ -76,6 +79,8 @@ const mapQuestion = (question: any): Question => {
     required: question.required,
     placeholder: question.placeholder,
     options: question.expand?.options.value,
+    dependency: question.dependency,
+    dependencyValue: question.dependencyValue,
   }
 }
 
@@ -104,6 +109,7 @@ const questionnairesBaseAtom = atom<Promise<Questionnaire[]>>(async () => {
   const response = await pb.collection('questionnaires').getFullList({
     expand: 'questions',
   })
+  console.log('response', response)
 
   return response.map(mapQuestionnaire)
 })
@@ -151,11 +157,16 @@ export const formStateAtom = atomFamily((id: string) =>
 
 export const answersForQuestionnaireAtom = atomFamily((id: string) =>
   atom(async () => {
-    const response = await pb.collection('answers').getList(0, 100, {
-      filter: `questionnaire = "${id}"`,
-    })
+    try {
+      const response = await pb.collection('answers').getList(0, 100, {
+        filter: `questionnaire = "${id}"`,
+      })
 
-    return response.items.map(mapAnswer)
+      return response.items.map(mapAnswer)
+    } catch (e) {
+      console.error(e)
+      return []
+    }
   })
 )
 

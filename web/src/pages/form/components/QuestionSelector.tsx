@@ -8,32 +8,43 @@ import {
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Question } from '@/state'
-import { useRef } from 'react'
 import {
   ControllerRenderProps,
   FieldValues,
-  useForm,
   useFormContext,
 } from 'react-hook-form'
-import { RadioGroupForm } from './Test'
+import useIsKeyboardOpen from '@/hooks/use-is-keyboard-open'
+import { useSetAtom } from 'jotai'
+import { formPageAtom } from '../state'
 
 const renderQuestionType = (
   question: Question,
-  field: ControllerRenderProps<FieldValues, any>
+  field: ControllerRenderProps<FieldValues, any>,
+  onAnswer: (value: any) => void
 ) => {
   switch (question.type) {
     case 'text':
-      return <Input placeholder={question.placeholder} {...field} />
+      return (
+        <Input
+          placeholder={question.placeholder}
+          onSubmit={(e) => onAnswer(e)}
+          {...field}
+        />
+      )
     case 'painScale':
       return (
         <RadioGroup
-          onValueChange={field.onChange}
+          onValueChange={(value) => {
+            field.onChange(value)
+            onAnswer(value)
+          }}
           defaultValue={field.value}
-          className="flex"
+          className="flex flex-wrap"
         >
           {Array.from({ length: 11 }).map((_, index) => (
             <FormItem className="flex items-center space-x-3 space-y-0">
               <FormControl>
+                {/* @ts-ignore */}
                 <RadioGroupItem value={index} />
               </FormControl>
               <FormLabel className="font-normal">{index}</FormLabel>
@@ -43,7 +54,13 @@ const renderQuestionType = (
       )
     case 'singleChoice':
       return (
-        <RadioGroup onValueChange={field.onChange} defaultValue={field.value}>
+        <RadioGroup
+          onValueChange={(value) => {
+            field.onChange(value)
+            onAnswer(value)
+          }}
+          defaultValue={field.value}
+        >
           {question.options.map((option, _) => (
             <FormItem className="flex items-center space-x-3 space-y-0">
               <FormControl>
@@ -62,44 +79,48 @@ const renderQuestionType = (
 const QuestionSelector = ({
   question,
   questionNumber,
-  refCallback,
 }: {
   question: Question
   questionNumber: number
-  refCallback: (el: HTMLElement | null) => void
 }) => {
   const { control } = useFormContext()
-  const ref = useRef<HTMLDivElement | null>(null)
+  const setPage = useSetAtom(formPageAtom)
+  const keyboardOpen = useIsKeyboardOpen()
+
+  const onAnswer = (_: any) => {
+    setTimeout(() => setPage((page) => page + 1), 400)
+  }
 
   return (
-    <section className="h-screen flex items-center justify-center snap-start">
-      <div
-        ref={(el) => {
-          ref.current = el
-          refCallback(el)
-        }}
-      >
-        <FormField
-          control={control}
-          name={question.id}
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex gap-2">
-                <FormLabel className="text-xl">{questionNumber}.</FormLabel>
-                {question.required && <span className="text-red-500">*</span>}
-                <FormLabel
-                  className="text-xl"
-                  dangerouslySetInnerHTML={{
-                    __html: `${question.text}`,
-                  }}
-                />
-              </div>
-              <FormControl>{renderQuestionType(question, field)}</FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        ></FormField>
-      </div>
+    <section
+      className="h-full w-full flex items-center justify-center"
+      style={{
+        paddingBottom: keyboardOpen ? 'calc(var(--vh, 1vh) * 50)' : '0',
+        transition: 'padding 100ms, height 100ms',
+      }}
+    >
+      <FormField
+        control={control}
+        name={question.id}
+        render={({ field }) => (
+          <FormItem>
+            <div className="flex gap-2">
+              <FormLabel className="text-xl">{questionNumber}.</FormLabel>
+              {question.required && <span className="text-red-500">*</span>}
+              <FormLabel
+                className="text-xl"
+                dangerouslySetInnerHTML={{
+                  __html: `${question.text}`,
+                }}
+              />
+            </div>
+            <FormControl>
+              {renderQuestionType(question, field, onAnswer)}
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      ></FormField>
     </section>
   )
 }
