@@ -61,19 +61,43 @@ const renderQuestionType = (
             onAnswer(value)
           }}
           defaultValue={field.value}
+          className="flex flex-wrap gap-4"
         >
-          {question.options.map((option, _) => (
-            <FormItem className="flex items-center space-x-3 space-y-0">
+          {question.options.map((option, index) => (
+            <FormItem className="flex items-center">
               <FormControl>
-                <RadioGroupItem value={option} />
+                <input
+                  type="radio"
+                  value={option}
+                  id={`${question.id}-option-${index}`}
+                  className="hidden peer"
+                  onChange={(e) => {
+                    field.onChange(e.target.value)
+                    onAnswer(e.target.value)
+                  }}
+                />
               </FormControl>
-              <FormLabel className="font-normal">{option}</FormLabel>
+              <label
+                htmlFor={`${question.id}-option-${index}`}
+                className="flex items-center justify-center px-6 py-3  space-x-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:font-semibold transition-colors duration-200"
+              >
+                {option}
+              </label>
+              {/* <FormLabel className="font-normal">{option}</FormLabel> */}
             </FormItem>
           ))}
         </RadioGroup>
       )
     case 'date':
-      return <DatePicker date={field.value} onChange={field.onChange} />
+      return (
+        <DatePicker
+          date={field.value}
+          onChange={(value) => {
+            field.onChange(value)
+            onAnswer(value)
+          }}
+        />
+      )
     default:
       break
   }

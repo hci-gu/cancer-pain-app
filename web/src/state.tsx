@@ -4,6 +4,7 @@ import { atomFamily, atomWithStorage, unwrap } from 'jotai/utils'
 import Cookies from 'js-cookie'
 import { atom } from 'jotai'
 import { z } from 'zod'
+import { dayStringFromDate } from './utils'
 
 export const pb = new Pocketbase(import.meta.env.VITE_API_URL)
 pb.autoCancellation(false)
@@ -42,6 +43,14 @@ export const authAtom = atomWithStorage<AuthModel | null>(
   },
   { getOnInit: true }
 )
+
+export const userDataAtom = atom(async (get) => {
+  const auth = get(authAtom)
+  if (!auth) return null
+
+  const response = await pb.collection('users').getOne(auth.id)
+  return response
+})
 
 export type Question = {
   id: string
@@ -174,12 +183,20 @@ export const answersForQuestionnaireAtom = atomFamily((id: string) =>
 
 export const submitQuestionnaire = async (
   questionnaireId: string,
-  answers: any
+  answers: any,
+  date: string | null = null
 ) => {
+  console.log({
+    user: pb.authStore.model?.id,
+    questionnaire: questionnaireId,
+    answers,
+    date: date ? new Date(date) : null,
+  })
   const response = await pb.collection('answers').create({
     user: pb.authStore.model?.id,
     questionnaire: questionnaireId,
     answers,
+    date: date ? new Date(date) : dayStringFromDate(new Date()),
   })
   return response
 }

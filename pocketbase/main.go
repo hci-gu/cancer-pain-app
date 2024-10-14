@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,6 +30,9 @@ import (
 var unauthorizedErr = apis.NewUnauthorizedError("Invalid or expired OTP token", nil)
 var notFoundErr = apis.NewNotFoundError("User not found", nil)
 var badRequestErr = apis.NewBadRequestError("Invalid request", nil)
+
+const INITIAL_FORM_ID = "muyb28eqa5xq39k"
+const TREAMTMENT_START_QUESTION_ID = "242u8ha0yn8m06d"
 
 func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record, error) {
 	collection, err := app.Dao().FindCollectionByNameOrId("otp")
@@ -201,6 +205,39 @@ func main() {
 		link := "http://192.168.0.33:5173/login/" + otp.Id + "?code=" + otp.GetString("password")
 
 		sendText(phoneNumber, "Välkommen till Sahlgrenska forskningsprojekt! vänligen fyll i formuläret på "+link)
+
+		return nil
+	})
+
+	app.OnRecordAfterCreateRequest("answers").Add(func(e *core.RecordCreateEvent) error {
+		questionnaireId := e.Record.GetString("questionnaire")
+
+		if questionnaireId != INITIAL_FORM_ID {
+			return nil
+		}
+
+		userId := e.Record.GetString("user")
+
+		user, err := app.Dao().FindRecordById("users", userId)
+
+		if err != nil {
+			return notFoundErr
+		}
+
+		answersString := e.Record.GetString("answers")
+		// parse json string to map
+		var answers map[string]interface{}
+		if err := json.Unmarshal([]byte(answersString), &answers); err != nil {
+			return badRequestErr
+		}
+
+		treatmentStart := answers[TREAMTMENT_START_QUESTION_ID]
+		log.Println("treatmentStart", treatmentStart)
+		user.Set("treatmentStart", treatmentStart)
+		log.Println("user", user)
+		if err := app.Dao().SaveRecord(user); err != nil {
+			return badRequestErr
+		}
 
 		return nil
 	})

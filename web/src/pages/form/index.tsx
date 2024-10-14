@@ -3,6 +3,7 @@ import { motion, interpolate } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAtom, useAtomValue } from 'jotai'
 import {
+  answersForQuestionnaireAtom,
   formStateAtom,
   Questionnaire,
   questionnaireAtom,
@@ -15,11 +16,16 @@ import { Button } from '@/components/ui/button'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import FormStateDebugger from './components/FormDebugger'
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  UpdateIcon,
+} from '@radix-ui/react-icons'
 import { useToast } from '@/hooks/use-toast'
 import useQuestions from './hooks/useQuestions'
 import ReactPageScroller from 'react-page-scroller'
 import { canProceedAtom, formPageAtom } from './state'
+import { questionnaireAnswered } from '@/utils'
 
 const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
@@ -89,7 +95,13 @@ const NavigationButtons = ({
   )
 }
 
-const Questions = ({ questionnaire }: { questionnaire: Questionnaire }) => {
+const Questions = ({
+  questionnaire,
+  loading,
+}: {
+  questionnaire: Questionnaire
+  loading: boolean
+}) => {
   const [currentPage, setCurrentPage] = useAtom(formPageAtom)
   const questions = useQuestions(questionnaire)
   const answers = useWatch()
@@ -124,7 +136,10 @@ const Questions = ({ questionnaire }: { questionnaire: Questionnaire }) => {
           <QuestionSelector question={q} questionNumber={i + 1} />
         ))}
         <div className="h-full w-full flex items-center justify-center">
-          <Button type="submit">Skicka in</Button>
+          <Button type="submit" disabled={loading}>
+            {loading && <UpdateIcon className="animate-spin mr-2" />}
+            Skicka in
+          </Button>
         </div>
       </ReactPageScroller>
     </div>
@@ -140,7 +155,8 @@ const LoadedForm = ({
 }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [_, setLoading] = useState(false)
+
+  const [loading, setLoading] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   })
@@ -148,8 +164,11 @@ const LoadedForm = ({
   const onSubmit = async (data: any) => {
     setLoading(true)
     try {
+      // get date from query params
+      const date = new URLSearchParams(window.location.search).get('date')
+
       await Promise.allSettled([
-        await submitQuestionnaire(questionnaire.id, data),
+        await submitQuestionnaire(questionnaire.id, data, date),
         new Promise((resolve) => setTimeout(resolve, 1000)),
       ])
     } catch (e) {
@@ -162,7 +181,7 @@ const LoadedForm = ({
       setLoading(false)
       return
     }
-    navigate('/forms')
+    navigate('history')
     toast({
       title: 'Submitted',
       description: 'The questionnaire was submitted successfully.',
@@ -175,8 +194,8 @@ const LoadedForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <ProgressBar questionnaire={questionnaire} />
-        <FormStateDebugger />
-        <Questions questionnaire={questionnaire} />
+        {/* <FormStateDebugger /> */}
+        <Questions questionnaire={questionnaire} loading={loading} />
         <NavigationButtons questionnaire={questionnaire} />
       </form>
     </Form>
@@ -187,6 +206,30 @@ const FormPage = () => {
   const { id } = useParams()
   const schema = useAtomValue(formStateAtom(id ?? ''))
   const questionnaire = useAtomValue(questionnaireAtom(id ?? ''))
+
+  const answers = useAtomValue(answersForQuestionnaireAtom(questionnaire.id))
+  const queryDate = new URLSearchParams(window.location.search).get('date')
+  const date = queryDate ? new Date(queryDate) : new Date()
+
+  console.log(date)
+  const answered = questionnaireAnswered(questionnaire, answers, date)
+
+  if (answered) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-center">
+          Du har redan svarat på det här formuläret. <br />
+          <Button
+            onClick={() => {
+              window.history.back()
+            }}
+          >
+            Gå tillbaka
+          </Button>
+        </p>
+      </div>
+    )
+  }
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
