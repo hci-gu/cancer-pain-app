@@ -1,6 +1,5 @@
 import { questionnaireAtom } from '@/state'
 import { useAtomValue } from 'jotai'
-import { useState } from 'react'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'

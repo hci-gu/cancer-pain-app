@@ -76,7 +76,7 @@ const FormsPage = () => {
   const questionaires = useAtomValue(questionnairesAtom)
 
   return (
-    <>
+    <div className="p-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -92,7 +92,7 @@ const FormsPage = () => {
           />
         ))}
       </div>
-    </>
+    </div>
   )
 }
 

@@ -60,8 +60,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeftIcon className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRightIcon className="h-4 w-4" />,
+        IconLeft: () => <ChevronLeftIcon className="h-4 w-4" />,
+        IconRight: () => <ChevronRightIcon className="h-4 w-4" />,
       }}
       {...props}
     />
@@ -69,7 +69,13 @@ function Calendar({
 }
 Calendar.displayName = 'Calendar'
 
-function CustomDay(props: DayProps) {
+type CustomDayProps = DayProps & {
+  onClick?: () => void
+  children?: React.ReactNode
+  style?: React.CSSProperties
+}
+
+function CustomDay(props: CustomDayProps) {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const dayRender = useDayRender(props.date, props.displayMonth, buttonRef)
 
@@ -85,7 +91,6 @@ function CustomDay(props: DayProps) {
       >
         {props.date.getDate()}
         {props.children}
-        {/* <span>hej</span> */}
       </div>
     )
   }
@@ -98,7 +103,9 @@ function LargeCalendar({
   showOutsideDays = true,
   onDayRender,
   ...props
-}: CalendarProps & { onDayRender?: (props: any) => Element }) {
+}: CalendarProps & {
+  onDayRender: (props: DayProps) => JSX.Element | null
+}) {
   return (
     <DayPicker
       locale={sv}
@@ -129,7 +136,7 @@ function LargeCalendar({
         ),
         day: cn(
           buttonVariants({ variant: 'ghost' }),
-          'h-16 w-16 m-1 font-normal aria-selected:opacity-100'
+          'md:h-16 md:w-16 m-1 font-normal aria-selected:opacity-100 h-12 w-auto'
         ),
         day_range_start: 'day-range-start',
         day_range_end: 'day-range-end',
@@ -148,7 +155,7 @@ function LargeCalendar({
       components={{
         IconLeft: (_) => <ChevronLeftIcon className="h-4 w-4" />,
         IconRight: (_) => <ChevronRightIcon className="h-4 w-4" />,
-        Day: onDayRender ? onDayRender : (props) => <CustomDay {...props} />,
+        Day: onDayRender,
       }}
       {...props}
     />

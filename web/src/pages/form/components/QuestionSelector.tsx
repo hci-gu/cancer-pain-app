@@ -13,7 +13,7 @@ import {
   FieldValues,
   useFormContext,
 } from 'react-hook-form'
-import useIsKeyboardOpen from '@/hooks/use-is-keyboard-open'
+// import useIsKeyboardOpen from '@/hooks/use-is-keyboard-open'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -112,7 +112,7 @@ const QuestionSelector = ({
 }) => {
   const { control } = useFormContext()
   const setPage = useSetAtom(formPageAtom)
-  const keyboardOpen = useIsKeyboardOpen()
+  // const keyboardOpen = useIsKeyboardOpen()
 
   const onAnswer = (_: any) => {
     setTimeout(() => setPage((page) => page + 1), 400)

@@ -7,11 +7,10 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { Calendar, CustomDay, LargeCalendar } from '@/components/ui/calendar'
+import { CustomDay, LargeCalendar } from '@/components/ui/calendar'
 import {
   Answer,
   answersForQuestionnaireAtom,
-  authAtom,
   Questionnaire,
   questionnaireAtom,
   userDataAtom,
@@ -21,6 +20,7 @@ import { useAtomValue } from 'jotai'
 import { startTransition, Suspense } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { dayStringFromDate, isSameDay, isWithinPeriod } from '@/utils'
+import { DayProps } from 'react-day-picker'
 
 const FormHistoryLoaded = ({
   questionnaire,
@@ -34,13 +34,13 @@ const FormHistoryLoaded = ({
   const navigate = useNavigate()
   // number of days between startDate and now
   const now = new Date()
-  const daysInPeriod = Math.floor(
-    (now.getTime() - (startDate ?? now).getTime()) / (1000 * 60 * 60 * 24)
-  )
-  const daysWithoutAnswer = Array.from(
-    { length: daysInPeriod },
-    (_, i) => new Date((startDate ?? now).getTime() + i * 1000 * 60 * 60 * 24)
-  ).filter((d) => !answers.some((a) => isSameDay(new Date(a.date), d)))
+  // const daysInPeriod = Math.floor(
+  //   (now.getTime() - (startDate ?? now).getTime()) / (1000 * 60 * 60 * 24)
+  // )
+  // const daysWithoutAnswer = Array.from(
+  //   { length: daysInPeriod },
+  //   (_, i) => new Date((startDate ?? now).getTime() + i * 1000 * 60 * 60 * 24)
+  // ).filter((d) => !answers.some((a) => isSameDay(new Date(a.date), d)))
 
   return (
     <div>
@@ -57,9 +57,9 @@ const FormHistoryLoaded = ({
       </Breadcrumb>
 
       <LargeCalendar
-        className="mt-8"
+        className="m-0 mt-8 p-0"
         disabled={{ after: new Date(), before: startDate ?? new Date() }}
-        onDayRender={(props) => {
+        onDayRender={(props: DayProps) => {
           if (isSameDay(props.date, startDate)) {
             return (
               <CustomDay

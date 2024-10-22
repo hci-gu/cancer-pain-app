@@ -15,7 +15,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import FormStateDebugger from './components/FormDebugger'
+// import FormStateDebugger from './components/FormDebugger'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -211,7 +211,6 @@ const FormPage = () => {
   const queryDate = new URLSearchParams(window.location.search).get('date')
   const date = queryDate ? new Date(queryDate) : new Date()
 
-  console.log(date)
   const answered = questionnaireAnswered(questionnaire, answers, date)
 
   if (answered) {
