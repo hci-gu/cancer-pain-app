@@ -7,6 +7,7 @@ specifiers:
   '@radix-ui/react-label': ^2.1.0
   '@radix-ui/react-popover': ^1.1.2
   '@radix-ui/react-radio-group': ^1.2.0
+  '@radix-ui/react-separator': ^1.1.0
   '@radix-ui/react-slot': ^1.1.0
   '@radix-ui/react-tabs': ^1.1.0
   '@radix-ui/react-toast': ^1.2.1
@@ -51,6 +52,7 @@ dependencies:
   '@radix-ui/react-label': 2.1.0_szuh4vtdsit4ubso7uq3ljvnnm
   '@radix-ui/react-popover': 1.1.2_szuh4vtdsit4ubso7uq3ljvnnm
   '@radix-ui/react-radio-group': 1.2.0_szuh4vtdsit4ubso7uq3ljvnnm
+  '@radix-ui/react-separator': 1.1.0_szuh4vtdsit4ubso7uq3ljvnnm
   '@radix-ui/react-slot': 1.1.0_vhfblam3newwcpiwkw3tsgpmum
   '@radix-ui/react-tabs': 1.1.0_szuh4vtdsit4ubso7uq3ljvnnm
   '@radix-ui/react-toast': 1.2.1_szuh4vtdsit4ubso7uq3ljvnnm
@@ -1105,6 +1107,26 @@ packages:
       '@radix-ui/react-primitive': 2.0.0_szuh4vtdsit4ubso7uq3ljvnnm
       '@radix-ui/react-use-callback-ref': 1.1.0_vhfblam3newwcpiwkw3tsgpmum
       '@radix-ui/react-use-controllable-state': 1.1.0_vhfblam3newwcpiwkw3tsgpmum
+      '@types/react': 18.3.5
+      '@types/react-dom': 18.3.0
+      react: 18.3.1
+      react-dom: 18.3.1_react@18.3.1
+    dev: false
+
+  /@radix-ui/react-separator/1.1.0_szuh4vtdsit4ubso7uq3ljvnnm:
+    resolution: {integrity: sha512-3uBAs+egzvJBDZAzvb/n4NxxOYpnspmWxO2u5NbZ8Y6FM/NdrGSF9bop3Cf6F6C71z1rTSn8KV0Fo2ZVd79lGA==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+    dependencies:
+      '@radix-ui/react-primitive': 2.0.0_szuh4vtdsit4ubso7uq3ljvnnm
       '@types/react': 18.3.5
       '@types/react-dom': 18.3.0
       react: 18.3.1

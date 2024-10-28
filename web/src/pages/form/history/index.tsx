@@ -13,10 +13,11 @@ import {
   answersForQuestionnaireAtom,
   Questionnaire,
   questionnaireAtom,
+  useAnswers,
   userDataAtom,
 } from '@/state'
 import { CheckIcon } from '@radix-ui/react-icons'
-import { useAtomValue, useSetAtom } from 'jotai'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { startTransition, Suspense, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { dayStringFromDate, isSameDay, isWithinPeriod } from '@/utils'
@@ -126,16 +127,7 @@ const FormHistoryPage = () => {
   const { id } = useParams()
   const userData = useAtomValue(userDataAtom)
   const questionnaire = useAtomValue(questionnaireAtom(id ?? ''))
-  const answers = useAtomValue(answersForQuestionnaireAtom(questionnaire.id))
-  const refreshAnswers = useSetAtom(
-    answersForQuestionnaireAtom(questionnaire.id)
-  )
-
-  useEffect(() => {
-    if (questionnaire.id) {
-      refreshAnswers()
-    }
-  }, [questionnaire.id, refreshAnswers])
+  const answers = useAnswers(questionnaire.id ?? '')
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

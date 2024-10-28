@@ -10,6 +10,7 @@ import {
   answersForQuestionnaireAtom,
   Questionnaire,
   questionnairesAtom,
+  useAnswers,
 } from '@/state'
 import { useAtomValue } from 'jotai'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +21,7 @@ const QuestionnaireCard = ({
 }: {
   questionaire: Questionnaire
 }) => {
-  const answers = useAtomValue(answersForQuestionnaireAtom(questionaire.id))
+  const answers = useAnswers(questionaire.id)
   const navigate = useNavigate()
 
   const answered = questionaire.occurrence == 'once' && answers.length > 0

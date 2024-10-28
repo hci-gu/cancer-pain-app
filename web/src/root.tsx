@@ -85,9 +85,15 @@ const RootPage = () => {
     <>
       <header className="sticky top-0 flex h-16 items-center border-b bg-background px-4 md:px-12">
         <nav className="w-full flex text-lg font-medium items-center md:gap-5 md:text-sm justify-between">
-          <div className="flex gap-6">
+          <div className="flex gap-6 items-center">
+            <img
+              src="/gu-logo-dark.svg"
+              alt="Göteborgs Universitet Icon"
+              className="h-8 w-8"
+            />
             <a href="/">Hem</a>
             <a href="/forms">Formulär</a>
+            <a href="/about">Om Studien</a>
           </div>
           {auth && (
             <a
@@ -100,8 +106,19 @@ const RootPage = () => {
         </nav>
       </header>
       <div className="flex flex-col items-center justify-center mt-8">
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-1/2 pb-64">
           <Outlet />
+        </div>
+        <div className="bg-zinc-900 text-white w-full h-1/7 flex p-4 fixed bottom-0">
+          <blockquote className="space-y-2">
+            <p className="text-sm">
+              Pre-RT studien är ett samarbete mellan Göteborgs Universitet och
+              Sahlgrenska
+            </p>
+            <footer className="text-xs font-light">
+              Kontakta Linda Åkeflo för mer information
+            </footer>
+          </blockquote>
         </div>
         <Toaster />
       </div>

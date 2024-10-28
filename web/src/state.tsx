@@ -2,9 +2,10 @@ import Pocketbase, { AuthModel } from 'pocketbase'
 import { atomFamily, atomWithStorage, unwrap } from 'jotai/utils'
 // @ts-ignore
 import Cookies from 'js-cookie'
-import { atom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import { z } from 'zod'
 import { dayStringFromDate } from './utils'
+import { useEffect } from 'react'
 
 export const pb = new Pocketbase(import.meta.env.VITE_API_URL)
 const IS_PROD = import.meta.env.VITE_API_URL.startsWith('https')
@@ -172,15 +173,18 @@ export const formStateAtom = atomFamily((id: string) =>
 export const answersForQuestionnaireAtom = atomFamily((id: string) => {
   // Writable atom to store the answers
   const dataAtom = atom<Answer[]>([])
+  console.log('answersForQuestionnaireAtom')
 
   // Atom to handle fetching and updating the answers
   const fetchAtom = atom(
     null, // No read function, only used for writing
     async (_get, set) => {
+      console.log('answersForQuestionnaireAtom')
       try {
         const response = await pb.collection('answers').getList(0, 100, {
           filter: `questionnaire = "${id}"`,
         })
+        console.log(response)
         set(dataAtom, response.items.map(mapAnswer))
       } catch (e) {
         console.error(e)
@@ -197,6 +201,20 @@ export const answersForQuestionnaireAtom = atomFamily((id: string) => {
 
   return combinedAtom
 })
+
+export const useAnswers = (questionnaireId: string) => {
+  const [answers, refreshAnswers] = useAtom(
+    answersForQuestionnaireAtom(questionnaireId)
+  )
+
+  useEffect(() => {
+    if (questionnaireId) {
+      refreshAnswers()
+    }
+  }, [questionnaireId, refreshAnswers])
+
+  return answers
+}
 
 export const submitQuestionnaire = async (
   questionnaireId: string,
