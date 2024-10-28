@@ -46,16 +46,24 @@ const INITIAL_FORM_ID = "muyb28eqa5xq39k"
 const TREAMTMENT_START_QUESTION_ID = "242u8ha0yn8m06d"
 
 func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record, error) {
-	collection, err := app.Dao().FindCollectionByNameOrId("otp")
+	return createOtpWithExpiration(app, user, false)
+}
 
+func createOtpWithExpiration(app *pocketbase.PocketBase, user *models.Record, useLongExpiration bool) (*models.Record, error) {
+	collection, err := app.Dao().FindCollectionByNameOrId("otp")
 	if err != nil {
 		return nil, err
 	}
 
 	record := models.NewRecord(collection)
 
+	if useLongExpiration {
+		record.Set("expiration", time.Now().AddDate(0, 0, 7))
+	} else {
+		record.Set("expiration", time.Now().Add(time.Hour))
+	}
+
 	record.Set("user", user.Id)
-	record.Set("expiration", time.Now().Add(5*time.Minute))
 	record.Set("attempts", 0)
 	record.Set("password", security.RandomStringWithAlphabet(6, "0123456789"))
 
@@ -285,7 +293,7 @@ func main() {
 	app.OnRecordAfterCreateRequest("users").Add(func(e *core.RecordCreateEvent) error {
 		phoneNumber := e.Record.GetString("phoneNumber")
 
-		otp, err := createOtp(app, e.Record)
+		otp, err := createOtpWithExpiration(app, e.Record, true)
 
 		if err != nil {
 			return badRequestErr

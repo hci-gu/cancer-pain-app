@@ -57,10 +57,10 @@ const LoginPage = () => {
           name="phoneNumber"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone number</FormLabel>
+              <FormLabel>Telefonnummer</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Phone number to receive reset password..."
+                  placeholder="Telefonnummer att skicka kod till..."
                   {...field}
                 />
               </FormControl>
@@ -68,7 +68,7 @@ const LoginPage = () => {
             </FormItem>
           )}
         />
-        <Button type="submit">Send password</Button>
+        <Button type="submit">Skicka engångskod</Button>
       </form>
     </Form>
   )

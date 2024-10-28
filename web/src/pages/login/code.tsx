@@ -90,7 +90,7 @@ function OTPPage() {
           name="password"
           render={() => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Engångskod</FormLabel>
               <FormControl>
                 <InputOTP
                   maxLength={6}
@@ -112,13 +112,13 @@ function OTPPage() {
                 </InputOTP>
               </FormControl>
               <FormDescription>
-                Password sent to your phone number
+                Kod skickad till ditt telefonnummer
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Skicka in</Button>
       </form>
     </Form>
   )

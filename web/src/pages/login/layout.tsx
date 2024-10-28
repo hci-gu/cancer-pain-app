@@ -22,7 +22,7 @@ const LoginLayout = ({ children }: { children: any }) => {
   const breadCrumbs = hasToken
     ? [
         {
-          label: 'Home',
+          label: 'Hem',
           href: '/welcome',
         },
         {
@@ -35,7 +35,7 @@ const LoginLayout = ({ children }: { children: any }) => {
       ]
     : [
         {
-          label: 'Home',
+          label: 'Hem',
           href: '/welcome',
         },
         {
@@ -43,8 +43,8 @@ const LoginLayout = ({ children }: { children: any }) => {
         },
       ]
   const description = hasToken
-    ? 'Enter your the code sent to your phone'
-    : 'Please enter your phone number to reset your password'
+    ? 'Skriv in koden som skickades till din telefon'
+    : 'Skriv in ditt telefonnummer för att få en kod att logga in med'
 
   return (
     <div>

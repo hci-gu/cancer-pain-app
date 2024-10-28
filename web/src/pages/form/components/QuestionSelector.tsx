@@ -80,6 +80,7 @@ const renderQuestionType = (
               <FormControl>
                 <input
                   type="radio"
+                  name={question.id}
                   value={option}
                   id={`${question.id}-option-${index}`}
                   className="hidden peer"
@@ -95,7 +96,6 @@ const renderQuestionType = (
               >
                 {option}
               </label>
-              {/* <FormLabel className="font-normal">{option}</FormLabel> */}
             </FormItem>
           ))}
         </RadioGroup>

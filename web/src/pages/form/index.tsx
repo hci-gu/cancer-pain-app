@@ -183,8 +183,8 @@ const LoadedForm = ({
     }
     navigate('history')
     toast({
-      title: 'Submitted',
-      description: 'The questionnaire was submitted successfully.',
+      title: 'Inskickat',
+      description: 'Ditt svar har skickats in.',
     })
 
     setLoading(false)
