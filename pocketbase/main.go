@@ -31,6 +31,12 @@ import (
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
+func isDevEnv() bool {
+	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
+	log.Println("isGoRun: ", isGoRun)
+	return isGoRun
+}
+
 var unauthorizedErr = apis.NewUnauthorizedError("Invalid or expired OTP token", nil)
 var notFoundErr = apis.NewNotFoundError("User not found", nil)
 var badRequestErr = apis.NewBadRequestError("Invalid request", nil)
@@ -60,6 +66,11 @@ func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record,
 }
 
 func sendText(phoneNumber string, text string) error {
+	if isDevEnv() {
+		// just print the message to console
+		log.Println("Sending message to", phoneNumber, ":", text)
+		return nil
+	}
 	// replace 0 with +46 for phoneNumber
 	phoneNumber = strings.Replace(phoneNumber, "0", "+46", 1)
 
@@ -252,7 +263,7 @@ func main() {
 			return apis.RecordAuthResponse(app, c, user, nil)
 		})
 
-		scheduler.MustAdd("notifications", "0 19 * * *", func() {
+		scheduler.MustAdd("notifications", "0 17 * * *", func() {
 			users, err := app.Dao().FindRecordsByFilter("users", "phoneNumber != ''", "", 0, 0, nil)
 			if err != nil {
 				log.Println("error", err)

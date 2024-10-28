@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { dayStringFromDate } from './utils'
 
 export const pb = new Pocketbase(import.meta.env.VITE_API_URL)
+const IS_PROD = import.meta.env.VITE_API_URL.startsWith('https')
 pb.autoCancellation(false)
 
 export const authAtom = atomWithStorage<AuthModel | null>(
@@ -23,6 +24,7 @@ export const authAtom = atomWithStorage<AuthModel | null>(
         return pb.authStore.model
       } catch (error) {
         console.error('Error parsing auth cookie:', error)
+        Cookies.remove(key)
         return initialValue
       }
     },
@@ -33,7 +35,8 @@ export const authAtom = atomWithStorage<AuthModel | null>(
           model: pb.authStore.model,
         }
         Cookies.set(key, JSON.stringify(authData), {
-          secure: false,
+          secure: IS_PROD,
+          expires: 90,
         })
       } else {
         Cookies.remove(key)
@@ -166,20 +169,34 @@ export const formStateAtom = atomFamily((id: string) =>
   })
 )
 
-export const answersForQuestionnaireAtom = atomFamily((id: string) =>
-  atom(async () => {
-    try {
-      const response = await pb.collection('answers').getList(0, 100, {
-        filter: `questionnaire = "${id}"`,
-      })
+export const answersForQuestionnaireAtom = atomFamily((id: string) => {
+  // Writable atom to store the answers
+  const dataAtom = atom<Answer[]>([])
 
-      return response.items.map(mapAnswer)
-    } catch (e) {
-      console.error(e)
-      return []
+  // Atom to handle fetching and updating the answers
+  const fetchAtom = atom(
+    null, // No read function, only used for writing
+    async (_get, set) => {
+      try {
+        const response = await pb.collection('answers').getList(0, 100, {
+          filter: `questionnaire = "${id}"`,
+        })
+        set(dataAtom, response.items.map(mapAnswer))
+      } catch (e) {
+        console.error(e)
+        set(dataAtom, []) // Set empty array on error
+      }
     }
-  })
-)
+  )
+
+  // Combine the atoms to return a single writable atom
+  const combinedAtom = atom(
+    (get) => get(dataAtom), // Read function to get current answers
+    (_get, set) => set(fetchAtom) // Write function to refresh answers
+  )
+
+  return combinedAtom
+})
 
 export const submitQuestionnaire = async (
   questionnaireId: string,

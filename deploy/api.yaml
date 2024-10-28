@@ -18,7 +18,7 @@ spec:
                       claimName: pre-rt-pv-claim
             containers:
                 - name: pre-rt-api
-                  image: 'registry.k8s.gu.se/appademin/pre-rt-api:0.1.1'
+                  image: 'registry.k8s.gu.se/appademin/pre-rt-api:0.1.2'
                   imagePullPolicy: Always
                   ports:
                       - containerPort: 8080

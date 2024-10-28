@@ -27,8 +27,20 @@ const renderQuestionType = (
     case 'text':
       return (
         <Input
-          placeholder={question.placeholder}
-          onSubmit={(e) => onAnswer(e)}
+          placeholder={
+            question.placeholder && question.placeholder.length > 0
+              ? question.placeholder
+              : 'Valfri kommentar'
+          }
+          enterKeyHint="done"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              const target = e.target as HTMLInputElement
+              target.blur()
+              onAnswer(e)
+            }
+          }}
           {...field}
         />
       )
