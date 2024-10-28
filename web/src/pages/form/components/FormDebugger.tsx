@@ -11,8 +11,8 @@ const FormStateDebugger = () => {
   const { control } = useFormContext()
   const formValues = useWatch({ control })
   return (
-    <pre className="fixed right-2 top-2 p-4 bg-white border border-gray-200 shadow-lg text-sm z-50 h-100 w-80 overflow-auto">
-      <Tabs defaultValue="state" className="w-[400px]">
+    <pre className="fixed right-2 top-2 p-4 bg-white border border-gray-200 shadow-lg text-sm z-50 h-100 w-800 overflow-auto">
+      <Tabs defaultValue="state" className="w-[600px]">
         <TabsList>
           <TabsTrigger value="state">State</TabsTrigger>
           <TabsTrigger value="form">Form</TabsTrigger>

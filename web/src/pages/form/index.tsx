@@ -15,7 +15,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-// import FormStateDebugger from './components/FormDebugger'
+import FormStateDebugger from './components/FormDebugger'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -194,7 +194,7 @@ const LoadedForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <ProgressBar questionnaire={questionnaire} />
-        {/* <FormStateDebugger /> */}
+        <FormStateDebugger />
         <Questions questionnaire={questionnaire} loading={loading} />
         <NavigationButtons questionnaire={questionnaire} />
       </form>

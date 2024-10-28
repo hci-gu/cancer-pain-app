@@ -59,7 +59,13 @@ export const userDataAtom = atom(async (get) => {
 export type Question = {
   id: string
   text: string
-  type: 'text' | 'painScale' | 'singleChoice' | 'multipleChoice' | 'date'
+  type:
+    | 'text'
+    | 'number'
+    | 'painScale'
+    | 'singleChoice'
+    | 'multipleChoice'
+    | 'date'
   required: boolean
   placeholder?: string
   options: string[]
@@ -146,8 +152,10 @@ export const formStateAtom = atomFamily((id: string) =>
       questionnaire.questions.reduce((acc, q) => {
         switch (q.type) {
           case 'singleChoice':
-          case 'multipleChoice':
             acc[q.id] = z.enum([q.options[0], ...q.options.slice(1)])
+            break
+          case 'multipleChoice':
+            acc[q.id] = z.array(z.enum([q.options[0], ...q.options.slice(1)]))
             break
           case 'painScale':
             acc[q.id] = z.number().int().min(0).max(10)
@@ -171,32 +179,24 @@ export const formStateAtom = atomFamily((id: string) =>
 )
 
 export const answersForQuestionnaireAtom = atomFamily((id: string) => {
-  // Writable atom to store the answers
   const dataAtom = atom<Answer[]>([])
-  console.log('answersForQuestionnaireAtom')
 
-  // Atom to handle fetching and updating the answers
-  const fetchAtom = atom(
-    null, // No read function, only used for writing
-    async (_get, set) => {
-      console.log('answersForQuestionnaireAtom')
-      try {
-        const response = await pb.collection('answers').getList(0, 100, {
-          filter: `questionnaire = "${id}"`,
-        })
-        console.log(response)
-        set(dataAtom, response.items.map(mapAnswer))
-      } catch (e) {
-        console.error(e)
-        set(dataAtom, []) // Set empty array on error
-      }
+  const fetchAtom = atom(null, async (_get, set) => {
+    try {
+      const response = await pb.collection('answers').getList(0, 100, {
+        filter: `questionnaire = "${id}"`,
+      })
+      console.log(response)
+      set(dataAtom, response.items.map(mapAnswer))
+    } catch (e) {
+      console.error(e)
+      set(dataAtom, [])
     }
-  )
+  })
 
-  // Combine the atoms to return a single writable atom
   const combinedAtom = atom(
-    (get) => get(dataAtom), // Read function to get current answers
-    (_get, set) => set(fetchAtom) // Write function to refresh answers
+    (get) => get(dataAtom),
+    (_get, set) => set(fetchAtom)
   )
 
   return combinedAtom
@@ -221,12 +221,6 @@ export const submitQuestionnaire = async (
   answers: any,
   date: string | null = null
 ) => {
-  console.log({
-    user: pb.authStore.model?.id,
-    questionnaire: questionnaireId,
-    answers,
-    date: date ? new Date(date) : null,
-  })
   const response = await pb.collection('answers').create({
     user: pb.authStore.model?.id,
     questionnaire: questionnaireId,
