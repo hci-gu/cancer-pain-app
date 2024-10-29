@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
-import { answersForQuestionnaireAtom, useAnswers } from '@/state'
-import { BoxIcon, CheckboxIcon, CheckCircledIcon } from '@radix-ui/react-icons'
-import { useAtomValue } from 'jotai'
+import { useAnswers } from '@/state'
+import { BoxIcon, CheckCircledIcon } from '@radix-ui/react-icons'
 import { startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HomeTodoItem from './HomeTodoItem'
@@ -14,22 +13,21 @@ function InitialForm() {
 
   if (answers.length > 0) {
     return (
-      <HomeTodoItem index={1} background="bg-green-100">
-        <CheckCircledIcon className="text-green-600" />
-        <span className="text-green-800 font-medium">
-          Du har svarat på formuläret
-        </span>
-      </HomeTodoItem>
+      <HomeTodoItem
+        index={1}
+        icon={<CheckCircledIcon className="text-green-600" />}
+        title="Du har angett behandlingsstart."
+        done
+      />
     )
   }
 
   return (
-    <HomeTodoItem index={1}>
-      <BoxIcon />
-      <div className="flex items-center space-x-4">
-        <p className="font-medium">
-          Du har ett initiellt formulär att fylla i.
-        </p>
+    <HomeTodoItem
+      index={1}
+      icon={<BoxIcon />}
+      title="Använd formuläret för att anmäla behandlingsstart."
+      action={
         <Button
           onClick={() => {
             startTransition(() => {
@@ -39,8 +37,8 @@ function InitialForm() {
         >
           Sätt igång
         </Button>
-      </div>
-    </HomeTodoItem>
+      }
+    />
   )
 }
 

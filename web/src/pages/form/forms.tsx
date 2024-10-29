@@ -51,9 +51,13 @@ const QuestionnaireCard = ({
       <CardFooter>
         <div className="flex w-full justify-between items-end">
           {questionaire.occurrence != 'once' ? (
-            <p>{answers.length} svar</p>
+            <p className="font-light text-muted-foreground">
+              {answers.length} svar
+            </p>
           ) : (
-            <p>{answers.length ? 'Svarat' : 'Inte svarat'}</p>
+            <p className="font-light text-muted-foreground">
+              {answers.length ? 'Svarat' : 'Inte svarat'}
+            </p>
           )}
           {questionaire.occurrence != 'once' && (
             <Button

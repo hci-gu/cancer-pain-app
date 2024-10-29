@@ -1,30 +1,36 @@
 import { cn } from '@/lib/utils'
 
 function HomeTodoItem({
-  children,
+  icon,
   index,
-  className = '',
-  background = 'bg-white',
+  title,
+  description = '',
+  done = false,
+  action,
 }: {
-  children: React.ReactNode
+  icon: React.ReactNode
   index: number
-  className?: string
-  background?: string
+  title: string
+  description?: string
+  done?: boolean
+  action?: React.ReactNode
 }) {
-  const textColor =
-    background === 'bg-white'
-      ? 'text-black'
-      : background.replace('bg', 'text').replace('100', '800')
+  const background = done ? 'bg-green-100' : 'bg-white'
+  const textClass = done ? 'text-green-800 font-medium' : 'text-black'
 
   return (
     <div
       className={cn(
-        `flex items-center space-x-2 p-4 rounded-md ${background}`,
-        className
+        `flex items-center space-x-2 p-4 rounded-md border border-transparent hover:border hover:border-gray-300 ${background}`
       )}
     >
-      <strong className={textColor}>{index}.</strong>
-      {children}
+      <strong className={textClass}>{index}.</strong>
+      {icon}
+      <div>
+        <h3 className={textClass}>{title}</h3>
+        <p className={`${textClass} font-light text-sm`}>{description}</p>
+      </div>
+      {action}
     </div>
   )
 }
