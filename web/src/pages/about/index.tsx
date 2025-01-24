@@ -1,4 +1,13 @@
+import { readAboutPageAtom } from '@/state'
+import { useSetAtom } from 'jotai'
+import { useEffect } from 'react'
+
 function AboutPage() {
+  const setRead = useSetAtom(readAboutPageAtom)
+  useEffect(() => {
+    setRead(true)
+  }, [])
+
   return (
     <div className="mx-4">
       <p>

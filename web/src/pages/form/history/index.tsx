@@ -10,15 +10,14 @@ import { Button } from '@/components/ui/button'
 import { CustomDay, LargeCalendar } from '@/components/ui/calendar'
 import {
   Answer,
-  answersForQuestionnaireAtom,
   Questionnaire,
   questionnaireAtom,
   useAnswers,
   userDataAtom,
 } from '@/state'
 import { CheckIcon } from '@radix-ui/react-icons'
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { startTransition, Suspense, useEffect } from 'react'
+import { useAtomValue } from 'jotai'
+import { startTransition, Suspense } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { dayStringFromDate, isSameDay, isWithinPeriod } from '@/utils'
 import { DayProps } from 'react-day-picker'
@@ -33,15 +32,7 @@ const FormHistoryLoaded = ({
   startDate: Date | null
 }) => {
   const navigate = useNavigate()
-  // number of days between startDate and now
   const now = new Date()
-  // const daysInPeriod = Math.floor(
-  //   (now.getTime() - (startDate ?? now).getTime()) / (1000 * 60 * 60 * 24)
-  // )
-  // const daysWithoutAnswer = Array.from(
-  //   { length: daysInPeriod },
-  //   (_, i) => new Date((startDate ?? now).getTime() + i * 1000 * 60 * 60 * 24)
-  // ).filter((d) => !answers.some((a) => isSameDay(new Date(a.date), d)))
 
   return (
     <div>

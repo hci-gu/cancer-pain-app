@@ -8,7 +8,7 @@ import { dayStringFromDate } from './utils'
 import { useEffect } from 'react'
 
 export const pb = new Pocketbase(import.meta.env.VITE_API_URL)
-const IS_PROD = import.meta.env.VITE_API_URL.startsWith('https')
+// const IS_PROD = import.meta.env.VITE_API_URL.startsWith('https')
 pb.autoCancellation(false)
 
 export const authAtom = atomWithStorage<AuthModel | null>(
@@ -36,7 +36,7 @@ export const authAtom = atomWithStorage<AuthModel | null>(
           model: pb.authStore.model,
         }
         Cookies.set(key, JSON.stringify(authData), {
-          secure: IS_PROD,
+          secure: false,
           expires: 90,
         })
       } else {
@@ -52,9 +52,27 @@ export const userDataAtom = atom(async (get) => {
   const auth = get(authAtom)
   if (!auth) return null
 
-  const response = await pb.collection('users').getOne(auth.id)
-  return response
+  try {
+    const response = await pb.collection('users').getOne(auth.id)
+    return response
+  } catch (e) {
+    // throw out the auth token if the user doesn't exist
+    Cookies.remove('auth')
+    console.error(e)
+    return null
+  }
 })
+
+export const readAboutPageAtom = atomWithStorage<boolean>(
+  'readAboutPage',
+  false
+)
+
+export type Resource = {
+  id: string
+  title: string
+  description: string
+}
 
 export type Question = {
   id: string
@@ -66,11 +84,13 @@ export type Question = {
     | 'singleChoice'
     | 'multipleChoice'
     | 'date'
+    | 'section'
   required: boolean
   placeholder?: string
   options: string[]
   dependency?: string
   dependencyValue?: any
+  resource?: Resource
 }
 
 export type Questionnaire = {
@@ -97,9 +117,10 @@ const mapQuestion = (question: any): Question => {
     type: question.type,
     required: question.required,
     placeholder: question.placeholder,
-    options: question.expand?.options.value,
+    options: question.expand?.options?.value,
     dependency: question.dependency,
     dependencyValue: question.dependencyValue,
+    resource: question.expand?.resource,
   }
 }
 
@@ -137,7 +158,7 @@ export const questionnairesAtom = unwrap(questionnairesBaseAtom)
 export const questionnaireAtom = atomFamily((id: string) =>
   atom(async () => {
     const response = await pb.collection('questionnaires').getOne(id, {
-      expand: 'questions,questions.options',
+      expand: 'questions,questions.options,questions.resource',
     })
 
     return mapQuestionnaire(response)

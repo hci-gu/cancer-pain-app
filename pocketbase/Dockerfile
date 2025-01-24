@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ARG GOLANG_VERSION=1.22.0
+ARG GOLANG_VERSION=1.23.4
 
 RUN apk update && apk add go gcc bash musl-dev openssl-dev ca-certificates && update-ca-certificates
 

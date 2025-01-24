@@ -11,11 +11,9 @@ import {
 } from '@/state'
 import QuestionSelector from './components/QuestionSelector'
 import { Form } from '@/components/ui/form'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import FormStateDebugger from './components/FormDebugger'
+// import FormStateDebugger from './components/FormDebugger'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -26,6 +24,9 @@ import useQuestions from './hooks/useQuestions'
 import ReactPageScroller from 'react-page-scroller'
 import { canProceedAtom, formPageAtom } from './state'
 import { questionnaireAnswered } from '@/utils'
+import useFormStateWithCache, {
+  SyncFormStateToLocalStorage,
+} from './hooks/useFormState'
 
 const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
@@ -46,7 +47,8 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
       />
       <motion.span
         animate={{ color: textColor(page) }}
-        className={`fixed top-1 left-1/2 font-semibold z-10`}
+        className={`fixed top-1 font-semibold z-10`}
+        style={{ left: '50%', transform: 'translateX(-50%)' }}
       >
         {Math.min(page + 1, questions.length)} / {questions.length}
       </motion.span>
@@ -98,9 +100,11 @@ const NavigationButtons = ({
 const Questions = ({
   questionnaire,
   loading,
+  onSubmit,
 }: {
   questionnaire: Questionnaire
   loading: boolean
+  onSubmit: (data: any) => void
 }) => {
   const [currentPage, setCurrentPage] = useAtom(formPageAtom)
   const questions = useQuestions(questionnaire)
@@ -113,6 +117,7 @@ const Questions = ({
   )
 
   const handlePageChange = (page: number) => {
+    if (currentPage === -1 && page === 0) return
     setCurrentPage(page)
   }
 
@@ -128,15 +133,26 @@ const Questions = ({
       <ReactPageScroller
         pageOnChange={handlePageChange}
         onBeforePageScroll={handleBeforePageChange}
-        customPageNumber={currentPage}
+        customPageNumber={currentPage ?? 0}
         blockScrollDown={canProceed}
         animationTimer={600}
       >
         {questions.map((q, i) => (
-          <QuestionSelector question={q} questionNumber={i + 1} />
+          <QuestionSelector
+            key={`Question_${q.id}_${i}`}
+            question={q}
+            questionNumber={i + 1}
+          />
         ))}
         <div className="h-full w-full flex items-center justify-center">
-          <Button type="submit" disabled={loading}>
+          <Button
+            type="submit"
+            disabled={loading}
+            onClick={(_) => {
+              console.log('submit')
+              onSubmit(answers)
+            }}
+          >
             {loading && <UpdateIcon className="animate-spin mr-2" />}
             Skicka in
           </Button>
@@ -157,8 +173,9 @@ const LoadedForm = ({
   const { toast } = useToast()
 
   const [loading, setLoading] = useState(false)
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useFormStateWithCache({
+    questionnaire,
+    formSchema,
   })
 
   const onSubmit = async (data: any) => {
@@ -181,7 +198,11 @@ const LoadedForm = ({
       setLoading(false)
       return
     }
-    navigate('history')
+    if (questionnaire.occurrence === 'once') {
+      navigate('/forms')
+    } else {
+      navigate('history')
+    }
     toast({
       title: 'Inskickat',
       description: 'Ditt svar har skickats in.',
@@ -193,10 +214,23 @@ const LoadedForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
+        <SyncFormStateToLocalStorage questionnaire={questionnaire} />
+        {/* <FormStateDebugger /> */}
         <ProgressBar questionnaire={questionnaire} />
-        <FormStateDebugger />
-        <Questions questionnaire={questionnaire} loading={loading} />
+        <Questions
+          questionnaire={questionnaire}
+          loading={loading}
+          onSubmit={onSubmit}
+        />
         <NavigationButtons questionnaire={questionnaire} />
+        <div className="fixed bottom-4 left-4 p-2">
+          <p className="text-xs text-gray-500 text-center pb-2">Skapat av</p>
+          <img
+            src="/vgr-logo.png"
+            alt="Västra Götalandsregionen"
+            className="h-8"
+          />
+        </div>
       </form>
     </Form>
   )

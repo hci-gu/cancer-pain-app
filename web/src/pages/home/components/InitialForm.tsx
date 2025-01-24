@@ -1,23 +1,33 @@
 import { Button } from '@/components/ui/button'
-import { useAnswers } from '@/state'
-import { BoxIcon, CheckCircledIcon } from '@radix-ui/react-icons'
+import { userDataAtom } from '@/state'
+import { CheckCircledIcon, ClockIcon } from '@radix-ui/react-icons'
 import { startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HomeTodoItem from './HomeTodoItem'
-
-const INITIAL_FORM_ID = 'muyb28eqa5xq39k'
+import { useAtomValue } from 'jotai'
 
 function InitialForm() {
   const navigate = useNavigate()
-  const answers = useAnswers(INITIAL_FORM_ID)
+  const user = useAtomValue(userDataAtom)
 
-  if (answers.length > 0) {
+  if (!!user?.treatmentStart) {
     return (
       <HomeTodoItem
         index={1}
         icon={<CheckCircledIcon className="text-green-600" />}
-        title="Du har angett behandlingsstart."
+        title={`Du har registrerat dig, din behandlingsstart är: ${new Date(
+          user.treatmentStart
+        ).toLocaleDateString()}`}
         done
+        action={
+          <Button
+            onClick={() => {
+              startTransition(() => navigate(`/forms/sdzkpd49ndccf5b/history`))
+            }}
+          >
+            Se schema
+          </Button>
+        }
       />
     )
   }
@@ -25,19 +35,8 @@ function InitialForm() {
   return (
     <HomeTodoItem
       index={1}
-      icon={<BoxIcon />}
-      title="Använd formuläret för att anmäla behandlingsstart."
-      action={
-        <Button
-          onClick={() => {
-            startTransition(() => {
-              navigate(`/forms/${INITIAL_FORM_ID}`)
-            })
-          }}
-        >
-          Sätt igång
-        </Button>
-      }
+      icon={<ClockIcon />}
+      title="Du är registrerad men har inte fått en start för behandling, vänligen kom tillbaka senare."
     />
   )
 }

@@ -12,23 +12,20 @@ import (
 	"strings"
 	"time"
 
-	_ "app/migrations"
+	// _ "app/migrations"
 
-	_ "github.com/joho/godotenv/autoload"
+	// _ "github.com/joho/godotenv/autoload"
+	// "github.com/labstack/echo"
+	// "github.com/labstack/echo/v5/middleware"
 
 	"github.com/pocketbase/dbx"
-
-	"github.com/labstack/echo/v5"
-	"github.com/labstack/echo/v5/middleware"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/security"
 	"github.com/pocketbase/pocketbase/tools/types"
-
-	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
 func isDevEnv() bool {
@@ -42,20 +39,38 @@ var notFoundErr = apis.NewNotFoundError("User not found", nil)
 var badRequestErr = apis.NewBadRequestError("Invalid request", nil)
 
 const WEB_URL = "https://pre-rt.prod.appadem.in"
-const INITIAL_FORM_ID = "muyb28eqa5xq39k"
-const TREAMTMENT_START_QUESTION_ID = "242u8ha0yn8m06d"
 
-func createOtp(app *pocketbase.PocketBase, user *models.Record) (*models.Record, error) {
+// const WEB_URL = "http://localhost:5173"
+const TREATMENT_END_FORM_ID = "p8ow7xj8h4uuv43"
+const TREATMENT_END_QUESTION_ID = "242u8ha0yn8m06d"
+
+func createOtp(app *pocketbase.PocketBase, user *core.Record) (*core.Record, error) {
 	return createOtpWithExpiration(app, user, false)
 }
 
-func createOtpWithExpiration(app *pocketbase.PocketBase, user *models.Record, useLongExpiration bool) (*models.Record, error) {
-	collection, err := app.Dao().FindCollectionByNameOrId("otp")
+func getLastCreatedUserWithDiagnosis(app *pocketbase.PocketBase, diagnosis string) (*core.Record, error) {
+	users, err := app.FindRecordsByFilter("users", "diagnosis = {:diagnosis}", "-created", 1, 0, dbx.Params{
+		"diagnosis": diagnosis,
+	})
+	if err != nil {
+		println("error", err)
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return nil, nil
+	}
+
+	return users[0], nil
+}
+
+func createOtpWithExpiration(app *pocketbase.PocketBase, user *core.Record, useLongExpiration bool) (*core.Record, error) {
+	collection, err := app.FindCollectionByNameOrId("otp")
 	if err != nil {
 		return nil, err
 	}
 
-	record := models.NewRecord(collection)
+	record := core.NewRecord(collection)
 
 	if useLongExpiration {
 		record.Set("expiration", time.Now().AddDate(0, 0, 7))
@@ -67,7 +82,7 @@ func createOtpWithExpiration(app *pocketbase.PocketBase, user *models.Record, us
 	record.Set("attempts", 0)
 	record.Set("password", security.RandomStringWithAlphabet(6, "0123456789"))
 
-	if err := app.Dao().SaveRecord(record); err != nil {
+	if err := app.Save(record); err != nil {
 		return nil, err
 	}
 	return record, nil
@@ -88,7 +103,7 @@ func sendText(phoneNumber string, text string) error {
 
 	// Prepare data
 	data := url.Values{}
-	data.Set("from", "Sahlgrenska")
+	data.Set("from", "StudiePreRT")
 	data.Set("to", phoneNumber)
 	data.Set("message", text)
 
@@ -124,6 +139,12 @@ func sendText(phoneNumber string, text string) error {
 	return nil
 }
 
+func sendTreatmentEndReminder(app *pocketbase.PocketBase, user *core.Record) {
+	link := WEB_URL + "/forms/" + TREATMENT_END_FORM_ID
+
+	sendText(user.GetString("phoneNumber"), "Hej! Det är nu 5 veckor efter behandlingsstart, du kan fylla i slutdatum här: "+link)
+}
+
 func answeredQuestionnaire(answeredDate time.Time, occurance string) bool {
 	var nextDueDate time.Time
 
@@ -154,8 +175,51 @@ func answeredQuestionnaire(answeredDate time.Time, occurance string) bool {
 	return nextDueDate.After(currentDate)
 }
 
-func checkAndSendNotification(app *pocketbase.PocketBase, user *models.Record, questionnaire *models.Record) {
-	answers, _ := app.Dao().FindRecordsByFilter("answers", "user = {:user} && questionnaire = {:questionnaire}", "-date", 1, 0, dbx.Params{
+func userShouldBeRemindedAboutTreatmentEnd(user *core.Record) bool {
+	// does user already have a treatment end date?
+	treatmentEnd := user.GetDateTime("treatmentEnd").Time()
+
+	// if its set no need to be reminded
+	if !treatmentEnd.IsZero() {
+		return false
+	}
+	// send reminder if day is 5 weeks after treatment start
+	treatmentStart := user.GetDateTime("treatmentStart").Time()
+	fiveWeeksAfterTreatmentStart := treatmentStart.AddDate(0, 0, 35)
+
+	today := time.Now()
+
+	// check if today is the day 5 weeks after treatment start
+	if today.Year() == fiveWeeksAfterTreatmentStart.Year() && today.YearDay() == fiveWeeksAfterTreatmentStart.YearDay() {
+		return true
+	}
+
+	return false
+}
+
+func userShouldBeNotified(user *core.Record) bool {
+	userType := user.GetString("type")
+
+	treatmentEnd := user.GetDateTime("treatmentEnd").Time()
+
+	// if treatmentEnd is set, it should be 6 weeks after
+	if !treatmentEnd.IsZero() {
+		sixWeeksAfterTreatmentEnd := treatmentEnd.AddDate(0, 0, 42)
+		return time.Now().After(sixWeeksAfterTreatmentEnd)
+	}
+
+	// if user.type == "PRE" it should be 2 weeks before treatment start
+	if userType == "PRE" {
+		treatmentStart := user.GetDateTime("treatmentStart").Time()
+		twoWeeksBeforeTreatmentStart := treatmentStart.AddDate(0, 0, -14)
+		return time.Now().After(twoWeeksBeforeTreatmentStart)
+	}
+
+	return false
+}
+
+func checkAndSendNotification(app *pocketbase.PocketBase, user *core.Record, questionnaire *core.Record) {
+	answers, _ := app.FindRecordsByFilter("answers", "user = {:user} && questionnaire = {:questionnaire}", "-date", 1, 0, dbx.Params{
 		"user":          user.Id,
 		"questionnaire": questionnaire.Id,
 	})
@@ -183,28 +247,22 @@ func main() {
 		Automigrate: isGoRun,
 	})
 
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		scheduler := cron.New()
 
-		e.Router.Use(middleware.Decompress())
-		e.Router.Use(middleware.BodyLimit(100 * 1024 * 1024))
+		se.Router.Bind(apis.Gzip())
 
-		e.Router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: []string{"*"}, // You can restrict this to specific domains if needed
-			AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
-		}))
-
-		e.Router.POST("/otp-create", func(c echo.Context) error {
+		se.Router.POST("/otp-create", func(e *core.RequestEvent) error {
 			data := struct {
 				PhoneNumber string `json:"phoneNumber"`
 			}{}
 
-			if err := c.Bind(&data); err != nil {
+			if err := e.BindBody(&data); err != nil {
 				log.Println("bind error", err)
 				return badRequestErr
 			}
 
-			user, err := app.Dao().FindFirstRecordByData("users", "phoneNumber", data.PhoneNumber)
+			user, err := app.FindFirstRecordByData("users", "phoneNumber", data.PhoneNumber)
 			if err != nil {
 				return notFoundErr
 			}
@@ -217,47 +275,47 @@ func main() {
 
 			sendText(data.PhoneNumber, "Din engångskod är: "+record.GetString("password"))
 
-			return c.JSON(200, record)
+			return e.JSON(200, record)
 		})
 
-		e.Router.POST("/otp-verify", func(c echo.Context) error {
+		se.Router.POST("/otp-verify", func(e *core.RequestEvent) error {
 			println("/POST otp-verify")
 			data := struct {
 				VerifyToken string `json:"verifyToken"`
 				OTP         string `json:"otp"`
 			}{}
 
-			if err := c.Bind(&data); err != nil {
+			if err := e.BindBody(&data); err != nil {
 				log.Println("bind error", err)
 				return unauthorizedErr
 			}
 
-			record, err := app.Dao().FindRecordById("otp", data.VerifyToken)
+			record, err := app.FindRecordById("otp", data.VerifyToken)
 			if err != nil {
 				return unauthorizedErr
 			}
 
 			if record.GetDateTime("expiration").Time().Before(time.Now()) {
-				app.Dao().DeleteRecord(record)
+				app.Delete(record)
 				return unauthorizedErr
 			}
 
 			if !security.Equal(record.GetString("password"), data.OTP) {
 				attempts := record.GetInt("attempts") + 1
 				if attempts > 3 {
-					app.Dao().DeleteRecord(record)
+					app.Delete(record)
 					return unauthorizedErr
 				}
 
 				record.Set("attempts", attempts)
-				if err := app.Dao().SaveRecord(record); err != nil {
+				if err := app.Save(record); err != nil {
 					log.Println("save error", err)
 				}
 
 				return unauthorizedErr
 			}
 
-			if err := app.Dao().ExpandRecord(record, []string{"user"}, nil); len(err) > 0 {
+			if err := app.ExpandRecord(record, []string{"user"}, nil); len(err) > 0 {
 				log.Println("expand error", err)
 				return unauthorizedErr
 			}
@@ -267,30 +325,70 @@ func main() {
 				return unauthorizedErr
 			}
 
-			defer app.Dao().DeleteRecord(record)
-			return apis.RecordAuthResponse(app, c, user, nil)
+			defer app.Delete(record)
+			return apis.RecordAuthResponse(e, user, "user", nil)
 		})
 
-		scheduler.MustAdd("notifications", "0 17 * * *", func() {
-			users, err := app.Dao().FindRecordsByFilter("users", "phoneNumber != ''", "", 0, 0, nil)
+		scheduler.MustAdd("notifications", "0 18 * * *", func() {
+			users, err := app.FindRecordsByFilter("users", "phoneNumber != ''", "", 0, 0, nil)
 			if err != nil {
 				log.Println("error", err)
 			}
 
-			questionnaire, _ := app.Dao().FindFirstRecordByFilter("questionnaires", "occurrence = 'daily'")
+			questionnaire, _ := app.FindFirstRecordByFilter("questionnaires", "occurrence = 'daily'")
 
 			for _, user := range users {
-				log.Println("user", user)
-				checkAndSendNotification(app, user, questionnaire)
+				if userShouldBeNotified(user) {
+					checkAndSendNotification(app, user, questionnaire)
+				}
+			}
+		})
+
+		scheduler.MustAdd("treatment-end-reminders", "0 17 * * *", func() {
+			users, err := app.FindRecordsByFilter("users", "phoneNumber != ''", "", 0, 0, nil)
+			if err != nil {
+				log.Println("error", err)
+			}
+
+			for _, user := range users {
+				if userShouldBeRemindedAboutTreatmentEnd(user) {
+					sendTreatmentEndReminder(app, user)
+				}
 			}
 		})
 
 		scheduler.Start()
 
-		return nil
+		return se.Next()
 	})
 
-	app.OnRecordAfterCreateRequest("users").Add(func(e *core.RecordCreateEvent) error {
+	app.OnRecordCreate("users").BindFunc(func(e *core.RecordEvent) error {
+		diagnosis := e.Record.GetString("diagnosis")
+
+		if diagnosis == "cervix" {
+			e.Record.Set("type", "POST")
+		} else {
+			previousUser, err := getLastCreatedUserWithDiagnosis(app, diagnosis)
+
+			if err != nil {
+				return err
+			}
+
+			if previousUser != nil {
+				if previousUser.GetString("type") == "POST" {
+					e.Record.Set("type", "PRE")
+				} else {
+					e.Record.Set("type", "POST")
+				}
+			} else {
+				e.Record.Set("type", "PRE")
+			}
+		}
+
+		return e.Next()
+	})
+
+	app.OnRecordAfterCreateSuccess("users").BindFunc(func(e *core.RecordEvent) error {
 		phoneNumber := e.Record.GetString("phoneNumber")
 
 		otp, err := createOtpWithExpiration(app, e.Record, true)
@@ -301,21 +399,21 @@ func main() {
 
 		link := WEB_URL + "/login/" + otp.Id + "?code=" + otp.GetString("password")
 
-		sendText(phoneNumber, "Välkommen till Sahlgrenska forskningsprojekt! vänligen fyll i formuläret på "+link)
+		sendText(phoneNumber, "Välkommen till Sahlgrenska forskningsprojekt PreRT. registrera dig här: "+link)
 
 		return nil
 	})
 
-	app.OnRecordAfterCreateRequest("answers").Add(func(e *core.RecordCreateEvent) error {
+	app.OnRecordAfterCreateSuccess("answers").BindFunc(func(e *core.RecordEvent) error {
 		questionnaireId := e.Record.GetString("questionnaire")
 
-		if questionnaireId != INITIAL_FORM_ID {
+		if questionnaireId != TREATMENT_END_FORM_ID {
 			return nil
 		}
 
 		userId := e.Record.GetString("user")
 
-		user, err := app.Dao().FindRecordById("users", userId)
+		user, err := app.FindRecordById("users", userId)
 
 		if err != nil {
 			return notFoundErr
@@ -328,11 +426,11 @@ func main() {
 			return badRequestErr
 		}
 
-		treatmentStart := answers[TREAMTMENT_START_QUESTION_ID]
-		log.Println("treatmentStart", treatmentStart)
-		user.Set("treatmentStart", treatmentStart)
+		treatmentEnd := answers[TREATMENT_END_QUESTION_ID]
+		log.Println("treatmentEnd", treatmentEnd)
+		user.Set("treatmentEnd", treatmentEnd)
 		log.Println("user", user)
-		if err := app.Dao().SaveRecord(user); err != nil {
+		if err := app.Save(user); err != nil {
 			return badRequestErr
 		}
 

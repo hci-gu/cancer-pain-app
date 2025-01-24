@@ -45,6 +45,7 @@ function OTPPage() {
 
     if (urlParams.has('code')) {
       const code = urlParams.get('code')
+      form.setValue('password', code ?? '')
       onSubmit({ password: code ?? '' })
     }
   }, [])

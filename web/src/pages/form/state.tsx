@@ -2,7 +2,7 @@ import { Question } from '@/state'
 import { atom } from 'jotai'
 import { atomFamily } from 'jotai/utils'
 
-export const formPageAtom = atom(0)
+export const formPageAtom = atom(-1)
 
 export const canProceedAtom = atomFamily(
   ({ questions, answers }: { questions: Question[]; answers: any }) =>

@@ -1,14 +1,15 @@
 import { cn } from '@/lib/utils'
+import { BoxIcon, CheckCircledIcon } from '@radix-ui/react-icons'
 
 function HomeTodoItem({
-  icon,
+  icon = <BoxIcon />,
   index,
   title,
   description = '',
   done = false,
   action,
 }: {
-  icon: React.ReactNode
+  icon?: React.ReactNode
   index: number
   title: string
   description?: string
@@ -25,7 +26,7 @@ function HomeTodoItem({
       )}
     >
       <strong className={textClass}>{index}.</strong>
-      {icon}
+      {done ? <CheckCircledIcon className="text-green-600" /> : icon}
       <div>
         <h3 className={textClass}>{title}</h3>
         <p className={`${textClass} font-light text-sm`}>{description}</p>

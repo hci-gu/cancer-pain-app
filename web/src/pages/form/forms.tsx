@@ -6,12 +6,7 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import {
-  answersForQuestionnaireAtom,
-  Questionnaire,
-  questionnairesAtom,
-  useAnswers,
-} from '@/state'
+import { Questionnaire, questionnairesAtom, useAnswers } from '@/state'
 import { useAtomValue } from 'jotai'
 import { useNavigate } from 'react-router-dom'
 import { startTransition } from 'react'

@@ -7,7 +7,7 @@ import { authAtom } from './state'
 const FooterContent = () => {
   return (
     <>
-      <p className="text-md">
+      <p className="text-sm sm:text-md">
         Pre-RT studien är ett samarbete mellan Göteborgs Universitet och
         Sahlgrenska
       </p>
@@ -137,7 +137,7 @@ const RootPage = () => {
         <div className="w-full md:w-1/2 pb-64">
           <Outlet />
         </div>
-        <div className="bg-zinc-900 text-white w-full h-1/7 flex p-4 fixed bottom-0">
+        <div className="bg-zinc-900 text-white w-full h-1/7 flex fixed bottom-0 p-2 sm:p-4">
           <blockquote className="space-y-2">
             <FooterContent />
           </blockquote>
