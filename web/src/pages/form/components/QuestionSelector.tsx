@@ -113,13 +113,7 @@ const renderQuestionType = (
   }
 }
 
-const QuestionSelector = ({
-  question,
-  questionNumber,
-}: {
-  question: Question
-  questionNumber: number
-}) => {
+const QuestionSelector = ({ question }: { question: Question }) => {
   const { control } = useFormContext()
   const setPage = useSetAtom(formPageAtom)
   // const keyboardOpen = useIsKeyboardOpen()
@@ -127,8 +121,6 @@ const QuestionSelector = ({
   const onAnswer = (_: any) => {
     setTimeout(() => setPage((page) => page + 1), 400)
   }
-
-  console.log('question', question)
 
   return (
     <section className="h-full w-full flex items-center justify-center px-4 md:px-16 sm:px-8">
@@ -140,7 +132,7 @@ const QuestionSelector = ({
             <div className="flex gap-2">
               {question.type !== 'section' && (
                 <FormLabel className="text-md sm:text-xl leading-tight sm:leading-normal">
-                  {questionNumber}.
+                  {question.number}.
                 </FormLabel>
               )}
               {question.required && <span className="text-red-500">*</span>}

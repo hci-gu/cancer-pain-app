@@ -91,6 +91,7 @@ export type Question = {
   dependency?: string
   dependencyValue?: any
   resource?: Resource
+  number: number
 }
 
 export type Questionnaire = {
@@ -121,6 +122,7 @@ const mapQuestion = (question: any): Question => {
     dependency: question.dependency,
     dependencyValue: question.dependencyValue,
     resource: question.expand?.resource,
+    number: -1,
   }
 }
 

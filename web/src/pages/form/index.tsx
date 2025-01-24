@@ -17,16 +17,19 @@ import { Button } from '@/components/ui/button'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
+  PinBottomIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import { useToast } from '@/hooks/use-toast'
-import useQuestions from './hooks/useQuestions'
+import useQuestions, { useCurrentSection } from './hooks/useQuestions'
 import ReactPageScroller from 'react-page-scroller'
 import { canProceedAtom, formPageAtom } from './state'
 import { questionnaireAnswered } from '@/utils'
 import useFormStateWithCache, {
   SyncFormStateToLocalStorage,
 } from './hooks/useFormState'
+import AbortButton from './components/AbortButton'
+import QuestionNavigationList from './components/QuestionNavigationList'
 
 const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
@@ -93,6 +96,16 @@ const NavigationButtons = ({
       >
         <ChevronDownIcon />
       </Button>
+      <Button
+        className="bg-blue-500 text-white py-6 rounded shadow-md"
+        disabled={canProceed}
+        onClick={(e) => {
+          e.preventDefault()
+          // setPage(page + 1)
+        }}
+      >
+        <PinBottomIcon />
+      </Button>
     </div>
   )
 }
@@ -138,11 +151,7 @@ const Questions = ({
         animationTimer={600}
       >
         {questions.map((q, i) => (
-          <QuestionSelector
-            key={`Question_${q.id}_${i}`}
-            question={q}
-            questionNumber={i + 1}
-          />
+          <QuestionSelector key={`Question_${q.id}_${i}`} question={q} />
         ))}
         <div className="h-full w-full flex items-center justify-center">
           <Button
@@ -160,6 +169,32 @@ const Questions = ({
       </ReactPageScroller>
     </div>
   )
+}
+
+const SectionHandler = ({
+  questionnaire,
+}: {
+  questionnaire: Questionnaire
+}) => {
+  const section = useCurrentSection(questionnaire)
+
+  if (section && section.id === 'kujwudwaahabsiz') {
+    return (
+      <>
+        <div className="fixed bottom-4 left-4 p-2">
+          <p className="text-xs text-gray-500 text-center pb-2">Skapat av</p>
+          <img
+            src="/vgr-logo.png"
+            alt="Västra Götalandsregionen"
+            className="h-8"
+          />
+        </div>
+        <AbortButton />
+      </>
+    )
+  }
+
+  return null
 }
 
 const LoadedForm = ({
@@ -217,20 +252,14 @@ const LoadedForm = ({
         <SyncFormStateToLocalStorage questionnaire={questionnaire} />
         {/* <FormStateDebugger /> */}
         <ProgressBar questionnaire={questionnaire} />
+        <QuestionNavigationList questionnaire={questionnaire} />
+        <SectionHandler questionnaire={questionnaire} />
         <Questions
           questionnaire={questionnaire}
           loading={loading}
           onSubmit={onSubmit}
         />
         <NavigationButtons questionnaire={questionnaire} />
-        <div className="fixed bottom-4 left-4 p-2">
-          <p className="text-xs text-gray-500 text-center pb-2">Skapat av</p>
-          <img
-            src="/vgr-logo.png"
-            alt="Västra Götalandsregionen"
-            className="h-8"
-          />
-        </div>
       </form>
     </Form>
   )
