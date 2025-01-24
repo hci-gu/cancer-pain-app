@@ -4,13 +4,12 @@ import { atomFamily } from 'jotai/utils'
 
 export const formPageAtom = atom(-1)
 
-export const canProceedAtom = atomFamily(
+export const answeredUpTo = atomFamily(
   ({ questions, answers }: { questions: Question[]; answers: any }) =>
-    atom((get) => {
-      const page = get(formPageAtom)
-
+    atom((_) => {
       const requiredQuestions = questions
-        .filter((question) => question.required)
+        // .filter((question) => question.required)
+        .filter((question) => question.type !== 'section')
         .map((question) => question.id)
 
       const answeredQuestions = Object.keys(answers).filter(
@@ -23,6 +22,19 @@ export const canProceedAtom = atomFamily(
         questions.findIndex((q) => q.id === question)
       )
       const canScrollUpTo = Math.min(...indexesForRemainingQuestions)
+
+      return canScrollUpTo
+    }),
+  (a, b) =>
+    a.questions.length === b.questions.length &&
+    JSON.stringify(a.answers) === JSON.stringify(b.answers)
+)
+
+export const canProceedAtom = atomFamily(
+  ({ questions, answers }: { questions: Question[]; answers: any }) =>
+    atom((get) => {
+      const page = get(formPageAtom)
+      const canScrollUpTo = get(answeredUpTo({ questions, answers }))
 
       return page >= canScrollUpTo || page === questions.length
     }),

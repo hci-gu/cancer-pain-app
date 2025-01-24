@@ -4,6 +4,8 @@ import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formPageAtom } from '../state'
+import { Button } from '@/components/ui/button'
+import { keyForQuestionnaire } from '../hooks/useFormState'
 
 const FormStateDebugger = () => {
   const { id } = useParams()
@@ -32,6 +34,16 @@ const FormStateDebugger = () => {
             null,
             2
           )}
+          <Button
+            onClick={() => {
+              console.log('remove', keyForQuestionnaire(questionnaire))
+              localStorage.removeItem(keyForQuestionnaire(questionnaire))
+              // reload window
+              window.location.reload()
+            }}
+          >
+            Rensa
+          </Button>
         </TabsContent>
         <TabsContent value="form">
           {JSON.stringify(questionnaire, null, 2)}

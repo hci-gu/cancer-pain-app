@@ -89,6 +89,7 @@ export type Question = {
   placeholder?: string
   options: string[]
   dependency?: string
+  followup: string[]
   dependencyValue?: any
   resource?: Resource
   number: number
@@ -121,6 +122,7 @@ const mapQuestion = (question: any): Question => {
     options: question.expand?.options?.value,
     dependency: question.dependency,
     dependencyValue: question.dependencyValue,
+    followup: question.followup,
     resource: question.expand?.resource,
     number: -1,
   }
@@ -175,10 +177,8 @@ export const formStateAtom = atomFamily((id: string) =>
       questionnaire.questions.reduce((acc, q) => {
         switch (q.type) {
           case 'singleChoice':
-            acc[q.id] = z.enum([q.options[0], ...q.options.slice(1)])
-            break
           case 'multipleChoice':
-            acc[q.id] = z.array(z.enum([q.options[0], ...q.options.slice(1)]))
+            acc[q.id] = z.any()
             break
           case 'painScale':
             acc[q.id] = z.number().int().min(0).max(10)

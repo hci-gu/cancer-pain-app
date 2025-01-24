@@ -13,7 +13,7 @@ import QuestionSelector from './components/QuestionSelector'
 import { Form } from '@/components/ui/form'
 import { useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-// import FormStateDebugger from './components/FormDebugger'
+import FormStateDebugger from './components/FormDebugger'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -23,7 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import useQuestions, { useCurrentSection } from './hooks/useQuestions'
 import ReactPageScroller from 'react-page-scroller'
-import { canProceedAtom, formPageAtom } from './state'
+import { answeredUpTo, canProceedAtom, formPageAtom } from './state'
 import { questionnaireAnswered } from '@/utils'
 import useFormStateWithCache, {
   SyncFormStateToLocalStorage,
@@ -35,27 +35,22 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
   const page = useAtomValue(formPageAtom)
   const scaleX = interpolate([0, questions.length - 1], [0.01, 1])
-  const textColor = interpolate(
-    [0, questions.length / 2 - 1, questions.length / 2, questions.length],
-    ['#000', '#000', '#fff', '#fff']
-  )
 
   return (
-    <>
+    <div className="fixed top-0 left-0 h-8 w-screen bg-blue-500">
       <motion.div
-        className="fixed top-0 left-0 h-8 w-screen bg-blue-500 z-10"
+        className="fixed top-8 left-0 h-2 w-screen bg-blue-500 z-10"
         animate={{ scaleX: scaleX(page) }}
         transition={{ type: 'spring', duration: 0.4 }}
         style={{ originX: 0 }}
       />
       <motion.span
-        animate={{ color: textColor(page) }}
-        className={`fixed top-1 font-semibold z-10`}
+        className="fixed top-1 font-semibold z-10 text-white"
         style={{ left: '50%', transform: 'translateX(-50%)' }}
       >
         {Math.min(page + 1, questions.length)} / {questions.length}
       </motion.span>
-    </>
+    </div>
   )
 }
 
@@ -67,6 +62,12 @@ const NavigationButtons = ({
   const questions = useQuestions(questionnaire)
   const [page, setPage] = useAtom(formPageAtom)
   const answers = useWatch()
+  const canScrollUpTo = useAtomValue(
+    answeredUpTo({
+      questions,
+      answers,
+    })
+  )
   const canProceed = useAtomValue(
     canProceedAtom({
       questions,
@@ -101,7 +102,7 @@ const NavigationButtons = ({
         disabled={canProceed}
         onClick={(e) => {
           e.preventDefault()
-          // setPage(page + 1)
+          setPage(canScrollUpTo)
         }}
       >
         <PinBottomIcon />
@@ -181,12 +182,12 @@ const SectionHandler = ({
   if (section && section.id === 'kujwudwaahabsiz') {
     return (
       <>
-        <div className="fixed bottom-4 left-4 p-2">
+        <div className="fixed top-4 md:top-auto md:bottom-4 md:left-4 p-2">
           <p className="text-xs text-gray-500 text-center pb-2">Skapat av</p>
           <img
             src="/vgr-logo.png"
             alt="Västra Götalandsregionen"
-            className="h-8"
+            className="h-6 md:h-8"
           />
         </div>
         <AbortButton />
@@ -250,7 +251,7 @@ const LoadedForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <SyncFormStateToLocalStorage questionnaire={questionnaire} />
-        {/* <FormStateDebugger /> */}
+        <FormStateDebugger />
         <ProgressBar questionnaire={questionnaire} />
         <QuestionNavigationList questionnaire={questionnaire} />
         <SectionHandler questionnaire={questionnaire} />

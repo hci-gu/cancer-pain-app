@@ -6,7 +6,7 @@ import { useLayoutEffect } from 'react'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
 
-const keyForQuestionnaire = (questionnaire: Questionnaire) => {
+export const keyForQuestionnaire = (questionnaire: Questionnaire) => {
   const date = new Date()
   switch (questionnaire.occurrence) {
     case 'daily':

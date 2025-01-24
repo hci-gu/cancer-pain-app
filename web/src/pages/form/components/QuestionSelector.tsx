@@ -105,7 +105,14 @@ const renderQuestionType = (
     case 'section':
       return (
         <div className="flex justify-center">
-          <Button onClick={() => onAnswer(null)}>Gå vidare</Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault()
+              onAnswer(null)
+            }}
+          >
+            Gå vidare
+          </Button>
         </div>
       )
     default:
