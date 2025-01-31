@@ -63,6 +63,11 @@ export const userDataAtom = atom(async (get) => {
   }
 })
 
+export const resourcesAtom = atom(async () => {
+  const response = await pb.collection('resource').getFullList()
+  return response.map(mapResource)
+})
+
 export const readAboutPageAtom = atomWithStorage<boolean>(
   'readAboutPage',
   false
@@ -115,6 +120,14 @@ export type Answer = {
   answers: Record<string, any>
   created: string
   date: string
+}
+
+const mapResource = (resource: any): Resource => {
+  return {
+    id: resource.id,
+    title: resource.title,
+    description: resource.description,
+  }
 }
 
 const mapQuestionOption = (

@@ -1,6 +1,72 @@
-import { readAboutPageAtom } from '@/state'
-import { useSetAtom } from 'jotai'
-import { useEffect } from 'react'
+import { readAboutPageAtom, resourcesAtom } from '@/state'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { useEffect, useLayoutEffect, useState } from 'react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { Separator } from '@/components/ui/separator'
+
+const titleToSlug = (title: string) =>
+  title
+    .toLowerCase()
+    .replace(/[åäàáâãæ]/g, 'a')
+    .replace(/[öòóôõø]/g, 'o')
+    .replace(/[^a-z0-9-\s]/g, '')
+    .replace(/-+/g, '')
+    .replace(/\s+/g, '-')
+    .trim()
+
+const Resources = () => {
+  const resources = useAtomValue(resourcesAtom)
+  const [openResource, setOpenResource] = useState<string>('')
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '')
+      setOpenResource(hash)
+    }
+
+    handleHashChange()
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  const resourceClicked = (value: string) => {
+    window.location.hash = value
+  }
+
+  return (
+    <div className="mt-8">
+      <h1 className="text-2xl font-bold mb-4">Resurser</h1>
+      <Accordion
+        type="single"
+        collapsible
+        value={openResource}
+        onValueChange={resourceClicked}
+      >
+        {resources.map((resource, index) => (
+          <AccordionItem
+            value={titleToSlug(resource.title)}
+            key={`Resource_${index}`}
+          >
+            <AccordionTrigger>{resource.title}</AccordionTrigger>
+            <AccordionContent>
+              <div
+                className="[&_a]:text-blue-500 [&_a]:hover:underline [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2"
+                dangerouslySetInnerHTML={{
+                  __html: resource.description,
+                }}
+              ></div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  )
+}
 
 function AboutPage() {
   const setRead = useSetAtom(readAboutPageAtom)
@@ -56,6 +122,8 @@ function AboutPage() {
         det vill säga digitaliserad information via webbsida och mobilapp för
         att förbättra informationsvägarna för egenvårdsråd.
       </p>
+      <Separator className="mt-4" />
+      <Resources />
     </div>
   )
 }
