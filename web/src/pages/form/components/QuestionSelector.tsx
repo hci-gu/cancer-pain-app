@@ -28,6 +28,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
+import { ResourceDrawer } from '@/components/resource'
 
 const renderQuestionType = (
   question: Question,
@@ -151,32 +152,7 @@ const QuestionSelector = ({ question }: { question: Question }) => {
                 }}
               />
               {question.resource && (
-                <Drawer>
-                  <DrawerTrigger>
-                    <Button size="icon">
-                      <InfoCircledIcon />
-                    </Button>
-                  </DrawerTrigger>
-                  <DrawerContent className="sm:m-16 h-4/5">
-                    <DrawerHeader>
-                      <div className="flex items-center justify-between">
-                        <DrawerClose>
-                          <Button variant="outline" size="icon">
-                            <Cross1Icon />
-                          </Button>
-                        </DrawerClose>
-                        <DrawerTitle>{question.resource.title}</DrawerTitle>
-                        <div></div>
-                      </div>
-                    </DrawerHeader>
-                    <div
-                      className="p-8 overflow-y-scroll"
-                      dangerouslySetInnerHTML={{
-                        __html: `${question.resource.description}`,
-                      }}
-                    ></div>
-                  </DrawerContent>
-                </Drawer>
+                <ResourceDrawer resource={question.resource} />
               )}
             </div>
             <FormControl>

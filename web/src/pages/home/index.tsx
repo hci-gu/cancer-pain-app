@@ -11,7 +11,7 @@ function HomePage() {
   const user = useAtomValue(userDataAtom)
   const hasReadAboutPage = useAtomValue(readAboutPageAtom)
   const dailyDescription = user?.treatmentStart
-    ? `Med start ${user?.treatmentStart.slice(0, 10)}`
+    ? `Med start ${user?.treatmentStart?.toISOString().slice(0, 10)}`
     : 'Ange'
 
   return (

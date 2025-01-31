@@ -29,7 +29,7 @@ function ProfilePage() {
             <h2 className="text-xl font-bold">Behandlingsstart</h2>
             <DatePicker
               date={
-                userData?.treatmentStart ?? new Date(userData.treatmentStart)
+                userData?.treatmentStart ?? new Date(userData.treatmentStart!)
               }
               onChange={() => {}}
             />

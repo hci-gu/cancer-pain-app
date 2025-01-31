@@ -3,6 +3,7 @@ import { Toaster } from './components/ui/toaster'
 import { PersonIcon } from '@radix-ui/react-icons'
 import { useAtomValue } from 'jotai'
 import { authAtom } from './state'
+import { useEffect, useState } from 'react'
 
 const FooterContent = () => {
   return (
@@ -67,14 +68,43 @@ const LoginWrapper = ({ children }: { children: any }) => {
   )
 }
 
+const useScrollDirection = () => {
+  const [scrollDirection, setScrollDirection] = useState('up')
+  const [prevOffset, setPrevOffset] = useState(0)
+
+  useEffect(() => {
+    const toggleScrollDirection = () => {
+      const scrollY = window.pageYOffset
+      if (scrollY === 0) {
+        setScrollDirection('up')
+      } else if (scrollY > prevOffset) {
+        setScrollDirection('down')
+      } else if (scrollY < prevOffset) {
+        setScrollDirection('up')
+      }
+      setPrevOffset(scrollY)
+    }
+
+    window.addEventListener('scroll', toggleScrollDirection)
+    return () => window.removeEventListener('scroll', toggleScrollDirection)
+  }, [prevOffset])
+
+  return scrollDirection
+}
+
 const Header = () => {
   const location = useLocation()
   const auth = useAtomValue(authAtom)
+  const scrollDirection = useScrollDirection()
 
   const activeClass = 'border-b-2 border-black'
 
   return (
-    <header className="sticky top-0 flex h-16 items-center border-b bg-background px-4 md:px-12">
+    <header
+      className={`sticky top-0 flex h-16 items-center border-b bg-background px-4 md:px-12 transition-transform duration-300 ${
+        scrollDirection === 'down' ? '-translate-y-16' : 'translate-y-0'
+      }`}
+    >
       <nav className="w-full flex text-lg font-medium items-center md:gap-5 md:text-sm justify-between">
         <div className="flex gap-6 items-center">
           <img

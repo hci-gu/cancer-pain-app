@@ -54,7 +54,7 @@ export const userDataAtom = atom(async (get) => {
 
   try {
     const response = await pb.collection('users').getOne(auth.id)
-    return response
+    return mapUser(response)
   } catch (e) {
     // throw out the auth token if the user doesn't exist
     Cookies.remove('auth')
@@ -64,14 +64,30 @@ export const userDataAtom = atom(async (get) => {
 })
 
 export const resourcesAtom = atom(async () => {
-  const response = await pb.collection('resource').getFullList()
-  return response.map(mapResource)
+  const response = await pb.collection('resourceCollection').getFullList({
+    expand: 'resources',
+  })
+  console.log('response', response)
+  return response.map(mapResourceCollection)
 })
 
 export const readAboutPageAtom = atomWithStorage<boolean>(
   'readAboutPage',
   false
 )
+
+export type User = {
+  id: string
+  type: 'PRE' | 'POST'
+  phoneNumber: string
+  treatmentStart?: Date
+  treatmentEnd?: Date
+}
+
+export type ResourceCollection = {
+  name: string
+  resources: Resource[]
+}
 
 export type Resource = {
   id: string
@@ -122,11 +138,30 @@ export type Answer = {
   date: string
 }
 
+const mapUser = (user: any): User => {
+  return {
+    id: user.id,
+    type: user.type,
+    phoneNumber: user.phoneNumber,
+    treatmentStart: user.treatmentStart
+      ? new Date(user.treatmentStart)
+      : undefined,
+    treatmentEnd: user.treatmentEnd ? new Date(user.treatmentEnd) : undefined,
+  }
+}
+
 const mapResource = (resource: any): Resource => {
   return {
     id: resource.id,
     title: resource.title,
     description: resource.description,
+  }
+}
+
+const mapResourceCollection = (resourceCollection: any): ResourceCollection => {
+  return {
+    name: resourceCollection.name,
+    resources: resourceCollection.expand?.resources.map(mapResource),
   }
 }
 

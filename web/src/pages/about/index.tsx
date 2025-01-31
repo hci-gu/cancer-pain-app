@@ -1,6 +1,6 @@
 import { readAboutPageAtom, resourcesAtom } from '@/state'
 import { useAtomValue, useSetAtom } from 'jotai'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { startTransition, useEffect, useState } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Separator } from '@/components/ui/separator'
+import Resource from '@/components/resource'
 
 const titleToSlug = (title: string) =>
   title
@@ -20,50 +21,71 @@ const titleToSlug = (title: string) =>
     .trim()
 
 const Resources = () => {
-  const resources = useAtomValue(resourcesAtom)
-  const [openResource, setOpenResource] = useState<string>('')
+  const collections = useAtomValue(resourcesAtom)
+  const [openResource, setOpenResource] = useState<string>(
+    window.location.hash.replace('#', '')
+  )
 
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      setOpenResource(hash)
+      startTransition(() => {
+        setOpenResource(hash)
+      })
     }
 
-    handleHashChange()
+    // Only scroll on initial load if there's a hash
+    const hash = window.location.hash.replace('#', '')
+    if (hash) {
+      const element = document.getElementById(hash)
+      if (element) {
+        const headerOffset = 100
+        const elementPosition = element.getBoundingClientRect().top
+        const offsetPosition =
+          elementPosition + window.pageYOffset - headerOffset
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        })
+      }
+    }
+
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
   const resourceClicked = (value: string) => {
-    window.location.hash = value
+    startTransition(() => {
+      window.location.hash = value
+    })
   }
 
   return (
     <div className="mt-8">
-      <h1 className="text-2xl font-bold mb-4">Resurser</h1>
-      <Accordion
-        type="single"
-        collapsible
-        value={openResource}
-        onValueChange={resourceClicked}
-      >
-        {resources.map((resource, index) => (
-          <AccordionItem
-            value={titleToSlug(resource.title)}
-            key={`Resource_${index}`}
+      {collections.map((collection) => (
+        <>
+          <h1 className="text-xl font-bold mb-4 mt-4">{collection.name}</h1>
+          <Accordion
+            type="single"
+            collapsible
+            value={openResource}
+            onValueChange={resourceClicked}
           >
-            <AccordionTrigger>{resource.title}</AccordionTrigger>
-            <AccordionContent>
-              <div
-                className="[&_a]:text-blue-500 [&_a]:hover:underline [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2"
-                dangerouslySetInnerHTML={{
-                  __html: resource.description,
-                }}
-              ></div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+            {collection.resources.map((resource, index) => (
+              <AccordionItem
+                value={titleToSlug(resource.title)}
+                key={`Resource_${index}`}
+                id={titleToSlug(resource.title)}
+              >
+                <AccordionTrigger>{resource.title}</AccordionTrigger>
+                <AccordionContent>
+                  <Resource resource={resource} />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </>
+      ))}
     </div>
   )
 }
@@ -124,6 +146,9 @@ function AboutPage() {
       </p>
       <Separator className="mt-4" />
       <Resources />
+      <div style={{ height: '100vh' }}></div>
+      <div className="h-64 w-full"></div>
+      <div className="h-64 w-full"></div>
     </div>
   )
 }
