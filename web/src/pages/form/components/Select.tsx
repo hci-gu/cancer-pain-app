@@ -1,8 +1,76 @@
-import { FormControl, FormItem } from '@/components/ui/form'
+import { FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { Question } from '@/state'
-import { ControllerRenderProps, FieldValues } from 'react-hook-form'
+import {
+  ControllerRenderProps,
+  FieldValues,
+  useFormContext,
+} from 'react-hook-form'
+
+const SelectFollowup = ({
+  question,
+  index,
+  disabled,
+}: {
+  question: Question
+  index: number
+  field: ControllerRenderProps<FieldValues, any>
+  disabled: boolean
+  onAnswer: (value: any) => void
+  optionInputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>
+}) => {
+  const { control } = useFormContext()
+  const id = `${question.id}_${index}`
+  const options = question.options?.followup ?? []
+
+  return (
+    <FormField
+      control={control}
+      name={id}
+      render={({ field }) => (
+        <RadioGroup
+          disabled={disabled}
+          name={id}
+          value={field.value}
+          defaultValue={field.value}
+          className={`flex flex-wrap gap-1 sm:gap-2 leading-tight sm:leading-normal justify-end ${
+            disabled && `opacity-50`
+          }`}
+        >
+          {options.map((option, index) => {
+            return (
+              <FormItem
+                className="flex items-center"
+                key={`${id}_${option}_${index}`}
+              >
+                <FormControl>
+                  <input
+                    type={'checkbox'}
+                    name={id}
+                    value={option}
+                    id={`${id}_${option}_${index}`}
+                    className="hidden peer"
+                    onChange={(_) => {
+                      field.onChange(option)
+                    }}
+                    checked={option == field.value}
+                  />
+                </FormControl>
+                <label
+                  htmlFor={`${id}_${option}_${index}`}
+                  className="flex items-center justify-center px-1 py-1 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:font-semibold transition-colors duration-200 sm:px-6 sm:py-3"
+                >
+                  {option}
+                </label>
+              </FormItem>
+            )
+          })}
+        </RadioGroup>
+      )}
+    />
+  )
+}
 
 export default function Select({
   question,
@@ -15,14 +83,19 @@ export default function Select({
   onAnswer: (value: any) => void
   optionInputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>
 }) {
+  const { control } = useFormContext()
+  const options = question.options?.value ?? []
+
   return (
     <RadioGroup
       name={question.id}
       value={field.value}
       defaultValue={field.value}
-      className="flex flex-wrap gap-2 sm:gap-4 leading-tight sm:leading-normal"
+      className={`flex flex-wrap gap-2 sm:gap-4 leading-tight sm:leading-normal ${
+        question.options?.followup?.length && 'flex-col items-start'
+      }`}
     >
-      {question.options.map((option, index) => {
+      {options.map((option, index) => {
         const compareOptionValues = (str1: string, str2: string) => {
           if (!str1 || !str2) return false
 
@@ -53,6 +126,9 @@ export default function Select({
               : field.value.filter(
                   (val: any) => !compareOptionValues(val, value)
                 )
+            if (question.options?.followup && !checked) {
+              control.unregister(`${question.id}_${index}`)
+            }
             field.onChange(newValue)
             return
           }
@@ -75,61 +151,79 @@ export default function Select({
               )
 
         return (
-          <FormItem
-            className="flex items-center"
-            key={`${question.id}_${option}_${index}`}
+          <div
+            className={`flex gap-4 items-center ${
+              question.options?.followup && `justify-between w-full`
+            }`}
           >
-            <FormControl>
-              <input
-                type={question.type === 'multipleChoice' ? 'checkbox' : 'radio'}
-                name={question.id}
-                value={option}
-                id={`${question.id}-option-${index}`}
-                className="hidden peer"
-                onChange={(e) => updateValue(option, e.target.checked)}
-                checked={isChecked}
-              />
-            </FormControl>
-            <label
-              htmlFor={`${question.id}-option-${index}`}
-              className="flex items-center justify-center px-2 py-2 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:font-semibold transition-colors duration-200 sm:px-6 sm:py-3"
+            <FormItem
+              className="flex items-center"
+              key={`${question.id}_${option}_${index}`}
             >
-              {option.split('{AMOUNT}')?.[0]}
-              {option.split('{AMOUNT}')?.[1] && (
-                <Input
-                  ref={(el) => (optionInputRefs.current[index] = el)}
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  className="w-16 h-6 mx-2"
-                  disabled={
-                    question.type === 'singleChoice'
-                      ? !compareOptionValues(field.value, option)
-                      : !field.value ||
-                        !field.value.some((val: any) =>
-                          compareOptionValues(val, option)
-                        )
+              <FormControl>
+                <input
+                  type={
+                    question.type === 'multipleChoice' ? 'checkbox' : 'radio'
                   }
-                  onChange={(e) => {
-                    const optionWithValue = option.replace(
-                      '{AMOUNT}',
-                      `{${e.target.value}}`
-                    )
-                    updateValue(optionWithValue, true)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      const target = e.target as HTMLInputElement
-                      target.blur()
-                      onAnswer(target.value)
-                    }
-                  }}
+                  name={question.id}
+                  value={option}
+                  id={`${question.id}-option-${index}`}
+                  className="hidden peer"
+                  onChange={(e) => updateValue(option, e.target.checked)}
+                  checked={isChecked}
                 />
-              )}
-              {option.split('{AMOUNT}')?.[1]}
-            </label>
-          </FormItem>
+              </FormControl>
+              <label
+                htmlFor={`${question.id}-option-${index}`}
+                className="flex items-center justify-center px-2 py-2 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:font-semibold transition-colors duration-200 sm:px-6 sm:py-3"
+              >
+                {option.split('{AMOUNT}')?.[0]}
+                {option.split('{AMOUNT}')?.[1] && (
+                  <Input
+                    ref={(el) => (optionInputRefs.current[index] = el)}
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    className="w-16 h-6 mx-2"
+                    disabled={
+                      question.type === 'singleChoice'
+                        ? !compareOptionValues(field.value, option)
+                        : !field.value ||
+                          !field.value.some((val: any) =>
+                            compareOptionValues(val, option)
+                          )
+                    }
+                    onChange={(e) => {
+                      const optionWithValue = option.replace(
+                        '{AMOUNT}',
+                        `{${e.target.value}}`
+                      )
+                      updateValue(optionWithValue, true)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const target = e.target as HTMLInputElement
+                        target.blur()
+                        onAnswer(target.value)
+                      }
+                    }}
+                  />
+                )}
+                {option.split('{AMOUNT}')?.[1]}
+              </label>
+            </FormItem>
+            {question.options?.followup && (
+              <SelectFollowup
+                question={question}
+                index={index}
+                disabled={!isChecked}
+                field={field}
+                onAnswer={onAnswer}
+                optionInputRefs={optionInputRefs}
+              />
+            )}
+          </div>
         )
       })}
     </RadioGroup>

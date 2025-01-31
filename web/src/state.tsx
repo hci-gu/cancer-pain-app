@@ -74,6 +74,11 @@ export type Resource = {
   description: string
 }
 
+export type QuestionOptions = {
+  value: string[]
+  followup: string[]
+}
+
 export type Question = {
   id: string
   text: string
@@ -87,7 +92,7 @@ export type Question = {
     | 'section'
   required: boolean
   placeholder?: string
-  options: string[]
+  options?: QuestionOptions
   dependency?: string
   followup: string[]
   dependencyValue?: any
@@ -112,6 +117,16 @@ export type Answer = {
   date: string
 }
 
+const mapQuestionOption = (
+  questionOption: any
+): QuestionOptions | undefined => {
+  if (!questionOption) return undefined
+  return {
+    value: questionOption.value,
+    followup: questionOption.followup,
+  }
+}
+
 const mapQuestion = (question: any): Question => {
   return {
     id: question.id,
@@ -119,7 +134,7 @@ const mapQuestion = (question: any): Question => {
     type: question.type,
     required: question.required,
     placeholder: question.placeholder,
-    options: question.expand?.options?.value,
+    options: mapQuestionOption(question.expand?.options),
     dependency: question.dependency,
     dependencyValue: question.dependencyValue,
     followup: question.followup,

@@ -1,4 +1,5 @@
 import { Suspense, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { motion, interpolate } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAtom, useAtomValue } from 'jotai'
@@ -26,6 +27,7 @@ import ReactPageScroller from 'react-page-scroller'
 import { answeredUpTo, canProceedAtom, formPageAtom } from './state'
 import { questionnaireAnswered } from '@/utils'
 import useFormStateWithCache, {
+  keyForQuestionnaire,
   SyncFormStateToLocalStorage,
 } from './hooks/useFormState'
 import AbortButton from './components/AbortButton'
@@ -123,20 +125,10 @@ const Questions = ({
   const [currentPage, setCurrentPage] = useAtom(formPageAtom)
   const questions = useQuestions(questionnaire)
   const answers = useWatch()
-  const canProceed = useAtomValue(
-    canProceedAtom({
-      questions,
-      answers,
-    })
-  )
 
   const handlePageChange = (page: number) => {
     if (currentPage === -1 && page === 0) return
     setCurrentPage(page)
-  }
-
-  const handleBeforePageChange = (page: number) => {
-    console.log(page)
   }
 
   return (
@@ -146,10 +138,8 @@ const Questions = ({
     >
       <ReactPageScroller
         pageOnChange={handlePageChange}
-        onBeforePageScroll={handleBeforePageChange}
         customPageNumber={currentPage ?? 0}
-        blockScrollDown={canProceed}
-        animationTimer={600}
+        animationTimer={200}
       >
         {questions.map((q, i) => (
           <QuestionSelector key={`Question_${q.id}_${i}`} question={q} />
@@ -158,10 +148,7 @@ const Questions = ({
           <Button
             type="submit"
             disabled={loading}
-            onClick={(_) => {
-              console.log('submit')
-              onSubmit(answers)
-            }}
+            onClick={(_) => onSubmit(answers)}
           >
             {loading && <UpdateIcon className="animate-spin mr-2" />}
             Skicka in
@@ -243,6 +230,7 @@ const LoadedForm = ({
       title: 'Inskickat',
       description: 'Ditt svar har skickats in.',
     })
+    localStorage.removeItem(keyForQuestionnaire(questionnaire))
 
     setLoading(false)
   }
@@ -251,7 +239,7 @@ const LoadedForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <SyncFormStateToLocalStorage questionnaire={questionnaire} />
-        <FormStateDebugger />
+        {/* <FormStateDebugger /> */}
         <ProgressBar questionnaire={questionnaire} />
         <QuestionNavigationList questionnaire={questionnaire} />
         <SectionHandler questionnaire={questionnaire} />
@@ -295,11 +283,30 @@ const FormPage = () => {
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      {questionnaire && schema && (
-        <LoadedForm questionnaire={questionnaire} formSchema={schema} />
-      )}
-    </Suspense>
+    <ErrorBoundary
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          <p className="text-center">
+            Något gick fel med formuläret. <br />
+            <Button
+              onClick={() => {
+                localStorage.removeItem(keyForQuestionnaire(questionnaire))
+                // reload window
+                window.location.reload()
+              }}
+            >
+              Rensa svar
+            </Button>
+          </p>
+        </div>
+      }
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        {questionnaire && schema && (
+          <LoadedForm questionnaire={questionnaire} formSchema={schema} />
+        )}
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 

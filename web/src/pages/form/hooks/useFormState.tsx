@@ -5,6 +5,7 @@ import { useForm, useFormContext, useWatch } from 'react-hook-form'
 import { useLayoutEffect } from 'react'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
+import useQuestions from './useQuestions'
 
 export const keyForQuestionnaire = (questionnaire: Questionnaire) => {
   const date = new Date()
@@ -51,9 +52,12 @@ const useFormStateWithCache = ({
   })
 
   useLayoutEffect(() => {
-    if (Object.keys(answers).length) {
-      setPage(Object.keys(answers).length + 1)
+    let index = 0
+    for (const question of questionnaire.questions) {
+      if (!answers[question.id]) break
+      index++
     }
+    setPage(index)
   }, [answers, setPage])
 
   return form

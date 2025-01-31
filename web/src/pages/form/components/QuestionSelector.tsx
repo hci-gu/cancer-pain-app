@@ -34,8 +34,9 @@ const renderQuestionType = (
   field: ControllerRenderProps<FieldValues, any>,
   onAnswer: (value: any) => void
 ) => {
+  const options = question.options?.value
   const optionInputRefs = useRef<(HTMLInputElement | null)[]>(
-    question.options?.map(() => null)
+    options?.map(() => null) ?? []
   )
 
   switch (question.type) {

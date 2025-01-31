@@ -94,7 +94,6 @@ export const useCurrentSection = (questionnaire: Questionnaire) => {
     .pop()
 
   const question = questions[activeSectionIndex ?? -1]
-  console.log(question)
 
   return question
 }
