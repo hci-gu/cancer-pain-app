@@ -14,7 +14,6 @@ import QuestionSelector from './components/QuestionSelector'
 import { Form } from '@/components/ui/form'
 import { useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import FormStateDebugger from './components/FormDebugger'
 import {
   ChevronDownIcon,
   ChevronUpIcon,

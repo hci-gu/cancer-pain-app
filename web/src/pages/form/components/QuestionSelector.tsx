@@ -19,15 +19,6 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import Select from './Select'
-import { Cross1Icon, InfoCircledIcon } from '@radix-ui/react-icons'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
 import { ResourceDrawer } from '@/components/resource'
 
 const renderQuestionType = (

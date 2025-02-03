@@ -5,7 +5,6 @@ import { useForm, useFormContext, useWatch } from 'react-hook-form'
 import { useLayoutEffect } from 'react'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
-import useQuestions from './useQuestions'
 
 export const keyForQuestionnaire = (questionnaire: Questionnaire) => {
   const date = new Date()
