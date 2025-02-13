@@ -26,7 +26,7 @@ const FooterContent = () => {
 const LoginWrapper = ({ children }: { children: any }) => {
   return (
     <>
-      <div className="flex items-center justify-center bg-zinc-900 p-2 md:hidden fixed w-full">
+      <div className="flex items-center justify-center bg-stone-800 p-2 md:hidden fixed w-full">
         <img
           src="/gu-logo.svg" // Adjust the path as needed for the dark logo variant
           alt="Göteborgs Universitet Icon"
@@ -106,7 +106,7 @@ const Header = () => {
       }`}
     >
       <nav className="w-full flex text-lg font-medium items-center md:gap-5 md:text-sm justify-between">
-        <div className="flex gap-6 items-center">
+        <div className="flex gap-8 items-center">
           <img
             src="/gu-logo-dark.svg"
             alt="Göteborgs Universitet Icon"
@@ -131,7 +131,7 @@ const Header = () => {
         {auth && (
           <a
             href="/profile"
-            className="flex items-center justify-center w-8 h-8 rounded-full border border-black"
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-stone-800"
           >
             <PersonIcon className="w-5 h-5" />
           </a>
@@ -163,11 +163,43 @@ const RootPage = () => {
   return (
     <>
       <Header />
-      <div className="flex flex-col items-center justify-center mt-8">
-        <div className="w-full md:w-1/2 pb-64">
+      <div
+        style={{
+          position: 'fixed',
+          zIndex: -2,
+          left: '-5vw',
+          top: '-5vh',
+          width: '110vw',
+          height: '110vh',
+          backgroundImage: 'url(/vastkust.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(12px)',
+        }}
+      ></div>
+      <div
+        style={{
+          position: 'fixed',
+          zIndex: -1,
+          left: 0,
+          top: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0, 0, 0, 0.2)',
+        }}
+      ></div>
+      <div className="flex flex-col items-center justify-center">
+        <div
+          className="w-full md:w-1/2 pb-64 pt-12 bg-white"
+          style={{
+            marginTop: '-16px',
+            borderRadius: '1rem',
+            boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+          }}
+        >
           <Outlet />
         </div>
-        <div className="bg-zinc-900 text-white w-full h-1/7 flex fixed bottom-0 p-2 sm:p-4">
+        <div className="bg-stone-800 text-white w-full h-1/7 flex fixed bottom-0 p-2 sm:p-4">
           <blockquote className="space-y-2">
             <FooterContent />
           </blockquote>

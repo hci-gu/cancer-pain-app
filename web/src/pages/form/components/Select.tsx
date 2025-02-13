@@ -2,6 +2,7 @@ import { FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { Question } from '@/state'
+import { forwardRef, useEffect, useState } from 'react'
 import {
   ControllerRenderProps,
   FieldValues,
@@ -52,6 +53,7 @@ const SelectFollowup = ({
                     id={`${id}_${option}_${index}`}
                     className="hidden peer"
                     onChange={(_) => {
+                      if (disabled) return
                       field.onChange(option)
                     }}
                     checked={option == field.value}
@@ -71,6 +73,49 @@ const SelectFollowup = ({
     />
   )
 }
+
+interface SelectNumericalInputProps {
+  initialValue: string
+  disabled: boolean
+  updateValue: (value: string) => void
+}
+
+const SelectNumericalInput = forwardRef<
+  HTMLInputElement,
+  SelectNumericalInputProps
+>(({ initialValue, disabled, updateValue }, ref) => {
+  const [value, setValue] = useState(initialValue ?? '')
+
+  useEffect(() => {
+    if (value.length > 0 && !isNaN(Number(value))) {
+      updateValue(value)
+    }
+  }, [value])
+
+  useEffect(() => {
+    if (disabled) {
+      setValue('')
+    }
+  }, [disabled])
+
+  return (
+    <Input
+      ref={ref}
+      type="number"
+      pattern="[0-9]*"
+      min={0}
+      placeholder="0"
+      className="w-16 h-6 mx-2"
+      disabled={disabled}
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value)
+      }}
+    />
+  )
+})
+
+SelectNumericalInput.displayName = 'SelectNumericalInput'
 
 export default function Select({
   question,
@@ -150,8 +195,22 @@ export default function Select({
                 compareOptionValues(val, option)
               )
 
+        let optionNumericValue = ''
+        if (option.includes('{AMOUNT}') && field.value) {
+          const optionValue = field.value.find
+            ? field.value?.find((val: string) =>
+                compareOptionValues(val, option)
+              )
+            : field.value
+          if (optionValue) {
+            const num = optionValue.match(/\d+/)?.[0]
+            optionNumericValue = num
+          }
+        }
+
         return (
           <div
+            key={`${question.id}_${option}_${index}`}
             className={`flex gap-4 items-center ${
               question.options?.followup && `justify-between w-full`
             }`}
@@ -179,12 +238,16 @@ export default function Select({
               >
                 {option.split('{AMOUNT}')?.[0]}
                 {option.split('{AMOUNT}')?.[1] && (
-                  <Input
+                  <SelectNumericalInput
+                    initialValue={optionNumericValue}
                     ref={(el) => (optionInputRefs.current[index] = el)}
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    className="w-16 h-6 mx-2"
+                    updateValue={(value) => {
+                      const optionWithValue = option.replace(
+                        '{AMOUNT}',
+                        `{${value}}`
+                      )
+                      updateValue(optionWithValue, true)
+                    }}
                     disabled={
                       question.type === 'singleChoice'
                         ? !compareOptionValues(field.value, option)
@@ -193,21 +256,6 @@ export default function Select({
                             compareOptionValues(val, option)
                           )
                     }
-                    onChange={(e) => {
-                      const optionWithValue = option.replace(
-                        '{AMOUNT}',
-                        `{${e.target.value}}`
-                      )
-                      updateValue(optionWithValue, true)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        const target = e.target as HTMLInputElement
-                        target.blur()
-                        onAnswer(target.value)
-                      }
-                    }}
                   />
                 )}
                 {option.split('{AMOUNT}')?.[1]}

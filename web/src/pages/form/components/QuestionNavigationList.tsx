@@ -58,9 +58,8 @@ const QuestionNavigationList = ({
           <ScrollArea className="h-[60vh]">
             <ul className="space-y-2">
               {questions.map((question, index) => (
-                <DialogClose asChild>
+                <DialogClose asChild key={`QuestionNavigator_${question.id}`}>
                   <li
-                    key={question.id}
                     onClick={() => {
                       setCurrentPage(index)
                     }}

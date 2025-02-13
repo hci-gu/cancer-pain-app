@@ -67,8 +67,16 @@ export const resourcesAtom = atom(async () => {
   const response = await pb.collection('resourceCollection').getFullList({
     expand: 'resources',
   })
-  console.log('response', response)
   return response.map(mapResourceCollection)
+})
+
+export const resourceCollectionAtom = atomFamily((id: string) => {
+  return atom(async () => {
+    const response = await pb.collection('resourceCollection').getOne(id, {
+      expand: 'resources',
+    })
+    return mapResourceCollection(response)
+  })
 })
 
 export const readAboutPageAtom = atomWithStorage<boolean>(
@@ -118,6 +126,7 @@ export type Question = {
   followup: string[]
   dependencyValue?: any
   resource?: Resource
+  resourceCollection?: ResourceCollection
   number: number
 }
 
@@ -187,6 +196,9 @@ const mapQuestion = (question: any): Question => {
     dependencyValue: question.dependencyValue,
     followup: question.followup,
     resource: question.expand?.resource,
+    resourceCollection: question.expand?.resourceCollection
+      ? mapResourceCollection(question.expand?.resourceCollection)
+      : undefined,
     number: -1,
   }
 }
@@ -225,7 +237,8 @@ export const questionnairesAtom = unwrap(questionnairesBaseAtom)
 export const questionnaireAtom = atomFamily((id: string) =>
   atom(async () => {
     const response = await pb.collection('questionnaires').getOne(id, {
-      expand: 'questions,questions.options,questions.resource',
+      expand:
+        'questions,questions.options,questions.resource,questions.resourceCollection.resources',
     })
 
     return mapQuestionnaire(response)

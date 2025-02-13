@@ -32,7 +32,9 @@ export function ResourceDrawer({ resource }: { resource: ResourceType }) {
             <div></div>
           </div>
         </DrawerHeader>
-        <Resource resource={resource} />
+        <div className="p-8">
+          <Resource resource={resource} />
+        </div>
       </DrawerContent>
     </Drawer>
   )
@@ -79,7 +81,7 @@ export default function Resource({ resource }: { resource: ResourceType }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div
-        className="[&_a]:text-blue-500 [&_a]:hover:underline [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2"
+        className="[&_a]:text-blue-500 [&_a]:hover:underline [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2 [&_p]:font-light [&_p]:text-base"
         dangerouslySetInnerHTML={{
           __html: description,
         }}

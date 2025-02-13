@@ -35,7 +35,7 @@ const FormHistoryLoaded = ({
   const now = new Date()
 
   return (
-    <div>
+    <div className="px-8">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

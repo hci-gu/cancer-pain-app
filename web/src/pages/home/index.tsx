@@ -15,9 +15,13 @@ function HomePage() {
     : 'Ange'
 
   return (
-    <div className="container mx-auto mt-8 p-4">
-      <h1 className="text-3xl font-bold">Välkommen till studien!</h1>
-      <p className="mb-4">Tack så mycket för att du är med och deltar.</p>
+    <div className="container mx-auto p-4">
+      <div className="w-full flex flex-col align-center justify-center mb-4">
+        <h1 className="text-3xl font-bold text-center">
+          Välkommen till studien!
+        </h1>
+        <p className="text-center">Tack för att du är med och deltar.</p>
+      </div>
 
       <Separator className="m-4" />
 

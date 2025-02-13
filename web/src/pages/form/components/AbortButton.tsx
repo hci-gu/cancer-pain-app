@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button'
+import { Questionnaire } from '@/state'
+import { keyForQuestionnaire } from '../hooks/useFormState'
 
-const AbortButton = () => {
+const AbortButton = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const onClick = () => {
+    localStorage.removeItem(keyForQuestionnaire(questionnaire))
     location.replace('https://www.google.se')
   }
 
@@ -13,6 +16,7 @@ const AbortButton = () => {
             <p className="text-lg">Hoppa ur formuläret snabbt</p>
             <p className="text-sm text-gray-600 w-60">
               Genom att klicka på knappen byts din sida direkt ut till google.se
+              och dina svar tas bort.
             </p>
           </div>
           <div className="flex justify-center mt-4">

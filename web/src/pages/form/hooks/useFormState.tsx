@@ -5,6 +5,7 @@ import { useForm, useFormContext, useWatch } from 'react-hook-form'
 import { useLayoutEffect } from 'react'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
+import useQuestions from './useQuestions'
 
 export const keyForQuestionnaire = (questionnaire: Questionnaire) => {
   const date = new Date()
@@ -41,7 +42,6 @@ const useFormStateWithCache = ({
   questionnaire: Questionnaire
   formSchema: any
 }) => {
-  const setPage = useSetAtom(formPageAtom)
   const key = keyForQuestionnaire(questionnaire)
   const answers = getAnswersFromLocalStorage(key)
 
@@ -50,16 +50,31 @@ const useFormStateWithCache = ({
     defaultValues: answers,
   })
 
+  return form
+}
+
+export const useScrollToLastAnsweredQuestion = (
+  questionnaire: Questionnaire
+) => {
+  const setPage = useSetAtom(formPageAtom)
+  const questions = useQuestions(questionnaire)
+  const key = keyForQuestionnaire(questionnaire)
+  const answers = getAnswersFromLocalStorage(key)
+
   useLayoutEffect(() => {
     let index = 0
-    for (const question of questionnaire.questions) {
-      if (!answers[question.id]) break
+    for (const question of questions) {
+      if (
+        !answers[question.id] &&
+        question.type !== 'section' &&
+        question.type !== 'text'
+      ) {
+        break
+      }
       index++
     }
     setPage(index)
-  }, [answers, setPage])
-
-  return form
+  }, [answers, questions, setPage])
 }
 
 export const SyncFormStateToLocalStorage = ({

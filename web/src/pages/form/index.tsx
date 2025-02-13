@@ -28,9 +28,12 @@ import { questionnaireAnswered } from '@/utils'
 import useFormStateWithCache, {
   keyForQuestionnaire,
   SyncFormStateToLocalStorage,
+  useScrollToLastAnsweredQuestion,
 } from './hooks/useFormState'
 import AbortButton from './components/AbortButton'
 import QuestionNavigationList from './components/QuestionNavigationList'
+import { QUESTIONNAIRE_FOV_ID } from '@/constants'
+import FormStateDebugger from './components/FormDebugger'
 
 const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
@@ -165,21 +168,33 @@ const SectionHandler = ({
 }) => {
   const section = useCurrentSection(questionnaire)
 
-  if (section && section.id === 'kujwudwaahabsiz') {
+  if (section && section.id === QUESTIONNAIRE_FOV_ID) {
     return (
       <>
         <div className="fixed top-4 md:top-auto md:bottom-4 md:left-4 p-2">
-          <p className="text-xs text-gray-500 text-center pb-2">Skapat av</p>
+          <p className="text-xs text-gray-500 text-center pb-2 invisible md:visible">
+            Skapat av
+          </p>
           <img
             src="/vgr-logo.png"
             alt="Västra Götalandsregionen"
             className="h-6 md:h-8"
           />
         </div>
-        <AbortButton />
+        <AbortButton questionnaire={questionnaire} />
       </>
     )
   }
+
+  return null
+}
+
+const InitiallyScrollToLastAnsweredQuestion = ({
+  questionnaire,
+}: {
+  questionnaire: Questionnaire
+}) => {
+  useScrollToLastAnsweredQuestion(questionnaire)
 
   return null
 }
@@ -236,9 +251,10 @@ const LoadedForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={(e) => e.preventDefault()}>
+        <FormStateDebugger />
+        <InitiallyScrollToLastAnsweredQuestion questionnaire={questionnaire} />
         <SyncFormStateToLocalStorage questionnaire={questionnaire} />
-        {/* <FormStateDebugger /> */}
         <ProgressBar questionnaire={questionnaire} />
         <QuestionNavigationList questionnaire={questionnaire} />
         <SectionHandler questionnaire={questionnaire} />

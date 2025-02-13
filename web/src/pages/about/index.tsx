@@ -1,91 +1,25 @@
 import { readAboutPageAtom, resourcesAtom } from '@/state'
 import { useAtomValue, useSetAtom } from 'jotai'
-import { startTransition, useEffect, useState } from 'react'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+import { useEffect } from 'react'
 import { Separator } from '@/components/ui/separator'
-import Resource from '@/components/resource'
-
-const titleToSlug = (title: string) =>
-  title
-    .toLowerCase()
-    .replace(/[åäàáâãæ]/g, 'a')
-    .replace(/[öòóôõø]/g, 'o')
-    .replace(/[^a-z0-9-\s]/g, '')
-    .replace(/-+/g, '')
-    .replace(/\s+/g, '-')
-    .trim()
+import ResourceAccordion from '@/components/resourceCollection'
 
 const Resources = () => {
   const collections = useAtomValue(resourcesAtom)
-  const [openResource, setOpenResource] = useState<string>(
-    window.location.hash.replace('#', '')
-  )
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '')
-      startTransition(() => {
-        setOpenResource(hash)
-      })
-    }
-
-    // Only scroll on initial load if there's a hash
-    const hash = window.location.hash.replace('#', '')
-    if (hash) {
-      const element = document.getElementById(hash)
-      if (element) {
-        const headerOffset = 100
-        const elementPosition = element.getBoundingClientRect().top
-        const offsetPosition =
-          elementPosition + window.pageYOffset - headerOffset
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth',
-        })
-      }
-    }
-
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
-
-  const resourceClicked = (value: string) => {
-    startTransition(() => {
-      window.location.hash = value
-    })
-  }
 
   return (
     <div className="mt-8">
       {collections.map((collection) => (
-        <>
-          <h1 className="text-xl font-bold mb-4 mt-4">{collection.name}</h1>
-          <Accordion
-            type="single"
-            collapsible
-            value={openResource}
-            onValueChange={resourceClicked}
-          >
-            {collection.resources.map((resource, index) => (
-              <AccordionItem
-                value={titleToSlug(resource.title)}
-                key={`Resource_${index}`}
-                id={titleToSlug(resource.title)}
-              >
-                <AccordionTrigger>{resource.title}</AccordionTrigger>
-                <AccordionContent>
-                  <Resource resource={resource} />
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </>
+        <ResourceAccordion collection={collection} />
       ))}
+    </div>
+  )
+}
+
+const HeaderSection = ({ text }: { text: string }) => {
+  return (
+    <div className="mb-8 bg-stone-800 text-center py-4">
+      <h2 className="text-2xl font-black text-white">{text.toUpperCase()}</h2>
     </div>
   )
 }
@@ -97,7 +31,8 @@ function AboutPage() {
   }, [])
 
   return (
-    <div className="mx-4">
+    <div className="[&>p]:mx-4 [&>h2]:mx-4">
+      <HeaderSection text="Om studien" />
       <p>
         <strong>
           Syftet med studien är att undersöka vid vilken tidpunkt som det är
@@ -132,6 +67,7 @@ function AboutPage() {
         cancerbehandling.
       </p>
       <br></br>
+      <HeaderSection text="Frågor & Svar" />
       <p>
         Sexuell hälsa är ett grundbehov och en viktig del i många människors
         liv. Det kan vara oroande att få en påverkan på den sexuella hälsan. Vi
@@ -146,9 +82,7 @@ function AboutPage() {
       </p>
       <Separator className="mt-4" />
       <Resources />
-      <div style={{ height: '100vh' }}></div>
-      <div className="h-64 w-full"></div>
-      <div className="h-64 w-full"></div>
+      <div style={{ height: '25vh' }}></div>
     </div>
   )
 }

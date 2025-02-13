@@ -10,6 +10,7 @@ export const answeredUpTo = atomFamily(
       const requiredQuestions = questions
         // .filter((question) => question.required)
         .filter((question) => question.type !== 'section')
+        .filter((question) => question.type !== 'text')
         .map((question) => question.id)
 
       const answeredQuestions = Object.keys(answers).filter(
@@ -21,8 +22,12 @@ export const answeredUpTo = atomFamily(
       const indexesForRemainingQuestions = remainingQuestions.map((question) =>
         questions.findIndex((q) => q.id === question)
       )
-      const canScrollUpTo = Math.min(...indexesForRemainingQuestions)
 
+      if (indexesForRemainingQuestions.length === 0) {
+        return questions.length
+      }
+
+      const canScrollUpTo = Math.min(...indexesForRemainingQuestions)
       return canScrollUpTo
     }),
   (a, b) =>
