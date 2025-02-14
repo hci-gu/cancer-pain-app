@@ -32,7 +32,7 @@ export function ResourceDrawer({ resource }: { resource: ResourceType }) {
             <div></div>
           </div>
         </DrawerHeader>
-        <div className="p-8">
+        <div className="p-8 flex flex-col justify-center items-center overflow-y-scroll">
           <Resource resource={resource} />
         </div>
       </DrawerContent>

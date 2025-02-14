@@ -33,7 +33,6 @@ import useFormStateWithCache, {
 import AbortButton from './components/AbortButton'
 import QuestionNavigationList from './components/QuestionNavigationList'
 import { QUESTIONNAIRE_FOV_ID } from '@/constants'
-import FormStateDebugger from './components/FormDebugger'
 
 const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
@@ -252,7 +251,6 @@ const LoadedForm = ({
   return (
     <Form {...form}>
       <form onSubmit={(e) => e.preventDefault()}>
-        <FormStateDebugger />
         <InitiallyScrollToLastAnsweredQuestion questionnaire={questionnaire} />
         <SyncFormStateToLocalStorage questionnaire={questionnaire} />
         <ProgressBar questionnaire={questionnaire} />
