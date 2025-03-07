@@ -1,7 +1,10 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/base64"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +12,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -26,11 +31,11 @@ import (
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/security"
 	"github.com/pocketbase/pocketbase/tools/types"
+	"golang.org/x/net/html"
 )
 
 func isDevEnv() bool {
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
-	log.Println("isGoRun: ", isGoRun)
 	return isGoRun
 }
 
@@ -43,6 +48,37 @@ const WEB_URL = "https://pre-rt.prod.appadem.in"
 // const WEB_URL = "http://localhost:5173"
 const TREATMENT_END_FORM_ID = "p8ow7xj8h4uuv43"
 const TREATMENT_END_QUESTION_ID = "242u8ha0yn8m06d"
+
+func stripHTML(input string) string {
+	doc, err := html.Parse(strings.NewReader(input))
+	if err != nil {
+		return input // fallback to the original string if parsing fails
+	}
+	var buf bytes.Buffer
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		if n.Type == html.TextNode {
+			buf.WriteString(n.Data)
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(doc)
+	return html.UnescapeString(buf.String())
+}
+
+var placeholderRe = regexp.MustCompile(`\{\w+\}`)
+
+func compareOptionValues(str1, str2 string) bool {
+	if str1 == "" || str2 == "" {
+		return false
+	}
+	normalize := func(s string) string {
+		return placeholderRe.ReplaceAllString(s, "{PLACEHOLDER}")
+	}
+	return normalize(str1) == normalize(str2)
+}
 
 func createOtp(app *pocketbase.PocketBase, user *core.Record) (*core.Record, error) {
 	return createOtpWithExpiration(app, user, false)
@@ -199,20 +235,28 @@ func userShouldBeRemindedAboutTreatmentEnd(user *core.Record) bool {
 
 func userShouldBeNotified(user *core.Record) bool {
 	userType := user.GetString("type")
-
+	treatmentStart := user.GetDateTime("treatmentStart").Time()
 	treatmentEnd := user.GetDateTime("treatmentEnd").Time()
+
+	if treatmentStart.IsZero() {
+		return false
+	}
+
+	// if user.type == "PRE" it should be 2 weeks before treatment start
+	if userType == "PRE" {
+		twoWeeksBeforeTreatmentStart := treatmentStart.AddDate(0, 0, -14)
+
+		if !treatmentEnd.IsZero() {
+			return time.Now().After(twoWeeksBeforeTreatmentStart) && time.Now().Before(treatmentEnd)
+		}
+
+		return time.Now().After(twoWeeksBeforeTreatmentStart)
+	}
 
 	// if treatmentEnd is set, it should be 6 weeks after
 	if !treatmentEnd.IsZero() {
 		sixWeeksAfterTreatmentEnd := treatmentEnd.AddDate(0, 0, 42)
 		return time.Now().After(sixWeeksAfterTreatmentEnd)
-	}
-
-	// if user.type == "PRE" it should be 2 weeks before treatment start
-	if userType == "PRE" {
-		treatmentStart := user.GetDateTime("treatmentStart").Time()
-		twoWeeksBeforeTreatmentStart := treatmentStart.AddDate(0, 0, -14)
-		return time.Now().After(twoWeeksBeforeTreatmentStart)
 	}
 
 	return false
@@ -234,7 +278,6 @@ func checkAndSendNotification(app *pocketbase.PocketBase, user *core.Record, que
 	date := time.Now().Format("2006-01-02")
 	link := WEB_URL + "/forms/" + questionnaire.Id + "?date=" + date
 
-	// log.Println("Hej! Glöm inte att svara på din enkät idag!" + link)
 	sendText(user.GetString("phoneNumber"), "Hej! Glöm inte att svara på din enkät idag!"+link)
 }
 
@@ -251,6 +294,291 @@ func main() {
 		scheduler := cron.New()
 
 		se.Router.Bind(apis.Gzip())
+
+		se.Router.GET("/data-export", func(e *core.RequestEvent) error {
+			if !e.HasSuperuserAuth() {
+				return apis.NewUnauthorizedError("Unauthorized", nil)
+			}
+
+			// Fetch all answers records.
+			answers, err := app.FindRecordsByFilter("answers", "", "", 0, 0, nil)
+			if err != nil {
+				return err
+			}
+			// Group answers by questionnaire id; if empty, use "unknown".
+			groupedAnswers := make(map[string][]*core.Record)
+			for _, answer := range answers {
+				qid := answer.GetString("questionnaire")
+				if qid == "" {
+					qid = "unknown"
+				}
+				groupedAnswers[qid] = append(groupedAnswers[qid], answer)
+			}
+
+			// Fetch all questionnaires.
+			questionnaireRecs, err := app.FindRecordsByFilter("questionnaires", "", "", 0, 0, nil)
+			if err != nil {
+				return err
+			}
+			questionnairesMap := make(map[string]*core.Record)
+			for _, q := range questionnaireRecs {
+				questionnairesMap[q.Id] = q
+			}
+
+			// Fetch all questions.
+			questionRecs, err := app.FindRecordsByFilter("questions", "", "", 0, 0, nil)
+			if err != nil {
+				return err
+			}
+			// Build mapping for question details.
+			type QuestionInfo struct {
+				Name    string   // rich text stripped (assume you have a helper stripHTML already defined)
+				Type    string   // e.g. "multipleChoice"
+				Options []string // for multipleChoice, a list of possible options
+			}
+			questionInfoMap := make(map[string]QuestionInfo)
+			// (Assume questionOptions have been fetched and processed similarly elsewhere.)
+			questionOptionsCache := make(map[string][]string)
+			for _, qRec := range questionRecs {
+				qi := QuestionInfo{
+					Name: stripHTML(qRec.GetString("text")),
+					Type: qRec.GetString("type"),
+				}
+				if qi.Type == "multipleChoice" {
+					optionsID := qRec.GetString("options")
+					if optionsID != "" {
+						if opts, ok := questionOptionsCache[optionsID]; ok {
+							qi.Options = opts
+						} else {
+							qOptRec, err := app.FindRecordById("questionOptions", optionsID)
+							if err == nil && qOptRec != nil {
+								rawOpts := qOptRec.Get("value")
+								var opts []string
+								// rawOpts is of type types.JSONRaw. Convert accordingly.
+								if raw, ok := rawOpts.(types.JSONRaw); ok {
+									if err := json.Unmarshal(raw, &opts); err != nil {
+										log.Println("Failed to unmarshal options:", err)
+									} else {
+										qi.Options = opts
+										questionOptionsCache[optionsID] = opts
+									}
+								} else {
+									log.Println("rawOpts is not types.JSONRaw")
+								}
+							}
+						}
+					}
+				}
+				questionInfoMap[qRec.Id] = qi
+			}
+
+			var buf bytes.Buffer
+			zipWriter := zip.NewWriter(&buf)
+
+			// Process each questionnaire group.
+			for qid, recs := range groupedAnswers {
+				baseHeaders := []string{"id", "user", "started", "date", "created", "updated"}
+				var questionIDs []string
+				// If questionnaire exists, use its "questions" field (assumed to be []string).
+				if qid != "unknown" {
+					if qRec, ok := questionnairesMap[qid]; ok {
+						if qs, ok := qRec.Get("questions").([]string); ok {
+							questionIDs = qs
+						}
+					}
+				}
+				// Fallback: union of keys in answers.
+				if len(questionIDs) == 0 {
+					keysSet := make(map[string]struct{})
+					for _, rec := range recs {
+						ansStr := rec.GetString("answers")
+						var ansMap map[string]interface{}
+						if err := json.Unmarshal([]byte(ansStr), &ansMap); err == nil {
+							for key := range ansMap {
+								keysSet[key] = struct{}{}
+							}
+						}
+					}
+					for key := range keysSet {
+						questionIDs = append(questionIDs, key)
+					}
+					sort.Strings(questionIDs)
+				}
+
+				// Expand columns: for multipleChoice questions, create a column per option.
+				expandedIDHeaders := []string{}
+				expandedHumanHeaders := []string{}
+				for _, qKey := range questionIDs {
+					if qi, ok := questionInfoMap[qKey]; ok && qi.Type == "multipleChoice" && len(qi.Options) > 0 {
+						for _, opt := range qi.Options {
+							expandedIDHeaders = append(expandedIDHeaders, qKey+"_"+opt)
+							expandedHumanHeaders = append(expandedHumanHeaders, qi.Name+" - "+opt)
+						}
+					} else {
+						expandedIDHeaders = append(expandedIDHeaders, qKey)
+						if qi, ok := questionInfoMap[qKey]; ok {
+							expandedHumanHeaders = append(expandedHumanHeaders, qi.Name)
+						} else {
+							expandedHumanHeaders = append(expandedHumanHeaders, qKey)
+						}
+					}
+				}
+				idHeaders := append(baseHeaders, expandedIDHeaders...)
+				humanHeaders := append(baseHeaders, expandedHumanHeaders...)
+
+				questionnaireName := qid
+				if qRec, ok := questionnairesMap[qid]; ok {
+					questionnaireName = qRec.GetString("name")
+					questionnaireName = strings.ReplaceAll(strings.ToLower(questionnaireName), " ", "_")
+				}
+				idFileName := fmt.Sprintf("%s_ids.csv", questionnaireName)
+				humanFileName := fmt.Sprintf("%s_names.csv", questionnaireName)
+
+				// Build rows for CSV.
+				var rows [][]string
+				for _, rec := range recs {
+					baseRow := []string{
+						rec.GetString("id"),
+						rec.GetString("user"),
+						rec.GetString("started"),
+						rec.GetString("date"),
+						rec.GetString("created"),
+						rec.GetString("updated"),
+					}
+					var expandedValues []string
+					ansStr := rec.GetString("answers")
+					var ansMap map[string]interface{}
+					if err := json.Unmarshal([]byte(ansStr), &ansMap); err != nil {
+						ansMap = map[string]interface{}{}
+					}
+					// For each question in order, expand the answer.
+					for _, qKey := range questionIDs {
+						if qi, ok := questionInfoMap[qKey]; ok && qi.Type == "multipleChoice" && len(qi.Options) > 0 {
+							// Parse the stored answer into a slice of strings.
+							var selectedAnswers []string
+							if rawVal, exists := ansMap[qKey]; exists {
+								switch v := rawVal.(type) {
+								case []interface{}:
+									for _, item := range v {
+										selectedAnswers = append(selectedAnswers, fmt.Sprintf("%v", item))
+									}
+								default:
+									selectedAnswers = append(selectedAnswers, fmt.Sprintf("%v", rawVal))
+								}
+							}
+							// For each option in the question, check if any selected answer matches (using compareOptionValues).
+							for _, opt := range qi.Options {
+								// If option text contains "{AMOUNT}", extract the numeric value.
+								if strings.Contains(opt, "{AMOUNT}") {
+									var valueFound string = ""
+									for _, ansVal := range selectedAnswers {
+										if compareOptionValues(opt, ansVal) {
+											// Extract digits inside curly braces.
+											re := regexp.MustCompile(`\{(\d+)\}`)
+											matches := re.FindStringSubmatch(ansVal)
+											if len(matches) > 1 {
+												valueFound = matches[1]
+											}
+											break
+										}
+									}
+									if valueFound != "" {
+										expandedValues = append(expandedValues, valueFound)
+									} else {
+										expandedValues = append(expandedValues, "0")
+									}
+								} else {
+									// For non-placeholder options, output "1" if matched, "0" otherwise.
+									matched := false
+									for _, ansVal := range selectedAnswers {
+										if compareOptionValues(opt, ansVal) {
+											matched = true
+											break
+										}
+									}
+									if matched {
+										expandedValues = append(expandedValues, "1")
+									} else {
+										expandedValues = append(expandedValues, "0")
+									}
+								}
+							}
+						} else {
+							// For non-multipleChoice questions.
+							if val, exists := ansMap[qKey]; exists {
+								expandedValues = append(expandedValues, fmt.Sprintf("%v", val))
+							} else {
+								expandedValues = append(expandedValues, "")
+							}
+						}
+					}
+					fullRow := append(baseRow, expandedValues...)
+					rows = append(rows, fullRow)
+				}
+
+				// Helper: write a CSV file into the zip.
+				writeCSV := func(fileName string, headers []string, rows [][]string) error {
+					fileWriter, err := zipWriter.Create(fileName)
+					if err != nil {
+						return err
+					}
+					csvWriter := csv.NewWriter(fileWriter)
+					if err := csvWriter.Write(headers); err != nil {
+						return err
+					}
+					for _, row := range rows {
+						if err := csvWriter.Write(row); err != nil {
+							return err
+						}
+					}
+					csvWriter.Flush()
+					return csvWriter.Error()
+				}
+
+				if err := writeCSV(idFileName, idHeaders, rows); err != nil {
+					return err
+				}
+				if err := writeCSV(humanFileName, humanHeaders, rows); err != nil {
+					return err
+				}
+			}
+
+			lookupFileName := "question_lookup.csv"
+			fileWriter, err := zipWriter.Create(lookupFileName)
+			if err != nil {
+				return err
+			}
+			csvWriter := csv.NewWriter(fileWriter)
+			// Write header row.
+			if err := csvWriter.Write([]string{"question_id", "question_name"}); err != nil {
+				return err
+			}
+			// Sort keys for a consistent order.
+			var questionIDs []string
+			for id := range questionInfoMap {
+				questionIDs = append(questionIDs, id)
+			}
+			sort.Strings(questionIDs)
+			for _, id := range questionIDs {
+				row := []string{id, questionInfoMap[id].Name}
+				if err := csvWriter.Write(row); err != nil {
+					return err
+				}
+			}
+			csvWriter.Flush()
+			if err := csvWriter.Error(); err != nil {
+				return err
+			}
+
+			if err := zipWriter.Close(); err != nil {
+				return err
+			}
+			e.Response.Header().Set("Content-Type", "application/zip")
+			e.Response.Header().Set("Content-Disposition", "attachment; filename=data_export.zip")
+			e.Response.WriteHeader(200)
+			_, err = e.Response.Write(buf.Bytes())
+			return err
+		})
 
 		se.Router.POST("/otp-create", func(e *core.RequestEvent) error {
 			data := struct {
