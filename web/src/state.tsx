@@ -63,6 +63,15 @@ export const userDataAtom = atom(async (get) => {
   }
 })
 
+export const dailyQuestionnaireScheduleAtom = atom(async () => {
+  const response = await pb.send('/daily-schedule', {})
+
+  return {
+    startDate: response.startDate ? new Date(response.startDate) : null,
+    endDate: response.endDate ? new Date(response.endDate) : null,
+  }
+})
+
 export const resourcesAtom = atom(async () => {
   const response = await pb.collection('resourceCollection').getFullList({
     expand: 'resources',

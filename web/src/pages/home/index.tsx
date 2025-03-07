@@ -2,12 +2,20 @@ import { Separator } from '@/components/ui/separator'
 import InitialForm from './components/InitialForm'
 import HomeTodoItem from './components/HomeTodoItem'
 import { CalendarIcon, InfoCircledIcon } from '@radix-ui/react-icons'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAtomValue } from 'jotai'
 import { readAboutPageAtom, userDataAtom } from '@/state'
 import BaselineForm from './components/BaselineForm'
+import { startTransition } from 'react'
 
 function HomePage() {
+  const navigate = useNavigate()
+  const handleNavigation = (path: string) => {
+    startTransition(() => {
+      navigate(path)
+    })
+  }
+
   const user = useAtomValue(userDataAtom)
   const hasReadAboutPage = useAtomValue(readAboutPageAtom)
   const dailyDescription = user?.treatmentStart
@@ -30,7 +38,10 @@ function HomePage() {
       </p>
       <div className="flex flex-col gap-2">
         <InitialForm />
-        <Link to="/about">
+        <button
+          onClick={() => handleNavigation('/about')}
+          className="text-left"
+        >
           <HomeTodoItem
             index={2}
             icon={<InfoCircledIcon />}
@@ -38,7 +49,7 @@ function HomePage() {
             description="Ta del av information om studien och dess syfte."
             done={hasReadAboutPage}
           />
-        </Link>
+        </button>
         <BaselineForm />
         <HomeTodoItem
           index={4}

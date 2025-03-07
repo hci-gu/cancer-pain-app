@@ -233,33 +233,54 @@ func userShouldBeRemindedAboutTreatmentEnd(user *core.Record) bool {
 	return false
 }
 
-func userShouldBeNotified(user *core.Record) bool {
-	userType := user.GetString("type")
+func startDateForDailyQuestionnaires(user *core.Record) *time.Time {
 	treatmentStart := user.GetDateTime("treatmentStart").Time()
 	treatmentEnd := user.GetDateTime("treatmentEnd").Time()
 
 	if treatmentStart.IsZero() {
+		return nil
+	}
+
+	if user.GetString("type") == "PRE" {
+		temp := treatmentStart.AddDate(0, 0, -14)
+		println("user is pre so we return date 14 days before start", temp.String())
+		return &temp
+	}
+
+	// the user is POST so it should be 6 weeks after treatment end
+	if !treatmentEnd.IsZero() {
+		temp := treatmentEnd.AddDate(0, 0, 14)
+		println("user is post so we return date 6 weeks after end", temp.String())
+		return &temp
+	}
+
+	return nil
+}
+
+func endDateForDailyQuestionnaires(user *core.Record) *time.Time {
+	treatmentEnd := user.GetDateTime("treatmentEnd").Time()
+
+	if treatmentEnd.IsZero() {
+		return nil
+	}
+
+	if user.GetString("type") == "PRE" {
+		return &treatmentEnd
+	}
+
+	temp := treatmentEnd.AddDate(0, 0, 56)
+	return &temp
+}
+
+func userShouldBeNotified(user *core.Record) bool {
+	startDate := startDateForDailyQuestionnaires(user)
+	endDate := endDateForDailyQuestionnaires(user)
+
+	if startDate == nil || endDate == nil {
 		return false
 	}
 
-	// if user.type == "PRE" it should be 2 weeks before treatment start
-	if userType == "PRE" {
-		twoWeeksBeforeTreatmentStart := treatmentStart.AddDate(0, 0, -14)
-
-		if !treatmentEnd.IsZero() {
-			return time.Now().After(twoWeeksBeforeTreatmentStart) && time.Now().Before(treatmentEnd)
-		}
-
-		return time.Now().After(twoWeeksBeforeTreatmentStart)
-	}
-
-	// if treatmentEnd is set, it should be 6 weeks after
-	if !treatmentEnd.IsZero() {
-		sixWeeksAfterTreatmentEnd := treatmentEnd.AddDate(0, 0, 42)
-		return time.Now().After(sixWeeksAfterTreatmentEnd)
-	}
-
-	return false
+	return time.Now().After(*startDate) && time.Now().Before(*endDate)
 }
 
 func checkAndSendNotification(app *pocketbase.PocketBase, user *core.Record, questionnaire *core.Record) {
@@ -655,6 +676,37 @@ func main() {
 
 			defer app.Delete(record)
 			return apis.RecordAuthResponse(e, user, "user", nil)
+		})
+
+		se.Router.GET("/daily-schedule", func(e *core.RequestEvent) error {
+			info, err := e.RequestInfo()
+
+			authRecord := info.Auth
+
+			if authRecord == nil {
+				return unauthorizedErr
+			}
+
+			user, err := app.FindRecordById("users", authRecord.Id)
+			if err != nil {
+				return notFoundErr
+			}
+
+			startDate := startDateForDailyQuestionnaires(user)
+			endDate := endDateForDailyQuestionnaires(user)
+
+			response := map[string]interface{}{}
+			if startDate != nil {
+				response["startDate"] = startDate.Format("2006-01-02")
+			} else {
+				response["startDate"] = nil
+			}
+			if endDate != nil {
+				response["endDate"] = endDate.Format("2006-01-02")
+			} else {
+				response["endDate"] = nil
+			}
+			return e.JSON(200, response)
 		})
 
 		scheduler.MustAdd("notifications", "0 18 * * *", func() {

@@ -32,7 +32,7 @@ specifiers:
   jotai: ^2.9.3
   js-cookie: ^3.0.5
   lucide-react: ^0.438.0
-  pocketbase: ^0.21.5
+  pocketbase: ^0.25.1
   postcss: ^8.4.44
   prop-types: ^15.8.1
   react: ^18.3.1
@@ -72,7 +72,7 @@ dependencies:
   jotai: 2.9.3_vhfblam3newwcpiwkw3tsgpmum
   js-cookie: 3.0.5
   lucide-react: 0.438.0_react@18.3.1
-  pocketbase: 0.21.5
+  pocketbase: 0.25.1
   react: 18.3.1
   react-day-picker: 8.10.1_ei322pjo6ehiudhg4dzlf5oyei
   react-dom: 18.3.1_react@18.3.1
@@ -2908,8 +2908,8 @@ packages:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
 
-  /pocketbase/0.21.5:
-    resolution: {integrity: sha512-bnI/uinnQps+ElSlzxkc4yvwuSFfKcoszDtXH/4QT2FhGq2mJVUvDlxn+rjRXVntUjPfmMG5LEPZ1eGqV6ssog==}
+  /pocketbase/0.25.1:
+    resolution: {integrity: sha512-2IH0KLI/qMNR/E17C7BGWX2FxW7Tead+igLHOWZ45P56v/NyVT18Jnmddeft+3qWWGL1Hog2F8bc4orWV/+Fcg==}
     dev: false
 
   /postcss-import/15.1.0_postcss@8.4.44:

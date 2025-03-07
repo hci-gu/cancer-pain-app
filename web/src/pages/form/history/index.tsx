@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { CustomDay, LargeCalendar } from '@/components/ui/calendar'
 import {
   Answer,
+  dailyQuestionnaireScheduleAtom,
   Questionnaire,
   questionnaireAtom,
   useAnswers,
@@ -26,10 +27,16 @@ const FormHistoryLoaded = ({
   questionnaire,
   answers,
   startDate,
+  endDate,
+  treatmentStart,
+  treatmentEnd,
 }: {
   questionnaire: Questionnaire
   answers: Answer[]
   startDate: Date | null
+  endDate: Date | null
+  treatmentStart?: Date
+  treatmentEnd?: Date
 }) => {
   const navigate = useNavigate()
   const now = new Date()
@@ -52,27 +59,10 @@ const FormHistoryLoaded = ({
         className="m-0 mt-8 p-0"
         disabled={{ after: new Date(), before: startDate ?? new Date() }}
         onDayRender={(props: DayProps) => {
-          if (isSameDay(props.date, startDate)) {
-            return (
-              <CustomDay
-                {...props}
-                onClick={() => {}}
-                style={{
-                  color: '#dc2626',
-                  fontWeight: 'bold',
-                  border: '2px solid #dc2626',
-                }}
-              >
-                <span>Start</span>
-              </CustomDay>
-            )
-          }
-
           if (answers.some((a) => isSameDay(new Date(a.date), props.date))) {
             return (
               <CustomDay
                 {...props}
-                // onClick={() => alert(props.date)}
                 style={{
                   color: '#16a34a',
                   fontWeight: 'bold',
@@ -107,6 +97,80 @@ const FormHistoryLoaded = ({
             )
           }
 
+          if (isSameDay(props.date, treatmentStart ?? null)) {
+            return (
+              <CustomDay
+                {...props}
+                onClick={() => {}}
+                style={{
+                  color: '#dc2626',
+                  fontWeight: 'bold',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  Behandling<br></br>start
+                </span>
+              </CustomDay>
+            )
+          }
+
+          if (isSameDay(props.date, treatmentEnd ?? null)) {
+            return (
+              <CustomDay
+                {...props}
+                onClick={() => {}}
+                style={{
+                  color: '#dc2626',
+                  fontWeight: 'bold',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  Behandling<br></br>slut
+                </span>
+              </CustomDay>
+            )
+          }
+
+          if (isSameDay(props.date, startDate)) {
+            return (
+              <CustomDay
+                {...props}
+                onClick={() => {}}
+                style={{
+                  color: '#dc2626',
+                  fontWeight: 'bold',
+                  border: '2px solid #dc2626',
+                }}
+              >
+                <span>Start</span>
+              </CustomDay>
+            )
+          }
+
+          if (isSameDay(props.date, endDate)) {
+            return (
+              <CustomDay
+                {...props}
+                onClick={() => {}}
+                style={{
+                  color: '#dc2626',
+                  fontWeight: 'bold',
+                  border: '2px solid #dc2626',
+                }}
+              >
+                <span>Avslut</span>
+              </CustomDay>
+            )
+          }
+
           return <CustomDay {...props} />
         }}
       />
@@ -119,15 +183,17 @@ const FormHistoryPage = () => {
   const userData = useAtomValue(userDataAtom)
   const questionnaire = useAtomValue(questionnaireAtom(id ?? ''))
   const answers = useAnswers(questionnaire.id ?? '')
+  const schedule = useAtomValue(dailyQuestionnaireScheduleAtom)
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <FormHistoryLoaded
         questionnaire={questionnaire}
         answers={answers}
-        startDate={
-          userData?.treatmentStart ? new Date(userData.treatmentStart) : null
-        }
+        treatmentStart={userData?.treatmentStart}
+        treatmentEnd={userData?.treatmentEnd}
+        startDate={schedule.startDate}
+        endDate={schedule.endDate}
       />
     </Suspense>
   )
