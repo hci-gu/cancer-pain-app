@@ -9,6 +9,18 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
+const compareOptionValues = (str1: string, str2: string) => {
+  if (!str1 || !str2) return false
+
+  const normalize = (str: string) =>
+    str.replace(/\{\w+\}/g, '{PLACEHOLDER}')
+
+  return normalize(str1) === normalize(str2)
+}
+
+const chipClassName =
+  'flex min-h-14 min-w-20 max-w-full cursor-pointer items-center justify-center rounded-xl bg-primary px-5 py-3 text-center text-base font-bold leading-tight text-foreground transition-colors duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-card peer-disabled:cursor-not-allowed peer-disabled:opacity-40 peer-checked:bg-study-teal-dark peer-checked:text-white sm:min-w-24 sm:px-7'
+
 const SelectFollowup = ({
   question,
   index,
@@ -35,7 +47,7 @@ const SelectFollowup = ({
           name={id}
           value={field.value}
           defaultValue={field.value}
-          className={`flex flex-wrap gap-1 sm:gap-2 leading-tight sm:leading-normal justify-end ${
+          className={`flex flex-wrap justify-end gap-2 leading-tight sm:gap-3 sm:leading-normal ${
             disabled && `opacity-25`
           }`}
         >
@@ -51,8 +63,8 @@ const SelectFollowup = ({
                     name={id}
                     value={option}
                     id={`${id}_${option}_${index}`}
-                    className="hidden peer"
-                    onChange={(_) => {
+                    className="peer sr-only"
+                    onChange={() => {
                       if (disabled) return
                       field.onChange(option)
                     }}
@@ -61,7 +73,7 @@ const SelectFollowup = ({
                 </FormControl>
                 <label
                   htmlFor={`${id}_${option}_${index}`}
-                  className="flex items-center justify-center px-1 py-1 border-2 border-foreground rounded-lg cursor-pointer peer-checked:primary peer-checked:primary-100 peer-checked:font-semibold transition-colors duration-200 sm:px-6 sm:py-3 bg-white peer-checked:bg-primary peer-checked:text-primary-foreground"
+                  className={chipClassName}
                 >
                   {option}
                 </label>
@@ -105,7 +117,7 @@ const SelectNumericalInput = forwardRef<
       pattern="[0-9]*"
       min={0}
       placeholder="0"
-      className="w-16 h-6 mx-2 text-foreground"
+      className="mx-2 h-8 w-16 border-foreground bg-white text-center text-foreground"
       disabled={disabled}
       value={value}
       onChange={(e) => {
@@ -136,20 +148,11 @@ export default function Select({
       name={question.id}
       value={field.value}
       defaultValue={field.value}
-      className={`flex flex-wrap gap-2 sm:gap-4 leading-tight sm:leading-normal ${
+      className={`flex max-w-full flex-wrap justify-center gap-3 leading-tight sm:gap-4 sm:leading-normal ${
         question.options?.followup?.length && 'flex-col items-start'
       }`}
     >
       {options.map((option, index) => {
-        const compareOptionValues = (str1: string, str2: string) => {
-          if (!str1 || !str2) return false
-
-          const normalize = (str: string) =>
-            str.replace(/\{\w+\}/g, '{PLACEHOLDER}')
-
-          return normalize(str1) === normalize(str2)
-        }
-
         const updateValue = (value: string, checked: boolean) => {
           if (!checked) {
             // reset optionInpurRef value
@@ -211,7 +214,7 @@ export default function Select({
         return (
           <div
             key={`${question.id}_${option}_${index}`}
-            className={`flex gap-4 items-center ${
+            className={`flex max-w-full items-center gap-4 ${
               question.options?.followup && `justify-between w-full`
             }`}
           >
@@ -227,14 +230,14 @@ export default function Select({
                   name={question.id}
                   value={option}
                   id={`${question.id}-option-${index}`}
-                  className="hidden peer"
+                  className="peer sr-only"
                   onChange={(e) => updateValue(option, e.target.checked)}
                   checked={isChecked}
                 />
               </FormControl>
               <label
                 htmlFor={`${question.id}-option-${index}`}
-                className="bg-card flex items-center justify-center px-2 py-2 border-2 border-foreground rounded-lg cursor-pointer peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:font-semibold transition-colors duration-200 sm:px-6 sm:py-3"
+                className={chipClassName}
               >
                 {option.includes('{AMOUNT}') ? (
                   <>
@@ -265,7 +268,7 @@ export default function Select({
                     {option.split('{AMOUNT}')?.[1]}
                   </>
                 ) : (
-                  <p>
+                  <p className="max-w-full break-words">
                     {option.split('\n').map((line, i) => (
                       <span key={i}>
                         {line}

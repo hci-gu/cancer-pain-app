@@ -206,49 +206,51 @@ Data-entry follow-up: PocketBase records still need FAQ category image assignmen
 
 ## Phase 9 - Question Cards and Answer Controls
 
-- [ ] Build `QuestionCard` around current `QuestionSelector` behavior.
-- [ ] Center question body in a white panel on desktop.
-- [ ] Make question body nearly full-width on mobile.
-- [ ] Render section intro screens, normal questions, long instructions, info icons, question numbers, and required markers.
-- [ ] Add the horizontal divider under question titles.
-- [ ] Rework `Select.tsx` into an `AnswerChipGroup`.
-- [ ] Render single-choice answers as chip buttons.
-- [ ] Render multiple-choice answers as chip buttons.
-- [ ] Preserve `react-hook-form` field values and validation.
-- [ ] Preserve dependency logic and follow-up visibility.
-- [ ] Preserve current auto-advance behavior after option selection.
-- [ ] Ensure chips expose selected state to screen readers.
-- [ ] Update visual treatment of the violence/escape action without changing scope logic.
-- [ ] Confirm long Swedish labels do not overflow chips or cards on mobile.
+- [x] Build `QuestionCard` around current `QuestionSelector` behavior.
+- [x] Center question body in a white panel on desktop.
+- [x] Make question body nearly full-width on mobile.
+- [x] Render section intro screens, normal questions, long instructions, info icons, question numbers, and required markers.
+- [x] Add the horizontal divider under question titles.
+- [x] Rework `Select.tsx` into an `AnswerChipGroup`.
+- [x] Render single-choice answers as chip buttons.
+- [x] Render multiple-choice answers as chip buttons.
+- [x] Preserve `react-hook-form` field values and validation.
+- [x] Preserve dependency logic and follow-up visibility.
+- [x] Preserve current auto-advance behavior after option selection.
+- [x] Ensure chips expose selected state to screen readers.
+- [x] Update visual treatment of the violence/escape action without changing scope logic.
+- [x] Confirm long Swedish labels do not overflow chips or cards on mobile.
 
 ## Phase 10 - Question List Dialog and Help Dialogs
 
-- [ ] Evolve `QuestionNavigationList` into `QuestionListDialog`.
-- [ ] Use centered dialog layout on desktop.
-- [ ] Use near-full-height sheet/drawer layout on mobile.
-- [ ] Group follow-up questions under headings.
-- [ ] Highlight the active question.
-- [ ] Disable inaccessible future questions.
-- [ ] Jump to the selected accessible question.
-- [ ] Trap focus in the dialog.
-- [ ] Close dialog with Escape.
-- [ ] Render question resource/help buttons for questions with resource metadata.
-- [ ] Render resource/help dialogs using PocketBase resource HTML.
-- [ ] Use redesign medical/help assets where the resource content requires frontend-provided imagery.
-- [ ] Match the length-measurement help references on mobile and desktop.
+- [x] Evolve `QuestionNavigationList` into `QuestionListDialog`.
+- [x] Use centered dialog layout on desktop.
+- [x] Use near-full-height sheet/drawer layout on mobile.
+- [x] Group follow-up questions under headings.
+- [x] Highlight the active question.
+- [x] Disable inaccessible future questions.
+- [x] Jump to the selected accessible question.
+- [x] Trap focus in the dialog.
+- [x] Close dialog with Escape.
+- [x] Render question resource/help buttons for questions with resource metadata.
+- [x] Render resource/help dialogs using PocketBase resource HTML.
+- [x] Use redesign medical/help assets where the resource content requires frontend-provided imagery.
+- [x] Match the length-measurement help references on mobile and desktop.
 
 ## Phase 11 - Submission Success Flow
 
-- [ ] Build `FormSuccessPage` for `/form/success`.
-- [ ] Use `success-check-circle--p55.svg`.
-- [ ] Match `daily-form-submitted-mobile.png` and `daily-form-submitted-desktop.png`.
-- [ ] Show confirmation copy.
-- [ ] Add close/continue CTA.
-- [ ] Make close/continue always navigate to `/check-in`.
-- [ ] Update questionnaire submit handler so every successful questionnaire navigates to `/form/success`.
-- [ ] Remove old immediate post-submit navigation to `/forms` or history.
-- [ ] Clear local cached form state after successful submission as current behavior requires.
-- [ ] Verify success behavior for once, daily, weekly, and dated questionnaire occurrences where applicable.
+- [x] Build `FormSuccessPage` for `/form/success`.
+- [x] Use `success-check-circle--p55.svg`.
+- [x] Match `daily-form-submitted-mobile.png` and `daily-form-submitted-desktop.png`.
+- [x] Show confirmation copy.
+- [x] Add close/continue CTA.
+- [x] Make close/continue always navigate to `/check-in`.
+- [x] Update questionnaire submit handler so every successful questionnaire navigates to `/form/success`.
+- [x] Remove old immediate post-submit navigation to `/forms` or history.
+- [x] Clear local cached form state after successful submission as current behavior requires.
+- [x] Verify success behavior for once, daily, weekly, and dated questionnaire occurrences where applicable.
+
+Verification note: phase 11 submit routing is occurrence-agnostic in the shared submit handler and preserves the dated `date` query submission path. Full end-to-end occurrence verification still depends on seeded PocketBase questionnaire data and a valid authenticated user.
 
 ## Phase 12 - Study Information Page
 

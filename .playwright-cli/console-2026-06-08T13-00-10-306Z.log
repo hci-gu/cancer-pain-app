@@ -1,0 +1,27 @@
+[     133ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=b51fe7e0:17994
+[   22131ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=b51fe7e0:17994
+[   46450ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=b51fe7e0:17994
+[   46502ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8090/api/collections/questionnaires/records/sdzkpd49ndccf5b?expand=questions%2Cquestions.options%2Cquestions.resource%2Cquestions.resourceCollection.resources%2Cfollowup%2Cfollowup.questions%2Cfollowup.questions.options%2Cfollowup.questions.resource%2Cfollowup.questions.resourceCollection.resources:0
+[   46506ms] [ERROR] Error handled by React Router default ErrorBoundary: ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:183:22) @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=b51fe7e0:5549
+[   46506ms] [ERROR] Error handled by React Router default ErrorBoundary: ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:183:22) @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=b51fe7e0:5549
+[   46508ms] [ERROR] Error handled by React Router default ErrorBoundary: ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:183:22) @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=b51fe7e0:5549
+[   46508ms] [ERROR] Error handled by React Router default ErrorBoundary: ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:183:22) @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=b51fe7e0:5549
+[   46509ms] [ERROR] %o
+
+%s
+
+%s
+ ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:183:22) The above error occurred in the <FormPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=b51fe7e0:6263
+[   46509ms] [ERROR] React Router caught the following error during render ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:183:22) @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=b51fe7e0:5588

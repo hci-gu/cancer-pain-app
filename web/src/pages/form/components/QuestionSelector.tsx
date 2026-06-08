@@ -21,6 +21,9 @@ import { Button } from '@/components/ui/button'
 import Select from './Select'
 import { ResourceDrawer } from '@/components/resource'
 
+const answerChipClassName =
+  'flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 py-3 text-base font-bold text-foreground transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-card peer-data-[state=checked]:bg-study-teal-dark peer-data-[state=checked]:text-white sm:min-w-16'
+
 const renderQuestionType = (
   question: Question,
   field: ControllerRenderProps<FieldValues, any>,
@@ -62,15 +65,26 @@ const renderQuestionType = (
             onAnswer(value)
           }}
           defaultValue={field.value}
-          className="flex flex-wrap"
+          className="flex max-w-full flex-wrap justify-center gap-2 sm:gap-3"
         >
           {Array.from({ length: 11 }).map((_, index) => (
-            <FormItem className="flex items-center space-x-3 space-y-0 flex-wrap">
+            <FormItem
+              className="flex items-center"
+              key={`${question.id}_pain_${index}`}
+            >
               <FormControl>
-                {/* @ts-ignore */}
-                <RadioGroupItem value={index} />
+                <RadioGroupItem
+                  value={`${index}`}
+                  id={`${question.id}_pain_${index}`}
+                  className="peer sr-only"
+                />
               </FormControl>
-              <FormLabel className="font-normal">{index}</FormLabel>
+              <FormLabel
+                htmlFor={`${question.id}_pain_${index}`}
+                className={answerChipClassName}
+              >
+                {index}
+              </FormLabel>
             </FormItem>
           ))}
         </RadioGroup>
@@ -99,6 +113,7 @@ const renderQuestionType = (
       return (
         <div className="flex justify-center">
           <Button
+            className="min-h-14 rounded-xl bg-primary px-7 text-base font-bold text-foreground hover:bg-study-teal-dark hover:text-white"
             onClick={(e) => {
               e.preventDefault()
               onAnswer(null)
@@ -122,19 +137,19 @@ const QuestionSelector = ({ question }: { question: Question }) => {
     .trim().length
   const useCompactText = plainTextLength > 250
 
-  const onAnswer = (_: any) => {
+  const onAnswer = () => {
     setTimeout(() => setPage((page) => page + 1), 400)
   }
 
   return (
-    <section className="flex h-full w-full items-center justify-center bg-background px-4 pt-24 sm:px-8 md:px-16">
+    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 md:px-16 md:pt-40">
       <FormField
         control={control}
         name={question.id}
         render={({ field }) => (
-          <FormItem className="w-full max-w-3xl bg-card px-5 py-10 text-center shadow-sm sm:px-12 md:px-16">
+          <FormItem className="min-h-[24rem] w-full bg-white px-6 py-10 text-center sm:px-12 md:max-w-3xl md:px-16">
             <div className="flex flex-col items-center gap-4">
-              <div className="flex items-start justify-center gap-2">
+              <div className="relative flex w-full items-start justify-center gap-2">
                 <FormLabel className="text-3xl font-black leading-none text-foreground">
                   {question.type === 'section'
                     ? 'Information'
@@ -143,14 +158,16 @@ const QuestionSelector = ({ question }: { question: Question }) => {
                 {question.required && (
                   <span className="text-xl font-black text-destructive">*</span>
                 )}
-                {question.resource && (
-                  <ResourceDrawer resource={question.resource} />
-                )}
-                {!question.resource && question.resourceCollection && (
-                  <ResourceDrawer
-                    resourceCollection={question.resourceCollection}
-                  />
-                )}
+                <div className="absolute right-0 top-0">
+                  {question.resource && (
+                    <ResourceDrawer resource={question.resource} />
+                  )}
+                  {!question.resource && question.resourceCollection && (
+                    <ResourceDrawer
+                      resourceCollection={question.resourceCollection}
+                    />
+                  )}
+                </div>
               </div>
               <div className="h-px w-full bg-foreground" />
               <FormLabel
@@ -165,7 +182,7 @@ const QuestionSelector = ({ question }: { question: Question }) => {
               />
             </div>
             <FormControl>
-              <div className="mt-8 flex justify-center">
+              <div className="mt-8 flex max-w-full justify-center">
                 {renderQuestionType(question, field, onAnswer)}
               </div>
             </FormControl>

@@ -4,18 +4,31 @@ import {
   userDataAtom,
 } from '@/state'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Cross1Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 import { Button } from '@/components/ui/button'
 import { useAtomValue } from 'jotai'
 import { Suspense } from 'react'
 import ResourceAccordion from './resourceCollection'
+import lengthMeasurementCompact from '@/assets/redesign/medical/dilator-length-measurement-compact--p28.svg'
+import lengthMeasurementWide from '@/assets/redesign/medical/dilator-length-measurement-wide--p27.svg'
+
+const isLengthMeasurementHelp = (title: string, description?: string) => {
+  const text = `${title} ${description ?? ''}`.toLowerCase()
+
+  return (
+    text.includes('vilken längd') ||
+    text.includes('längd på stav') ||
+    text.includes('längden') ||
+    text.includes('length measurement')
+  )
+}
 
 export function ResourceDrawer({
   resource,
@@ -23,35 +36,59 @@ export function ResourceDrawer({
 }:
   | { resource: ResourceType; resourceCollection?: undefined }
   | { resource?: undefined; resourceCollection: ResourceCollection }) {
-  const title = resource ? resource.title : resourceCollection.name
+  const title = resource?.title ?? resourceCollection!.name
+  const showLengthMeasurement = isLengthMeasurementHelp(
+    title,
+    resource?.description ?? resourceCollection?.description
+  )
 
   return (
-    <Drawer>
-      <DrawerTrigger>
-        <Button size="icon">
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          size="icon"
+          className="h-9 w-9 rounded-full bg-study-coral text-white hover:bg-study-coral/90"
+          aria-label={`Visa hjälp: ${title}`}
+        >
           <InfoCircledIcon />
         </Button>
-      </DrawerTrigger>
-      <DrawerContent className="sm:m-16 h-4/5">
-        <DrawerHeader>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] w-[95vw] max-w-3xl overflow-hidden rounded-xl border-0 bg-white p-5 text-foreground sm:p-7">
+        <DialogHeader>
           <div className="flex items-center justify-between">
-            <DrawerClose>
+            <div className="h-9 w-9" />
+            <DialogTitle className="text-center text-2xl font-black leading-tight sm:text-3xl">
+              {title}
+            </DialogTitle>
+            <DialogClose asChild>
               <Button
-                variant="outline"
+                type="button"
+                variant="ghost"
                 size="icon"
-                className="border-foreground"
+                className="text-foreground hover:bg-primary"
+                aria-label="Stäng hjälp"
               >
                 <Cross1Icon />
               </Button>
-            </DrawerClose>
-            <DrawerTitle className="mr-10">{title}</DrawerTitle>
-            <div></div>
+            </DialogClose>
           </div>
-        </DrawerHeader>
-        <div className="p-8 flex flex-col justify-center items-center overflow-y-scroll">
+          <div className="mt-3 h-px w-full bg-foreground" />
+        </DialogHeader>
+        <div className="flex max-h-[74vh] flex-col items-center overflow-y-auto pt-4">
           {resource && <Resource resource={resource} />}
+          {showLengthMeasurement && (
+            <picture className="mt-5 block w-full">
+              <source media="(min-width: 640px)" srcSet={lengthMeasurementWide} />
+              <img
+                src={lengthMeasurementCompact}
+                alt="Illustration som visar hur vaginalstavens längd mäts."
+                className="w-full"
+              />
+            </picture>
+          )}
           {resourceCollection && (
-            <div className="w-full h-full">
+            <div className="h-full w-full">
               <ResourceAccordion
                 collection={resourceCollection}
                 showHeader={false}
@@ -59,8 +96,8 @@ export function ResourceDrawer({
             </div>
           )}
         </div>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }
 

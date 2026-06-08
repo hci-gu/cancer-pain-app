@@ -81,8 +81,9 @@ const RootPage = () => {
   }
 
   if (
-    location.pathname.includes('/forms/') &&
-    !location.pathname.includes('history')
+    (location.pathname.includes('/forms/') &&
+      !location.pathname.includes('history')) ||
+    location.pathname === '/form/success'
   ) {
     return <Outlet />
   }
