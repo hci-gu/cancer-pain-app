@@ -127,50 +127,47 @@ const QuestionSelector = ({ question }: { question: Question }) => {
   }
 
   return (
-    <section className="h-full w-full flex items-center justify-center px-4 md:px-16 sm:px-8">
+    <section className="flex h-full w-full items-center justify-center bg-background px-4 pt-24 sm:px-8 md:px-16">
       <FormField
         control={control}
         name={question.id}
         render={({ field }) => (
-          <FormItem>
-            <div
-              className={`flex ${
-                useCompactText ? 'gap-0.5 sm:gap-2' : 'gap-1 sm:gap-2'
-              }`}
-            >
-              {question.type !== 'section' && (
-                <FormLabel
-                  className={
-                    useCompactText
-                      ? 'text-xs sm:text-xl leading-tight sm:leading-normal'
-                      : 'text-sm sm:text-xl leading-snug sm:leading-normal'
-                  }
-                >
-                  {question.number}.
+          <FormItem className="w-full max-w-3xl bg-card px-5 py-10 text-center shadow-sm sm:px-12 md:px-16">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-start justify-center gap-2">
+                <FormLabel className="text-3xl font-black leading-none text-foreground">
+                  {question.type === 'section'
+                    ? 'Information'
+                    : `Fråga ${question.number}`}
                 </FormLabel>
-              )}
-              {question.required && <span className="text-red-500">*</span>}
+                {question.required && (
+                  <span className="text-xl font-black text-destructive">*</span>
+                )}
+                {question.resource && (
+                  <ResourceDrawer resource={question.resource} />
+                )}
+                {!question.resource && question.resourceCollection && (
+                  <ResourceDrawer
+                    resourceCollection={question.resourceCollection}
+                  />
+                )}
+              </div>
+              <div className="h-px w-full bg-foreground" />
               <FormLabel
-                className={`max-w-6xl ${
+                className={`mx-auto max-w-2xl font-black text-foreground ${
                   useCompactText
-                    ? 'text-xs sm:text-xl leading-tight sm:leading-normal'
-                    : 'text-sm sm:text-xl leading-snug sm:leading-normal'
+                    ? 'text-base leading-snug sm:text-lg'
+                    : 'text-xl leading-snug'
                 }`}
                 dangerouslySetInnerHTML={{
                   __html: `${question.text}`,
                 }}
               />
-              {question.resource && (
-                <ResourceDrawer resource={question.resource} />
-              )}
-              {!question.resource && question.resourceCollection && (
-                <ResourceDrawer
-                  resourceCollection={question.resourceCollection}
-                />
-              )}
             </div>
             <FormControl>
-              {renderQuestionType(question, field, onAnswer)}
+              <div className="mt-8 flex justify-center">
+                {renderQuestionType(question, field, onAnswer)}
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>

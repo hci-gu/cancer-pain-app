@@ -2,7 +2,7 @@ import { Questionnaire } from '@/state'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useForm, useFormContext, useWatch } from 'react-hook-form'
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
 import useQuestions from './useQuestions'
@@ -60,8 +60,17 @@ export const useScrollToLastAnsweredQuestion = (
   const questions = useQuestions(questionnaire)
   const key = keyForQuestionnaire(questionnaire)
   const answers = getAnswersFromLocalStorage(key)
+  const initialized = useRef(false)
 
   useLayoutEffect(() => {
+    if (initialized.current) return
+    initialized.current = true
+
+    if (Object.keys(answers).length === 0) {
+      setPage(-1)
+      return
+    }
+
     let index = 0
     for (const question of questions) {
       if (

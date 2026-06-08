@@ -1,75 +1,161 @@
-import { Button } from '@/components/ui/button'
-import { CalendarDays, ClipboardList, Flag, History } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAtomValue } from 'jotai'
+import { useAnswers, userDataAtom } from '@/state'
+import { cn } from '@/lib/utils'
+import registrationArtMobile from '@/assets/redesign/dashboard-cards/registration-card-square--p64.svg'
+import registrationArt from '@/assets/redesign/dashboard-cards/registration-card-large-wide--p70.svg'
+import calendarArtMobile from '@/assets/redesign/dashboard-cards/calendar-card-yellow-alt-wide--p75.svg'
+import calendarArt from '@/assets/redesign/dashboard-cards/calendar-card-yellow-wide--p71.svg'
+import cloudsArt from '@/assets/redesign/dashboard-cards/clouds-card-pink-wide--p72.svg'
+import flagArtMobile from '@/assets/redesign/dashboard-cards/flag-card-blue-alt-wide--p77.svg'
+import flagArt from '@/assets/redesign/dashboard-cards/flag-card-blue-wide--p73.svg'
+import successIcon from '@/assets/redesign/status/success-check-circle--p55.svg'
 
 const DAILY_FORM_ID = 'sdzkpd49ndccf5b'
 const TREATMENT_END_FORM_ID = 'p8ow7xj8h4uuv43'
 
-const items = [
-  {
-    title: 'Fyll i formular - idag',
-    description: 'Oppna dagens dagliga formular.',
-    href: `/forms/${DAILY_FORM_ID}`,
-    icon: ClipboardList,
-  },
-  {
-    title: 'Tidigare dagliga svar',
-    description: 'Se tidigare dagar och oppna ett svar fran schemat.',
-    href: `/forms/${DAILY_FORM_ID}/history`,
-    icon: History,
-  },
-  {
-    title: 'Behandlingsstart',
-    description: 'Visas fran din registrerade behandlingsstart.',
-    href: '/profile',
-    icon: CalendarDays,
-  },
-  {
-    title: 'Slutdatum for stralbehandling',
-    description: 'Fyll i nar din stralbehandling ar avslutad.',
-    href: `/forms/${TREATMENT_END_FORM_ID}`,
-    icon: Flag,
-  },
-]
+type CheckInCardProps = {
+  title: string
+  href?: string
+  art: string
+  mobileArt?: string
+  complete?: boolean
+  badge?: string
+  buttonLabel?: string
+  titleClassName?: string
+}
+
+function CheckInCard({
+  title,
+  href,
+  art,
+  mobileArt,
+  complete = false,
+  badge,
+  buttonLabel,
+  titleClassName,
+}: CheckInCardProps) {
+  const content = (
+    <article
+      className={cn(
+        'relative aspect-[350/268] overflow-hidden rounded-xl text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:aspect-[462/214]',
+        !href && 'hover:translate-y-0'
+      )}
+    >
+      <picture>
+        <source media="(min-width: 640px)" srcSet={art} />
+        <img
+          src={mobileArt ?? art}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
+      <div className="relative z-10 flex h-full flex-col items-center p-4">
+        <h2
+          className={cn(
+            'max-w-[82%] text-xl font-black leading-none text-foreground',
+            titleClassName
+          )}
+        >
+          {title}
+        </h2>
+        {(badge || buttonLabel) && (
+          <span className="mt-auto rounded-full bg-card/85 px-6 py-2 text-base font-bold text-foreground">
+            {buttonLabel ?? badge}
+          </span>
+        )}
+      </div>
+      {complete && (
+        <img
+          src={successIcon}
+          alt=""
+          aria-hidden="true"
+          className="absolute right-4 top-4 z-20 h-10 w-10"
+        />
+      )}
+    </article>
+  )
+
+  if (!href) return content
+
+  return (
+    <Link to={href} className="study-focus block rounded-xl">
+      {content}
+    </Link>
+  )
+}
 
 export default function CheckInPage() {
+  const user = useAtomValue(userDataAtom)
+  const treatmentEndAnswers = useAnswers(TREATMENT_END_FORM_ID)
+  const treatmentStart = user?.treatmentStart
+  const treatmentStartLabel = treatmentStart
+    ? treatmentStart.toLocaleDateString('sv-SE')
+    : 'Saknas'
+  const treatmentEndComplete = treatmentEndAnswers.length > 0
+
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-black md:text-4xl">Daglig koll</h1>
-        <p className="max-w-xl text-base font-medium text-muted-foreground">
-          Har samlas dagliga formular och behandlingsdatum. Den fulla visuella
-          check-in dashboarden byggs i nasta fas.
+      <div className="space-y-4">
+        <p className="text-lg font-bold">
+          <Link to="/" className="hover:underline">
+            Start
+          </Link>{' '}
+          <span aria-hidden="true">&gt;</span> Dagligt formulär
         </p>
+        <div className="space-y-5">
+          <h1 className="text-4xl font-black leading-tight md:text-5xl">
+            Här checkar du in!
+          </h1>
+          <div className="max-w-2xl space-y-4 text-lg font-semibold leading-snug">
+            <p>
+              Här kan både du och vi följa hur du mår under behandlingen. Det
+              bästa är om du checkar in varje gång du använder staven.
+            </p>
+            <p>
+              Här ser du också din startpunkt - den svarar du på i början av
+              din behandling.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {items.map((item) => {
-          const Icon = item.icon
-
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="study-focus rounded-xl"
-            >
-              <article className="flex min-h-36 flex-col justify-between rounded-xl border border-foreground/15 bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                <Icon className="h-7 w-7" aria-hidden="true" />
-                <div className="space-y-2">
-                  <h2 className="text-lg font-black">{item.title}</h2>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              </article>
-            </Link>
-          )
-        })}
-      </div>
-
-      <Button asChild>
-        <Link to="/">Till startsidan</Link>
-      </Button>
+      <section
+        aria-label="Daglig check-in"
+        className="grid grid-cols-2 gap-3 sm:gap-6"
+      >
+        <CheckInCard
+          title="Fyll i formulär - idag"
+          href={`/forms/${DAILY_FORM_ID}`}
+          mobileArt={registrationArtMobile}
+          art={registrationArt}
+          titleClassName="max-w-[78%]"
+        />
+        <CheckInCard
+          title="Fyll i formulär - annan dag"
+          href={`/forms/${DAILY_FORM_ID}/history`}
+          mobileArt={calendarArtMobile}
+          art={calendarArt}
+          titleClassName="max-w-[84%]"
+        />
+        <CheckInCard
+          title="Startdatum strålbehandling:"
+          art={cloudsArt}
+          complete={Boolean(treatmentStart)}
+          badge={treatmentStartLabel}
+          titleClassName="max-w-[80%]"
+        />
+        <CheckInCard
+          title="Slutdatum strålbehandling:"
+          href={`/forms/${TREATMENT_END_FORM_ID}`}
+          mobileArt={flagArtMobile}
+          art={flagArt}
+          complete={treatmentEndComplete}
+          buttonLabel={treatmentEndComplete ? 'Svarat' : 'Svara'}
+          titleClassName="max-w-[80%]"
+        />
+      </section>
     </div>
   )
 }

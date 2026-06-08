@@ -38,22 +38,29 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
   const page = useAtomValue(formPageAtom)
   const scaleX = interpolate([0, questions.length - 1], [0.01, 1])
+  const showProgress = page >= 0
 
   return (
-    <div className="fixed top-0 left-0 h-8 w-screen bg-primary">
-      <motion.div
-        className="fixed top-8 left-0 h-2 w-screen bg-primary z-10"
-        animate={{ scaleX: scaleX(page) }}
-        transition={{ type: 'spring', duration: 0.4 }}
-        style={{ originX: 0 }}
-      />
-      <motion.span
-        className="fixed top-1 font-semibold z-10 text-white"
-        style={{ left: '50%', transform: 'translateX(-50%)' }}
-      >
-        {Math.min(page + 1, questions.length)} / {questions.length}
-      </motion.span>
-    </div>
+    <>
+      <div className="fixed left-0 top-0 z-40 h-20 w-screen bg-study-header" />
+      {showProgress && (
+        <>
+          <motion.div
+            className="fixed left-1/2 top-28 z-40 h-4 w-64 -translate-x-1/2 overflow-hidden rounded-full bg-primary"
+          >
+            <motion.div
+              className="h-full rounded-full bg-study-teal-dark"
+              animate={{ scaleX: scaleX(page) }}
+              transition={{ type: 'spring', duration: 0.4 }}
+              style={{ originX: 0 }}
+            />
+          </motion.div>
+          <motion.span className="fixed right-7 top-6 z-50 text-lg font-black text-foreground">
+            {Math.min(page + 1, questions.length)}/{questions.length}
+          </motion.span>
+        </>
+      )}
+    </>
   )
 }
 
@@ -79,9 +86,9 @@ const NavigationButtons = ({
   )
 
   return (
-    <div className="fixed bottom-4 right-4 flex space-x-2">
+    <div className="fixed bottom-4 right-4 z-50 flex space-x-2">
       <Button
-        className="text-white py-6 rounded shadow-md"
+        className="h-12 w-12 rounded-lg bg-study-coral p-0 text-white shadow-md hover:bg-study-coral/90"
         disabled={page === 0}
         onClick={(e) => {
           e.preventDefault()
@@ -91,7 +98,7 @@ const NavigationButtons = ({
         <ChevronUpIcon />
       </Button>
       <Button
-        className="text-white py-6 rounded shadow-md"
+        className="h-12 w-12 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
         disabled={canProceed}
         onClick={(e) => {
           e.preventDefault()
@@ -101,7 +108,7 @@ const NavigationButtons = ({
         <ChevronDownIcon />
       </Button>
       <Button
-        className="text-white py-6 rounded shadow-md"
+        className="h-12 w-12 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
         disabled={canProceed}
         onClick={(e) => {
           e.preventDefault()
@@ -134,7 +141,7 @@ const Questions = ({
 
   return (
     <div
-      className="w-screen h-screen"
+      className="h-screen w-screen bg-background"
       style={{ position: 'absolute', overflow: 'hidden' }}
     >
       <ReactPageScroller
@@ -148,7 +155,7 @@ const Questions = ({
         {questions.map((q, i) => (
           <QuestionSelector key={`Question_${q.id}_${i}`} question={q} />
         ))}
-        <div className="h-full w-full flex items-center justify-center bg-red">
+        <div className="flex h-full w-full items-center justify-center bg-background px-4 pt-24">
           <Button
             type="submit"
             disabled={loading}
@@ -160,6 +167,43 @@ const Questions = ({
         </div>
       </ReactPageScroller>
     </div>
+  )
+}
+
+const QuestionnaireIntro = ({
+  questionnaire,
+}: {
+  questionnaire: Questionnaire
+}) => {
+  const [, setPage] = useAtom(formPageAtom)
+  const introHtml =
+    questionnaire.introText && questionnaire.introText.trim().length > 0
+      ? questionnaire.introText
+      : questionnaire.description
+
+  return (
+    <section className="flex min-h-screen w-screen items-center justify-center bg-background px-4 pt-20">
+      <div className="w-full max-w-3xl bg-card px-6 py-10 text-center shadow-sm sm:px-16">
+        <h1 className="text-3xl font-black text-foreground">
+          {questionnaire.name}
+        </h1>
+        <div className="my-6 h-px w-full bg-foreground" />
+        <div
+          className="resource-content mx-auto max-w-xl text-lg font-bold leading-snug text-foreground [&_p]:mb-4"
+          dangerouslySetInnerHTML={{ __html: introHtml }}
+        />
+        <Button
+          type="button"
+          className="mt-4"
+          onClick={(event) => {
+            event.preventDefault()
+            setPage(0)
+          }}
+        >
+          Gå vidare
+        </Button>
+      </div>
+    </section>
   )
 }
 
@@ -216,6 +260,7 @@ const LoadedForm = ({
   const { toast } = useToast()
 
   const [loading, setLoading] = useState(false)
+  const page = useAtomValue(formPageAtom)
   const form = useFormStateWithCache({
     questionnaire,
     formSchema,
@@ -241,11 +286,7 @@ const LoadedForm = ({
       setLoading(false)
       return
     }
-    if (questionnaire.occurrence === 'once') {
-      navigate('/forms')
-    } else {
-      navigate('history')
-    }
+    navigate('/form/success')
     toast({
       title: 'Inskickat',
       description: 'Ditt svar har skickats in.',
@@ -257,17 +298,24 @@ const LoadedForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form
+        className="min-h-screen bg-background text-foreground"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <InitiallyScrollToLastAnsweredQuestion questionnaire={questionnaire} />
         <SyncFormStateToLocalStorage questionnaire={questionnaire} />
         <ProgressBar questionnaire={questionnaire} />
         <QuestionNavigationList questionnaire={questionnaire} />
         <SectionHandler questionnaire={questionnaire} />
-        <Questions
-          questionnaire={questionnaire}
-          loading={loading}
-          onSubmit={onSubmit}
-        />
+        {page < 0 ? (
+          <QuestionnaireIntro questionnaire={questionnaire} />
+        ) : (
+          <Questions
+            questionnaire={questionnaire}
+            loading={loading}
+            onSubmit={onSubmit}
+          />
+        )}
         <NavigationButtons questionnaire={questionnaire} />
       </form>
     </Form>

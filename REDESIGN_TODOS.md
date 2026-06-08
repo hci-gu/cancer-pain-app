@@ -171,38 +171,38 @@ Data-entry follow-up: PocketBase records still need FAQ category image assignmen
 
 ## Phase 7 - Daily Check-In Dashboard
 
-- [ ] Build `CheckInPage` for `/check-in`.
-- [ ] Reuse current questionnaire data and answer-state logic from `web/src/pages/form/forms.tsx` where useful.
-- [ ] Redesign using `daily-check-in-overview-mobile.png` and `daily-check-in-overview-desktop.png`.
-- [ ] Render exactly four entry cards:
-  - [ ] Daily form for today
-  - [ ] Previous-day daily form/history
-  - [ ] Treatment start date status
-  - [ ] Treatment end date form
-- [ ] Link today's daily form to the existing daily questionnaire route.
-- [ ] Link previous-day daily form to `/forms/sdzkpd49ndccf5b/history` unless the daily questionnaire ID changes.
-- [ ] Read treatment start status from `user.treatmentStart`.
-- [ ] Do not make treatment start a user-completed questionnaire.
-- [ ] Link treatment end to the existing treatment-end questionnaire flow.
-- [ ] Show treatment end finished state after its questionnaire is completed.
-- [ ] Ensure `/check-in` replaces `/forms` in the user-facing flow.
+- [x] Build `CheckInPage` for `/check-in`.
+- [x] Reuse current questionnaire data and answer-state logic from `web/src/pages/form/forms.tsx` where useful.
+- [x] Redesign using `daily-check-in-overview-mobile.png` and `daily-check-in-overview-desktop.png`.
+- [x] Render exactly four entry cards:
+  - [x] Daily form for today
+  - [x] Previous-day daily form/history
+  - [x] Treatment start date status
+  - [x] Treatment end date form
+- [x] Link today's daily form to the existing daily questionnaire route.
+- [x] Link previous-day daily form to `/forms/sdzkpd49ndccf5b/history` unless the daily questionnaire ID changes.
+- [x] Read treatment start status from `user.treatmentStart`.
+- [x] Do not make treatment start a user-completed questionnaire.
+- [x] Link treatment end to the existing treatment-end questionnaire flow.
+- [x] Show treatment end finished state after its questionnaire is completed.
+- [x] Ensure `/check-in` replaces `/forms` in the user-facing flow.
 
 ## Phase 8 - Questionnaire Shell and Intro Flow
 
-- [ ] Build `QuestionnaireShell`.
-- [ ] Move progress, form header, question list trigger, floating navigation, and full-screen scroller into the shell.
-- [ ] Header shows "Se alla fragor".
-- [ ] Header shows progress bar.
-- [ ] Header shows progress count like `1/2`, `3/8`, or `32/37`.
-- [ ] Keep current progress-count behavior unchanged.
-- [ ] Render intro screens from `questionnaire.introText`.
-- [ ] Do not hard-code intro copy by questionnaire ID.
-- [ ] Do not derive intro copy from section-question text.
-- [ ] Support initial questionnaire intro content: 37 questions, about 20 minutes.
-- [ ] Support daily vaginal dilator intro content: 6-8 questions, about 1-2 minutes depending on follow-ups.
-- [ ] Keep cached form-state restore behavior after reload.
-- [ ] Keep auto-scroll/restore-to-last-answered behavior unless the redesigned shell intentionally replaces it.
-- [ ] Keep direct access to `/forms/:id?date=...` working.
+- [x] Build `QuestionnaireShell`.
+- [x] Move progress, form header, question list trigger, floating navigation, and full-screen scroller into the shell.
+- [x] Header shows "Se alla fragor".
+- [x] Header shows progress bar.
+- [x] Header shows progress count like `1/2`, `3/8`, or `32/37`.
+- [x] Keep current progress-count behavior unchanged.
+- [x] Render intro screens from `questionnaire.introText`.
+- [x] Do not hard-code intro copy by questionnaire ID.
+- [x] Do not derive intro copy from section-question text.
+- [x] Support initial questionnaire intro content: 37 questions, about 20 minutes.
+- [x] Support daily vaginal dilator intro content: 6-8 questions, about 1-2 minutes depending on follow-ups.
+- [x] Keep cached form-state restore behavior after reload.
+- [x] Keep auto-scroll/restore-to-last-answered behavior unless the redesigned shell intentionally replaces it.
+- [x] Keep direct access to `/forms/:id?date=...` working.
 
 ## Phase 9 - Question Cards and Answer Controls
 

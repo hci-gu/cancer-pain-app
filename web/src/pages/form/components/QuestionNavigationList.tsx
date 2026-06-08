@@ -37,20 +37,23 @@ const QuestionNavigationList = ({
 
   return (
     <Dialog>
-      <DialogTrigger className="fixed left:0 md:top-16 md:right-8 z-50">
+      <DialogTrigger className="fixed left-6 top-4 z-50">
         <Button
           type="button"
-          variant={isMobile ? 'link' : 'outline'}
-          className="text-white md:bg-white md:text-black bg-none"
+          variant={isMobile ? 'link' : 'ghost'}
+          className="gap-3 bg-transparent text-base font-bold text-foreground hover:bg-white/30"
         >
-          <ListBulletIcon className="mr-2" />
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-study-teal-dark text-white">
+            <ListBulletIcon className="h-7 w-7" />
+          </span>
           Se alla frågor
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] sm:w-[80vw] md:w-[50vw] max-w-3xl max-h-[80vh] overflow-hidden">
-        <DialogHeader className="flex flex-col gap-2 mb-4 w-80">
-          <h2 className="text-2xl font-semibold">Frågor</h2>
-          <span className="text-md font-light">
+      <DialogContent className="max-h-[86vh] w-[95vw] max-w-2xl overflow-hidden rounded-xl bg-background px-6 py-8 sm:w-[80vw]">
+        <DialogHeader className="mb-4 flex flex-col items-center gap-2 text-center">
+          <h2 className="text-3xl font-black">Frågor</h2>
+          <div className="h-px w-full bg-foreground" />
+          <span className="text-md font-medium">
             Klicka på en fråga för att hoppa till den.
           </span>
         </DialogHeader>
@@ -74,8 +77,8 @@ const QuestionNavigationList = ({
                         disabled={disabledAfter < index}
                         variant="link"
                         className={`
-                          w-full text-left justify-start text-foreground hover:no-underline overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer
-                          ${index === page ? 'font-black' : 'font-regular'}
+                          h-auto w-full justify-start rounded-xl px-3 py-2 text-left text-base text-foreground hover:no-underline overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer
+                          ${index === page ? 'bg-study-header font-black' : 'font-bold'}
                         `}
                         dangerouslySetInnerHTML={{
                           __html: `${question.text}`,
