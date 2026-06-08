@@ -131,6 +131,7 @@ export type ResourceCollection = {
   name: string
   resources: Resource[]
   description?: string
+  image?: string
 }
 
 export type Resource = {
@@ -170,6 +171,7 @@ export type Questionnaire = {
   id: string
   name: string
   description: string
+  introText?: string
   occurrence: 'daily' | 'weekly' | 'monthly' | 'once'
   questions: Question[]
   dependency: string[]
@@ -207,10 +209,15 @@ const mapResource = (resource: any): Resource => {
 }
 
 const mapResourceCollection = (resourceCollection: any): ResourceCollection => {
+  const image = Array.isArray(resourceCollection.image)
+    ? resourceCollection.image[0]
+    : resourceCollection.image
+
   return {
     id: resourceCollection.id,
     name: resourceCollection.name,
     description: resourceCollection.description,
+    image,
     resources: resourceCollection.expand?.resources.map(mapResource),
   }
 }
@@ -250,6 +257,7 @@ const mapQuestionnaire = (questionnaire: any): Questionnaire => {
     id: questionnaire.id,
     name: questionnaire.name,
     description: questionnaire.description,
+    introText: questionnaire.introText,
     occurrence: questionnaire.occurrence,
     questions: questionnaire.expand?.questions.map(mapQuestion) ?? [],
     dependency: questionnaire.dependency,
