@@ -1,0 +1,1477 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pre-RT Redesign Implementation Report</title>
+    <style>
+      :root {
+        --bg: #f8eded;
+        --panel: #fffaf8;
+        --header: #f8b5bb;
+        --footer: #f7aeb4;
+        --ink: #06484c;
+        --muted: #5f7678;
+        --teal: #9fded8;
+        --teal-dark: #67bbb4;
+        --yellow: #e9cb62;
+        --coral: #f58f7d;
+        --blue: #92c5d4;
+        --pink: #f698be;
+        --lavender: #a7b8db;
+        --line: #d9bfc0;
+        --danger: #fb5b78;
+        --code: #213134;
+        --radius: 12px;
+        --shadow: 0 10px 30px rgba(70, 45, 50, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.55;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      code,
+      pre {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+
+      code {
+        padding: 0.15rem 0.35rem;
+        border-radius: 6px;
+        background: rgba(6, 72, 76, 0.1);
+        color: var(--code);
+        font-size: 0.92em;
+      }
+
+      pre {
+        overflow-x: auto;
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #213134;
+        color: #effafa;
+        line-height: 1.45;
+      }
+
+      .page {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .hero {
+        background: var(--header);
+        border-bottom: 1px solid rgba(6, 72, 76, 0.18);
+      }
+
+      .hero-inner,
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+
+      .hero-inner {
+        padding: 40px 0 34px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: rgba(6, 72, 76, 0.75);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.1;
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 880px;
+        font-size: clamp(2rem, 5vw, 4.8rem);
+        letter-spacing: 0;
+      }
+
+      .hero-copy {
+        max-width: 780px;
+        margin: 18px 0 0;
+        font-size: 1.12rem;
+        color: rgba(6, 72, 76, 0.85);
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(6, 72, 76, 0.16);
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 32px;
+        padding: 32px 0 80px;
+      }
+
+      nav.toc {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+        padding: 18px;
+        border-radius: var(--radius);
+        background: rgba(255, 250, 248, 0.8);
+        border: 1px solid var(--line);
+      }
+
+      nav.toc strong {
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      nav.toc a {
+        display: block;
+        padding: 7px 0;
+        color: rgba(6, 72, 76, 0.78);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+
+      nav.toc a:hover {
+        color: var(--ink);
+        text-decoration: underline;
+      }
+
+      .content {
+        display: grid;
+        gap: 28px;
+      }
+
+      section {
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 250, 248, 0.72);
+      }
+
+      section > h2 {
+        margin-bottom: 14px;
+        font-size: clamp(1.45rem, 2.5vw, 2.15rem);
+      }
+
+      section > p {
+        max-width: 860px;
+      }
+
+      .lead {
+        font-size: 1.05rem;
+        color: rgba(6, 72, 76, 0.86);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .note,
+      .warning,
+      .todo-card {
+        padding: 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(6, 72, 76, 0.14);
+        background: #fffaf8;
+      }
+
+      .warning {
+        border-color: rgba(251, 91, 120, 0.45);
+        background: #fff0f3;
+      }
+
+      .todo-card h3,
+      .note h3,
+      .warning h3 {
+        margin-bottom: 8px;
+        font-size: 1.05rem;
+      }
+
+      ul,
+      ol {
+        padding-left: 1.25rem;
+      }
+
+      li + li {
+        margin-top: 0.35rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        overflow: hidden;
+        border-radius: 10px;
+        background: #fffaf8;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        background: rgba(159, 222, 216, 0.42);
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .swatch {
+        min-height: 86px;
+        border-radius: 10px;
+        border: 1px solid rgba(6, 72, 76, 0.15);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        font-weight: 800;
+      }
+
+      .swatch span {
+        display: block;
+        font-weight: 600;
+        color: rgba(6, 72, 76, 0.72);
+      }
+
+      .component-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .component {
+        padding: 16px;
+        border-radius: 10px;
+        background: #fffaf8;
+        border: 1px solid var(--line);
+      }
+
+      .component h3 {
+        margin-bottom: 8px;
+      }
+
+      .shots {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      figure {
+        margin: 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fffaf8;
+        box-shadow: var(--shadow);
+      }
+
+      figure img {
+        display: block;
+        width: 100%;
+        height: 280px;
+        object-fit: contain;
+        background: white;
+        border-bottom: 1px solid var(--line);
+      }
+
+      figure.diagram img {
+        height: 360px;
+      }
+
+      figcaption {
+        padding: 10px 12px 12px;
+      }
+
+      figcaption strong {
+        display: block;
+      }
+
+      figcaption small {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        word-break: break-word;
+      }
+
+      details {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fffaf8;
+        padding: 12px 14px;
+      }
+
+      details + details {
+        margin-top: 10px;
+      }
+
+      summary {
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .checklist li {
+        margin-top: 0.55rem;
+      }
+
+      .route {
+        white-space: nowrap;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+
+        nav.toc {
+          position: static;
+        }
+
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media print {
+        nav.toc {
+          display: none;
+        }
+
+        main {
+          display: block;
+        }
+
+        section {
+          break-inside: avoid;
+          margin-bottom: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero-inner">
+          <p class="eyebrow">Pre-RT app redesign</p>
+          <h1>Implementation report for screens and assets in <code>redesign/</code></h1>
+          <p class="hero-copy">
+            This document maps the exported screenshots to the current React
+            application and turns them into an implementation brief. It also
+            explains how to navigate the extracted Illustrator assets so a
+            developer can place the right logo, tile art, medical diagram, or
+            FAQ illustration without using full-screen mockups as production
+            assets.
+          </p>
+          <div class="meta-row">
+            <span class="pill">45 screen references</span>
+            <span class="pill">86 SVG/PNG asset pairs</span>
+            <span class="pill">React + Vite + Tailwind</span>
+            <span class="pill">PocketBase data model</span>
+            <span class="pill">Mobile and desktop counterparts</span>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <nav class="toc" aria-label="Table of contents">
+          <strong>Contents</strong>
+          <a href="#summary">Summary</a>
+          <a href="#folder-map">Folder map</a>
+          <a href="#route-map">Route map</a>
+          <a href="#visual-system">Visual system</a>
+          <a href="#components">Component plan</a>
+          <a href="#flow-behavior">Flow behavior</a>
+          <a href="#implementation-plan">Implementation plan</a>
+          <a href="#qa">QA checklist</a>
+          <a href="#gallery">Screenshot gallery</a>
+          <a href="#assets">Asset guide</a>
+        </nav>
+
+        <div class="content">
+          <section id="summary">
+            <h2>Summary</h2>
+            <p class="lead">
+              The redesign is not a surface-level color refresh. It changes the
+              app from a generic shadcn/Tailwind interface into a bespoke,
+              illustrated study companion with a persistent Pre-RT identity,
+              pink page chrome, teal controls, dashboard task tiles, guided
+              questionnaire intros, question navigation drawers, and categorized
+              resource pages.
+            </p>
+
+            <div class="grid three">
+              <div class="todo-card">
+                <h3>Primary implementation target</h3>
+                <p>
+                  Replace the current global header/footer and generic cards
+                  with a redesign shell used by authenticated pages and a
+                  specialized full-screen shell for questionnaires.
+                </p>
+              </div>
+              <div class="todo-card">
+                <h3>Biggest product change</h3>
+                <p>
+                  The home and form list become visual workflow dashboards. The
+                  daily form, initial questionnaire, study info, and Q&amp;A are
+                  presented as clear task tiles with completion states.
+                </p>
+              </div>
+              <div class="todo-card">
+                <h3>Biggest engineering risk</h3>
+                <p>
+                  Current questionnaire rendering is full-screen and generic.
+                  The redesign requires questionnaire-specific intro screens,
+                  progress chrome, modal resources, follow-up grouping, and
+                  adaptive text sizing.
+                </p>
+              </div>
+            </div>
+
+            <div class="warning">
+              <h3>Do not implement the browser chrome</h3>
+              <p>
+                Several mobile screenshots include Android browser controls at
+                the very top and bottom. Treat those as viewport context only.
+                The app should implement the pink app header, content, floating
+                form controls, and footer, but not the OS/browser bars.
+              </p>
+            </div>
+          </section>
+
+          <section id="folder-map">
+            <h2>Folder Map</h2>
+            <p class="lead">
+              Treat <code>redesign/</code> as the design handoff package. It
+              contains references, source Illustrator files, and extracted
+              production candidates. The app implementation should import from
+              copied assets under <code>web/src/assets/redesign/</code> or from
+              <code>web/public/</code>, not directly from this report folder.
+            </p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Path</th>
+                  <th>Purpose</th>
+                  <th>How to use it</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>redesign/screens/</code></td>
+                  <td>45 renamed full-screen PNG references.</td>
+                  <td>
+                    Use these to compare layout, responsive behavior, spacing,
+                    hierarchy, and interaction states. Do not crop these for
+                    production UI.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>redesign/assets/</code></td>
+                  <td>Extracted Illustrator assets, organized by usage.</td>
+                  <td>
+                    Use these to populate cards, headers, footers, resource
+                    pages, success states, and help dialogs. Prefer the SVG
+                    file; fall back to the PNG if browser rendering is off.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>redesign/assets/README.md</code></td>
+                  <td>Detailed asset manifest.</td>
+                  <td>
+                    Start here when looking for a specific visual. It lists
+                    every extracted asset and explains the folder categories.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>redesign/assets/source-previews/</code></td>
+                  <td>Contact sheets for the Illustrator source and extracted assets.</td>
+                  <td>
+                    Use <code>extracted-assets-contact-sheet.png</code> to scan
+                    the available assets quickly. Use
+                    <code>graphics-ai-pages-contact-sheet.png</code> to trace
+                    back to the original page in <code>graphics.ai</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>redesign/graphics.ai</code></td>
+                  <td>Original asset source, PDF-compatible Illustrator file.</td>
+                  <td>
+                    Only reopen this if the extracted SVG/PNG set is missing a
+                    needed variant or if an asset needs a cleaner export from
+                    Illustrator.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>redesign/screens.ai</code></td>
+                  <td>Original screen source, PDF-compatible Illustrator file.</td>
+                  <td>
+                    Use as the source of the 45 screen references. Production
+                    code should still use components plus extracted assets.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="route-map">
+            <h2>Route Map</h2>
+            <p>
+              The existing routes live in <code>web/src/main.tsx</code>. The
+              redesign references mostly authenticated flows. Login and OTP are
+              not represented in the current screen references.
+            </p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Route / area</th>
+                  <th>Current code</th>
+                  <th>Redesign references</th>
+                  <th>Implementation notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="route"><code>/</code></td>
+                  <td>
+                    <code>web/src/pages/home/index.tsx</code><br />
+                    <code>HomeTodoItem</code>, <code>InitialForm</code>,
+                    <code>BaselineForm</code>
+                  </td>
+                  <td>
+                    <code>home-study-overview-mobile.png</code><br />
+                    <code>home-study-overview-desktop.png</code>
+                  </td>
+                  <td>
+                    Convert the vertical task list into a two-column tile grid
+                    on mobile and desktop. Cards need illustrations, colored
+                    states, checkmarks, and action affordances.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/forms</code></td>
+                  <td><code>web/src/pages/form/forms.tsx</code></td>
+                  <td>
+                    <code>daily-check-in-overview-mobile.png</code><br />
+                    <code>daily-check-in-overview-desktop.png</code>
+                  </td>
+                  <td>
+                    This route currently lists questionnaires. In the redesign
+                    it is the "Har checkar du in!" dashboard for daily check-in,
+                    filling today's form, another date, and treatment start
+                    status.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/forms/:id</code></td>
+                  <td>
+                    <code>web/src/pages/form/index.tsx</code><br />
+                    <code>QuestionSelector</code>,
+                    <code>QuestionNavigationList</code>
+                  </td>
+                  <td>
+                    Initial form screenshots, daily form screenshots, submitted
+                    screens, drawers, and help modal examples.
+                  </td>
+                  <td>
+                    Keep the existing PocketBase-driven question data, but
+                    redesign the shell, progress bar, question card, option
+                    chips, question drawer, help modal, and submit confirmation.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/forms/:id/history</code></td>
+                  <td><code>web/src/pages/form/history/index.tsx</code></td>
+                  <td>
+                    No exact screen. The daily check-in dashboard references
+                    selecting another date and calendar/schedule states.
+                  </td>
+                  <td>
+                    Use the same shell and tile language. Calendar/date picking
+                    should connect to existing daily schedule behavior from
+                    <code>dailyQuestionnaireScheduleAtom</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/about</code></td>
+                  <td>
+                    <code>web/src/pages/about/index.tsx</code><br />
+                    <code>ResourceAccordion</code>,
+                    <code>Resource</code>
+                  </td>
+                  <td>
+                    <code>about-study-information-mobile.png</code><br />
+                    <code>about-study-information-desktop.png</code>
+                  </td>
+                  <td>
+                    Replace the current long text and section bands with a
+                    compact "Information om studien" page containing accordion
+                    questions and a contact block.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route">Q&amp;A / resources</td>
+                  <td>
+                    Current data comes from PocketBase
+                    <code>resourceCollection</code> and <code>resources</code>.
+                  </td>
+                  <td>
+                    <code>faq-category-overview-*.png</code>,
+                    <code>faq-vaginal-dilator-*.png</code>,
+                    <code>faq-intimate-care-*.png</code>,
+                    <code>faq-sexual-health-desktop.png</code>
+                  </td>
+                  <td>
+                    The design expects a category landing page before resource
+                    accordions. Add a route or route state for
+                    <code>Start &gt; Fragor och svar</code> and category detail
+                    pages.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/profile</code></td>
+                  <td><code>web/src/pages/profile/index.tsx</code></td>
+                  <td>No direct screenshot.</td>
+                  <td>
+                    Apply the new app shell and controls, but do not invent
+                    profile behavior from the screenshots. Keep logout and
+                    treatment dates.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="visual-system">
+            <h2>Visual System</h2>
+            <p>
+              Use the screenshot palette as the source of truth, then encode it
+              into Tailwind theme variables in <code>web/src/index.css</code>.
+              The current theme already uses OKLCH variables; update those
+              tokens rather than scattering hard-coded colors.
+            </p>
+
+            <div class="swatches" aria-label="Approximate redesign colors">
+              <div class="swatch" style="background: var(--bg)">
+                Page background <span>#F8EDED</span>
+              </div>
+              <div class="swatch" style="background: var(--header)">
+                Header/footer pink <span>#F8B5BB</span>
+              </div>
+              <div class="swatch" style="background: var(--teal)">
+                Control teal <span>#9FDED8</span>
+              </div>
+              <div class="swatch" style="background: var(--ink); color: white">
+                Text dark teal <span style="color: #d7eeee">#06484C</span>
+              </div>
+              <div class="swatch" style="background: var(--yellow)">
+                Yellow card <span>#E9CB62</span>
+              </div>
+              <div class="swatch" style="background: var(--coral)">
+                Coral card <span>#F58F7D</span>
+              </div>
+              <div class="swatch" style="background: var(--blue)">
+                Blue card <span>#92C5D4</span>
+              </div>
+              <div class="swatch" style="background: var(--pink)">
+                Pink card <span>#F698BE</span>
+              </div>
+            </div>
+
+            <div class="grid two">
+              <div class="note">
+                <h3>Layout rhythm</h3>
+                <ul>
+                  <li>Authenticated pages use a full-width pink top bar.</li>
+                  <li>Desktop content is centered, usually 640-760px wide inside a 912px artboard.</li>
+                  <li>Mobile content is tight but still card-based, matching the 409px wide exports.</li>
+                  <li>Footer is a full-width pink strip with GU seal and contact copy.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Typography</h3>
+                <ul>
+                  <li>Use dark teal, heavy headings, and compact body copy.</li>
+                  <li>Reserve large display type for page titles only.</li>
+                  <li>Question cards use centered text and a horizontal divider under the question title.</li>
+                  <li>Keep Swedish product text from the source data where possible.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Controls</h3>
+                <ul>
+                  <li>Primary buttons are soft teal rounded pills.</li>
+                  <li>Choice answers are chip buttons with stable widths and generous spacing.</li>
+                  <li>Danger/abort action uses a saturated pink-red button.</li>
+                  <li>Floating form nav buttons are square, pink, and bottom-right aligned.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Cards and illustrations</h3>
+                <ul>
+                  <li>Task tiles use saturated pastel backgrounds with illustrations.</li>
+                  <li>Cards have modest radii and minimal shadows.</li>
+                  <li>Illustrations are meaningful content cues, not decoration.</li>
+                  <li>Completion checkmarks sit in the top-right of task tiles.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="components">
+            <h2>Component Plan</h2>
+            <p>
+              The easiest path is to preserve the current data-fetching and
+              routing, then replace the page shells and components in layers.
+              Suggested new component boundaries:
+            </p>
+
+            <div class="component-list">
+              <article class="component">
+                <h3><code>StudyAppShell</code></h3>
+                <p>
+                  Replaces the current authenticated part of
+                  <code>RootPage</code>. Owns the top bar, logo, breadcrumb
+                  trail, constrained page width, footer, and responsive spacing.
+                  It should accept optional breadcrumb items and a variant for
+                  ordinary pages versus form pages.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>StudyFooter</code></h3>
+                <p>
+                  Shared footer used on home, check-in, about, and resource
+                  pages. Match the GU seal/contact strip in the screenshots.
+                  Avoid fixed positioning on long content pages unless the
+                  content area accounts for it.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>StudyTaskCard</code></h3>
+                <p>
+                  Replacement for <code>HomeTodoItem</code>. Supports title,
+                  illustration, background color, completion state, disabled
+                  state, short status text, and link/button action. Use it for
+                  home and daily check-in dashboards.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>QuestionnaireShell</code></h3>
+                <p>
+                  Wraps <code>FormPage</code>. Owns the pink form header,
+                  progress count, progress bar, "Se alla fragor" trigger,
+                  floating previous/next/jump controls, and full-screen page
+                  scroller. This should replace ad hoc fixed elements in
+                  <code>ProgressBar</code>, <code>NavigationButtons</code>, and
+                  <code>QuestionNavigationList</code>.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>QuestionCard</code></h3>
+                <p>
+                  Replacement for the layout inside <code>QuestionSelector</code>.
+                  Handles section intro screens, normal question screens, long
+                  instruction text, info icons, question numbers, required
+                  markers, and answer controls.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>AnswerChipGroup</code></h3>
+                <p>
+                  Shared answer rendering for single-choice and multiple-choice
+                  questions. Current behavior lives in
+                  <code>pages/form/components/Select.tsx</code>. The redesign
+                  wants chip buttons, not generic radio rows.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>QuestionListDialog</code></h3>
+                <p>
+                  Evolves <code>QuestionNavigationList</code>. Must group
+                  follow-up questions under headings, highlight the active
+                  question, disable future inaccessible questions, and use a
+                  centered dialog on desktop plus a near-full-height sheet on
+                  mobile.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>ResourceCategoryGrid</code> and <code>ResourcePage</code></h3>
+                <p>
+                  Adds the Q&amp;A category landing screen shown in the redesign
+                  before the existing accordions. Detail pages should reuse
+                  PocketBase resource collections but adopt the new card,
+                  accordion, image/video, and breadcrumb layout.
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section id="flow-behavior">
+            <h2>Flow Behavior</h2>
+
+            <details open>
+              <summary>Home study overview</summary>
+              <ul>
+                <li>Route: <code>/</code>.</li>
+                <li>Show "Valkommen till studien!" and a short thank-you/introduction.</li>
+                <li>Cards: registration date, initial questionnaire, read study info, Q&amp;A, daily form, after radiation treatment.</li>
+                <li>Completed cards show a circular checkmark in the top-right.</li>
+                <li>Use <code>userDataAtom</code>, <code>readAboutPageAtom</code>, and <code>useAnswers</code> to drive states.</li>
+              </ul>
+            </details>
+
+            <details>
+              <summary>Daily check-in dashboard</summary>
+              <ul>
+                <li>Likely route: <code>/forms</code> or a dedicated daily route if the product owner wants to keep all questionnaires visible elsewhere.</li>
+                <li>Cards include "Fyll i formular - idag", "Fyll i formular - annan dag", treatment start date, and treatment start answer/status.</li>
+                <li>The current <code>FormsPage</code> introduction copy already roughly matches this flow; preserve intent but replace the generic questionnaire cards.</li>
+              </ul>
+            </details>
+
+            <details>
+              <summary>Questionnaire intro pages</summary>
+              <ul>
+                <li>Initial questionnaire intro states: 37 questions, about 20 minutes.</li>
+                <li>Daily vaginal dilator intro states: 6-8 questions, about 1-2 minutes, depending on follow-ups.</li>
+                <li>Current <code>section</code> questions can render these intro screens, but they need new copy/layout handling and clear CTA buttons.</li>
+              </ul>
+            </details>
+
+            <details>
+              <summary>Questionnaire questions</summary>
+              <ul>
+                <li>Header shows "Se alla fragor", progress bar, and count such as <code>1/2</code>, <code>3/8</code>, or <code>32/37</code>.</li>
+                <li>Question body is centered in a white panel on desktop, and nearly full-width on mobile.</li>
+                <li>Option chips auto-advance after selection, matching current <code>onAnswer</code> behavior.</li>
+                <li>Info buttons open resource/help dialogs for questions with resource metadata.</li>
+                <li>Long safety/violence questions need compact text and an always-visible "Lamna genast" escape action.</li>
+              </ul>
+            </details>
+
+            <details>
+              <summary>Submitted state</summary>
+              <ul>
+                <li>Display a dedicated success panel after submission instead of immediately navigating away.</li>
+                <li>Show a large green checkmark and a button to close the form.</li>
+                <li>After closing, navigate to the daily history/dashboard or questionnaire list as appropriate.</li>
+              </ul>
+            </details>
+
+            <details>
+              <summary>Q&amp;A and study information</summary>
+              <ul>
+                <li>Category overview has six colored illustrated tiles.</li>
+                <li>Detail pages use breadcrumb path <code>Start &gt; Fragor och svar &gt; Category</code>.</li>
+                <li>Accordions are teal bars with chevrons. Expanded content lives in a white content card.</li>
+                <li>Media examples include diagrams, a video placeholder/player, and step-by-step illustrated instructions.</li>
+              </ul>
+            </details>
+          </section>
+
+          <section id="implementation-plan">
+            <h2>Implementation Plan</h2>
+            <ol class="checklist">
+              <li>
+                <strong>Create design tokens.</strong> Update
+                <code>web/src/index.css</code> theme variables for background,
+                foreground, primary, card, destructive, border, and radius.
+                Add named semantic utility classes only if Tailwind tokens are
+                not enough.
+              </li>
+              <li>
+                <strong>Build the app shell.</strong> Refactor
+                <code>RootPage</code> into reusable shell components. Keep
+                auth-gating in <code>main.tsx</code> unchanged initially.
+              </li>
+              <li>
+                <strong>Replace dashboard cards.</strong> Implement
+                <code>StudyTaskCard</code> and update home plus daily check-in
+                screens. Drive card completion from existing atoms/hooks.
+              </li>
+              <li>
+                <strong>Refactor questionnaire chrome.</strong> Move progress,
+                list dialog, floating navigation, and section intro rendering
+                into a coherent <code>QuestionnaireShell</code>.
+              </li>
+              <li>
+                <strong>Update question controls.</strong> Rework
+                <code>Select.tsx</code> and <code>QuestionSelector.tsx</code>
+                to render answer chips and question cards while preserving form
+                state, validation, dependencies, and auto-scroll behavior.
+              </li>
+              <li>
+                <strong>Add resource category pages.</strong> Keep PocketBase
+                resource data, but add a category overview and redesign
+                <code>ResourceAccordion</code> to match the screen references.
+              </li>
+              <li>
+                <strong>Integrate visual assets.</strong> Extract or recreate
+                only missing assets. The current handoff already includes
+                extracted SVG/PNG pairs under <code>redesign/assets/</code> for
+                logos, card illustrations, medical diagrams, success states,
+                and resource artwork. Do not crop production UI from
+                <code>redesign/screens/</code>.
+              </li>
+              <li>
+                <strong>QA against references.</strong> Use Playwright or manual
+                browser screenshots at mobile and desktop widths. Compare page
+                layout, spacing, overflow, form progression, and route
+                navigation.
+              </li>
+            </ol>
+          </section>
+
+          <section id="qa">
+            <h2>QA Checklist</h2>
+            <div class="grid two">
+              <div class="note">
+                <h3>Responsive checks</h3>
+                <ul>
+                  <li>Mobile width around 409px matches screenshot proportions.</li>
+                  <li>Desktop width around 912-927px matches screenshot proportions.</li>
+                  <li>No text overlaps card art, footer, form controls, or browser viewport edges.</li>
+                  <li>Long FAQ pages scroll cleanly and keep footer placement sane.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Form checks</h3>
+                <ul>
+                  <li>Answer chips update react-hook-form values correctly.</li>
+                  <li>Follow-up questions appear only when dependency values match.</li>
+                  <li>Question drawer jumps to the selected accessible question.</li>
+                  <li>Cached form state still restores after reload.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Data checks</h3>
+                <ul>
+                  <li>Existing questionnaire IDs continue to work, including daily form <code>sdzkpd49ndccf5b</code>.</li>
+                  <li>Baseline form <code>u6917wm639q1d01</code> completion state remains correct.</li>
+                  <li>Resources still render sanitized/expected HTML from PocketBase.</li>
+                  <li><code>&lt;pre&gt;</code> and <code>&lt;post&gt;</code> resource filtering still works by user type.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Accessibility checks</h3>
+                <ul>
+                  <li>All cards used as links/buttons have keyboard focus states.</li>
+                  <li>Question chips expose selected state to screen readers.</li>
+                  <li>Dialogs trap focus and close with Escape.</li>
+                  <li>Color is not the only signal for completion, danger, or disabled states.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="gallery">
+            <h2>Screenshot Gallery</h2>
+            <p>
+              Use these as visual references while implementing. Click any image
+              to open the raw PNG.
+            </p>
+
+            <h3>Home and daily check-in</h3>
+            <div class="shots">
+              <figure>
+                <a href="redesign/screens/home-study-overview-mobile.png"><img src="redesign/screens/home-study-overview-mobile.png" alt="Home study overview mobile" /></a>
+                <figcaption><strong>Home overview, mobile</strong><small>redesign/screens/home-study-overview-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/home-study-overview-desktop.png"><img src="redesign/screens/home-study-overview-desktop.png" alt="Home study overview desktop" /></a>
+                <figcaption><strong>Home overview, desktop</strong><small>redesign/screens/home-study-overview-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-check-in-overview-mobile.png"><img src="redesign/screens/daily-check-in-overview-mobile.png" alt="Daily check-in overview mobile" /></a>
+                <figcaption><strong>Daily check-in, mobile</strong><small>redesign/screens/daily-check-in-overview-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-check-in-overview-desktop.png"><img src="redesign/screens/daily-check-in-overview-desktop.png" alt="Daily check-in overview desktop" /></a>
+                <figcaption><strong>Daily check-in, desktop</strong><small>redesign/screens/daily-check-in-overview-desktop.png</small></figcaption>
+              </figure>
+            </div>
+
+            <h3>Initial questionnaire</h3>
+            <div class="shots">
+              <figure>
+                <a href="redesign/screens/initial-form-intro-mobile.png"><img src="redesign/screens/initial-form-intro-mobile.png" alt="Initial form intro mobile" /></a>
+                <figcaption><strong>Initial form intro, mobile</strong><small>redesign/screens/initial-form-intro-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/initial-form-intro-desktop.png"><img src="redesign/screens/initial-form-intro-desktop.png" alt="Initial form intro desktop" /></a>
+                <figcaption><strong>Initial form intro, desktop</strong><small>redesign/screens/initial-form-intro-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/initial-form-employment-question-mobile.png"><img src="redesign/screens/initial-form-employment-question-mobile.png" alt="Employment question mobile" /></a>
+                <figcaption><strong>Employment question</strong><small>redesign/screens/initial-form-employment-question-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/initial-form-violence-section-mobile.png"><img src="redesign/screens/initial-form-violence-section-mobile.png" alt="Violence section mobile" /></a>
+                <figcaption><strong>Violence section</strong><small>redesign/screens/initial-form-violence-section-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/initial-form-sexual-history-question-mobile.png"><img src="redesign/screens/initial-form-sexual-history-question-mobile.png" alt="Sexual history question mobile" /></a>
+                <figcaption><strong>Sexual history question</strong><small>redesign/screens/initial-form-sexual-history-question-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/initial-form-question-list-drawer-mobile.png"><img src="redesign/screens/initial-form-question-list-drawer-mobile.png" alt="Initial form question drawer mobile" /></a>
+                <figcaption><strong>Initial form drawer</strong><small>redesign/screens/initial-form-question-list-drawer-mobile.png</small></figcaption>
+              </figure>
+            </div>
+
+            <h3>Daily form</h3>
+            <div class="shots">
+              <figure>
+                <a href="redesign/screens/daily-form-vaginal-dilator-intro-mobile.png"><img src="redesign/screens/daily-form-vaginal-dilator-intro-mobile.png" alt="Daily form intro mobile" /></a>
+                <figcaption><strong>Daily form intro, mobile</strong><small>redesign/screens/daily-form-vaginal-dilator-intro-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-vaginal-dilator-intro-desktop.png"><img src="redesign/screens/daily-form-vaginal-dilator-intro-desktop.png" alt="Daily form intro desktop" /></a>
+                <figcaption><strong>Daily form intro, desktop</strong><small>redesign/screens/daily-form-vaginal-dilator-intro-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-radiation-today-question-mobile.png"><img src="redesign/screens/daily-form-radiation-today-question-mobile.png" alt="Radiation today question mobile" /></a>
+                <figcaption><strong>Radiation today, mobile</strong><small>redesign/screens/daily-form-radiation-today-question-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-radiation-today-question-desktop.png"><img src="redesign/screens/daily-form-radiation-today-question-desktop.png" alt="Radiation today question desktop" /></a>
+                <figcaption><strong>Radiation today, desktop</strong><small>redesign/screens/daily-form-radiation-today-question-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-dilator-size-question-mobile.png"><img src="redesign/screens/daily-form-dilator-size-question-mobile.png" alt="Dilator size question mobile" /></a>
+                <figcaption><strong>Dilator size, mobile</strong><small>redesign/screens/daily-form-dilator-size-question-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-dilator-size-question-desktop.png"><img src="redesign/screens/daily-form-dilator-size-question-desktop.png" alt="Dilator size question desktop" /></a>
+                <figcaption><strong>Dilator size, desktop</strong><small>redesign/screens/daily-form-dilator-size-question-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-question-list-drawer-mobile.png"><img src="redesign/screens/daily-form-question-list-drawer-mobile.png" alt="Daily form question drawer mobile" /></a>
+                <figcaption><strong>Daily question drawer</strong><small>redesign/screens/daily-form-question-list-drawer-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-question-list-drawer-followups-mobile.png"><img src="redesign/screens/daily-form-question-list-drawer-followups-mobile.png" alt="Daily form question drawer followups mobile" /></a>
+                <figcaption><strong>Daily drawer with follow-ups</strong><small>redesign/screens/daily-form-question-list-drawer-followups-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-question-list-drawer-desktop.png"><img src="redesign/screens/daily-form-question-list-drawer-desktop.png" alt="Daily form question drawer desktop" /></a>
+                <figcaption><strong>Daily drawer, desktop</strong><small>redesign/screens/daily-form-question-list-drawer-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-length-measurement-help-mobile.png"><img src="redesign/screens/daily-form-length-measurement-help-mobile.png" alt="Length measurement help mobile" /></a>
+                <figcaption><strong>Measurement help, mobile</strong><small>redesign/screens/daily-form-length-measurement-help-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-length-measurement-help-desktop.png"><img src="redesign/screens/daily-form-length-measurement-help-desktop.png" alt="Length measurement help desktop" /></a>
+                <figcaption><strong>Measurement help, desktop</strong><small>redesign/screens/daily-form-length-measurement-help-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-submitted-mobile.png"><img src="redesign/screens/daily-form-submitted-mobile.png" alt="Daily form submitted mobile" /></a>
+                <figcaption><strong>Submitted, mobile</strong><small>redesign/screens/daily-form-submitted-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/daily-form-submitted-desktop.png"><img src="redesign/screens/daily-form-submitted-desktop.png" alt="Daily form submitted desktop" /></a>
+                <figcaption><strong>Submitted, desktop</strong><small>redesign/screens/daily-form-submitted-desktop.png</small></figcaption>
+              </figure>
+            </div>
+
+            <h3>Study information and Q&amp;A</h3>
+            <div class="shots">
+              <figure>
+                <a href="redesign/screens/about-study-information-mobile.png"><img src="redesign/screens/about-study-information-mobile.png" alt="About study information mobile" /></a>
+                <figcaption><strong>Study info, mobile</strong><small>redesign/screens/about-study-information-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/about-study-information-desktop.png"><img src="redesign/screens/about-study-information-desktop.png" alt="About study information desktop" /></a>
+                <figcaption><strong>Study info, desktop</strong><small>redesign/screens/about-study-information-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-category-overview-mobile.png"><img src="redesign/screens/faq-category-overview-mobile.png" alt="FAQ category overview mobile" /></a>
+                <figcaption><strong>Q&amp;A categories, mobile</strong><small>redesign/screens/faq-category-overview-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-category-overview-desktop.png"><img src="redesign/screens/faq-category-overview-desktop.png" alt="FAQ category overview desktop" /></a>
+                <figcaption><strong>Q&amp;A categories, desktop</strong><small>redesign/screens/faq-category-overview-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-accordion-mobile.png"><img src="redesign/screens/faq-vaginal-dilator-accordion-mobile.png" alt="Vaginal dilator accordion mobile" /></a>
+                <figcaption><strong>Vaginal dilator accordion, mobile</strong><small>redesign/screens/faq-vaginal-dilator-accordion-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-accordion-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-accordion-desktop.png" alt="Vaginal dilator accordion desktop" /></a>
+                <figcaption><strong>Vaginal dilator accordion, desktop</strong><small>redesign/screens/faq-vaginal-dilator-accordion-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-intimate-care-mobile.png"><img src="redesign/screens/faq-intimate-care-mobile.png" alt="Intimate care mobile" /></a>
+                <figcaption><strong>Intimate care, mobile</strong><small>redesign/screens/faq-intimate-care-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-intimate-care-desktop.png"><img src="redesign/screens/faq-intimate-care-desktop.png" alt="Intimate care desktop" /></a>
+                <figcaption><strong>Intimate care, desktop</strong><small>redesign/screens/faq-intimate-care-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-sexual-health-desktop.png"><img src="redesign/screens/faq-sexual-health-desktop.png" alt="Sexual health desktop" /></a>
+                <figcaption><strong>Sexual health, desktop</strong><small>redesign/screens/faq-sexual-health-desktop.png</small></figcaption>
+              </figure>
+            </div>
+
+            <h3>Expanded Q&amp;A examples</h3>
+            <div class="shots">
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-purpose-expanded-mobile.png"><img src="redesign/screens/faq-vaginal-dilator-purpose-expanded-mobile.png" alt="Purpose expanded mobile" /></a>
+                <figcaption><strong>Purpose expanded, mobile</strong><small>redesign/screens/faq-vaginal-dilator-purpose-expanded-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-purpose-expanded-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-purpose-expanded-desktop.png" alt="Purpose expanded desktop" /></a>
+                <figcaption><strong>Purpose expanded, desktop</strong><small>redesign/screens/faq-vaginal-dilator-purpose-expanded-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-radiation-effects-expanded-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-radiation-effects-expanded-desktop.png" alt="Radiation effects expanded desktop" /></a>
+                <figcaption><strong>Radiation effects expanded</strong><small>redesign/screens/faq-vaginal-dilator-radiation-effects-expanded-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-vaginal-adhesion-expanded-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-vaginal-adhesion-expanded-desktop.png" alt="Vaginal adhesion expanded desktop" /></a>
+                <figcaption><strong>Vaginal adhesion expanded</strong><small>redesign/screens/faq-vaginal-dilator-vaginal-adhesion-expanded-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-size-expanded-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-size-expanded-desktop.png" alt="Dilator size expanded desktop" /></a>
+                <figcaption><strong>Dilator size expanded</strong><small>redesign/screens/faq-vaginal-dilator-size-expanded-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-length-measurement-expanded-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-length-measurement-expanded-desktop.png" alt="Length measurement expanded desktop" /></a>
+                <figcaption><strong>Length measurement expanded</strong><small>redesign/screens/faq-vaginal-dilator-length-measurement-expanded-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-how-to-use-video-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-how-to-use-video-desktop.png" alt="How to use video desktop" /></a>
+                <figcaption><strong>How-to video example</strong><small>redesign/screens/faq-vaginal-dilator-how-to-use-video-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-how-to-use-steps-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-how-to-use-steps-desktop.png" alt="How to use steps desktop" /></a>
+                <figcaption><strong>How-to steps example</strong><small>redesign/screens/faq-vaginal-dilator-how-to-use-steps-desktop.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-therapy-timing-expanded-mobile.png"><img src="redesign/screens/faq-vaginal-dilator-therapy-timing-expanded-mobile.png" alt="Therapy timing expanded mobile" /></a>
+                <figcaption><strong>Therapy timing, mobile</strong><small>redesign/screens/faq-vaginal-dilator-therapy-timing-expanded-mobile.png</small></figcaption>
+              </figure>
+              <figure>
+                <a href="redesign/screens/faq-vaginal-dilator-therapy-timing-expanded-desktop.png"><img src="redesign/screens/faq-vaginal-dilator-therapy-timing-expanded-desktop.png" alt="Therapy timing expanded desktop" /></a>
+                <figcaption><strong>Therapy timing, desktop</strong><small>redesign/screens/faq-vaginal-dilator-therapy-timing-expanded-desktop.png</small></figcaption>
+              </figure>
+            </div>
+
+            <h3>Diagrams</h3>
+            <div class="shots">
+              <figure class="diagram">
+                <a href="redesign/screens/app-flow-sitemap-diagram.png"><img src="redesign/screens/app-flow-sitemap-diagram.png" alt="App flow sitemap diagram" /></a>
+                <figcaption><strong>App flow / sitemap</strong><small>redesign/screens/app-flow-sitemap-diagram.png</small></figcaption>
+              </figure>
+              <figure class="diagram">
+                <a href="redesign/screens/treatment-timeline-group-a-diagram.png"><img src="redesign/screens/treatment-timeline-group-a-diagram.png" alt="Treatment timeline group A diagram" /></a>
+                <figcaption><strong>Treatment timeline, group A</strong><small>redesign/screens/treatment-timeline-group-a-diagram.png</small></figcaption>
+              </figure>
+              <figure class="diagram">
+                <a href="redesign/screens/treatment-timeline-group-b-diagram.png"><img src="redesign/screens/treatment-timeline-group-b-diagram.png" alt="Treatment timeline group B diagram" /></a>
+                <figcaption><strong>Treatment timeline, group B</strong><small>redesign/screens/treatment-timeline-group-b-diagram.png</small></figcaption>
+              </figure>
+            </div>
+          </section>
+
+          <section id="assets">
+            <h2>Asset Guide</h2>
+            <p>
+              The extracted assets live under <code>redesign/assets/</code>.
+              Each production candidate has a matching <code>.svg</code> and
+              <code>.png</code>. The SVG is usually the first choice for
+              implementation; use the PNG fallback if the SVG has unexpected
+              clipping, embedded-font differences, or browser rendering issues.
+            </p>
+
+            <div class="shots">
+              <figure class="diagram">
+                <a href="redesign/assets/source-previews/extracted-assets-contact-sheet.png"><img src="redesign/assets/source-previews/extracted-assets-contact-sheet.png" alt="Extracted assets contact sheet" /></a>
+                <figcaption>
+                  <strong>Extracted assets contact sheet</strong>
+                  <small>redesign/assets/source-previews/extracted-assets-contact-sheet.png</small>
+                </figcaption>
+              </figure>
+              <figure class="diagram">
+                <a href="redesign/assets/source-previews/graphics-ai-pages-contact-sheet.png"><img src="redesign/assets/source-previews/graphics-ai-pages-contact-sheet.png" alt="Graphics Illustrator source contact sheet" /></a>
+                <figcaption>
+                  <strong>graphics.ai page map</strong>
+                  <small>redesign/assets/source-previews/graphics-ai-pages-contact-sheet.png</small>
+                </figcaption>
+              </figure>
+            </div>
+
+            <h3>Where to find assets</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Need</th>
+                  <th>Folder</th>
+                  <th>Use these assets first</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Header and footer identity</td>
+                  <td><code>redesign/assets/logos/</code></td>
+                  <td>
+                    <code>pre-rt-logo--p56.svg</code>,
+                    <code>gothenburg-university-seal--p57.svg</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Submitted/success confirmation</td>
+                  <td><code>redesign/assets/status/</code></td>
+                  <td><code>success-check-circle--p55.svg</code></td>
+                </tr>
+                <tr>
+                  <td>Home study overview task tiles</td>
+                  <td><code>redesign/assets/dashboard-cards/</code></td>
+                  <td>
+                    <code>registration-card-*</code>,
+                    <code>initial-questionnaire-card-*</code>,
+                    <code>study-info-card-*</code>,
+                    <code>faq-card-*</code>,
+                    <code>daily-form-card-*</code>,
+                    <code>after-treatment-card-*</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Daily check-in dashboard states</td>
+                  <td><code>redesign/assets/dashboard-cards/</code></td>
+                  <td>
+                    <code>calendar-card-yellow-*</code>,
+                    <code>clouds-card-pink-wide--p72.svg</code>,
+                    <code>flag-card-blue-*</code>,
+                    <code>registration-card-large-wide--p70.svg</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Q&amp;A category grid tiles</td>
+                  <td><code>redesign/assets/faq-categories/</code></td>
+                  <td>
+                    <code>radiation-effects-wave-card-*</code>,
+                    <code>vaginal-dilator-card-*</code>,
+                    <code>sexual-health-card-*</code>,
+                    <code>intimate-care-card-*</code>,
+                    <code>violence-card-*</code>,
+                    <code>learn-more-card-*</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Expanded Q&amp;A article illustrations</td>
+                  <td><code>redesign/assets/faq-categories/</code></td>
+                  <td>
+                    <code>sexual-health-*</code>,
+                    <code>intimate-care-*</code>,
+                    <code>violence-*</code>,
+                    <code>hand-heart-care-*</code>,
+                    <code>learn-more-hearts-*</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Medical/resource diagrams</td>
+                  <td><code>redesign/assets/medical/</code></td>
+                  <td>
+                    <code>pelvic-anatomy-*</code>,
+                    <code>vaginal-adhesion-*</code>,
+                    <code>dilator-size-comparison-*</code>,
+                    <code>dilator-length-measurement-*</code>,
+                    <code>therapy-timing-timeline-*</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Daily form help dialog</td>
+                  <td><code>redesign/assets/medical/</code></td>
+                  <td>
+                    <code>dilator-length-measurement-compact--p28.svg</code>
+                    for narrow dialogs and
+                    <code>dilator-length-measurement-wide--p27.svg</code> for
+                    desktop dialogs.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Questionnaire/help filler artwork</td>
+                  <td><code>redesign/assets/questionnaire/</code></td>
+                  <td>
+                    <code>help-magnifier-ribbon-wide--p3.svg</code>,
+                    <code>questionnaire-clipboard-broken-heart-wide--p50.svg</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Placement workflow</h3>
+            <ol class="checklist">
+              <li>
+                Start from the relevant screen in <code>redesign/screens/</code>
+                to understand layout and state.
+              </li>
+              <li>
+                Open <code>redesign/assets/source-previews/extracted-assets-contact-sheet.png</code>
+                if you need a visual scan of available assets.
+              </li>
+              <li>
+                Pick the semantic folder, not the closest-looking screenshot:
+                task art from <code>dashboard-cards/</code>, resource art from
+                <code>faq-categories/</code>, medical diagrams from
+                <code>medical/</code>, shell identity from <code>logos/</code>.
+              </li>
+              <li>
+                Import the SVG version into React when possible. Use the PNG
+                version only as a fallback or when the source is intentionally
+                raster-like.
+              </li>
+              <li>
+                Copy the selected production assets into the frontend, ideally
+                preserving the same subfolders under
+                <code>web/src/assets/redesign/</code>. This keeps implementation
+                imports stable and prevents the design handoff folder from
+                becoming runtime application state.
+              </li>
+            </ol>
+
+            <h3>Recommended frontend layout</h3>
+            <pre><code>web/src/assets/redesign/
+  logos/
+  status/
+  dashboard-cards/
+  faq-categories/
+  medical/
+  questionnaire/</code></pre>
+
+            <p>
+              Example import pattern for Vite/React:
+            </p>
+            <pre><code>import preRtLogo from '@/assets/redesign/logos/pre-rt-logo--p56.svg'
+import dailyCardArt from '@/assets/redesign/dashboard-cards/daily-form-card-wide--p62.svg'
+import successIcon from '@/assets/redesign/status/success-check-circle--p55.svg'
+
+export function StudyTaskCard() {
+  return &lt;img src={dailyCardArt} alt="" aria-hidden="true" /&gt;
+}</code></pre>
+
+            <h3>Responsive asset choice</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Asset suffix</th>
+                  <th>Best use</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>*-square--pNN</code></td>
+                  <td>Compact mobile cards, equal tile grids, icon-like category tiles.</td>
+                  <td>Use with stable card aspect ratios to prevent layout shift.</td>
+                </tr>
+                <tr>
+                  <td><code>*-wide--pNN</code></td>
+                  <td>Desktop cards, wide dashboard tiles, article media blocks.</td>
+                  <td>Usually the best match for the desktop screen references.</td>
+                </tr>
+                <tr>
+                  <td><code>*-compact--pNN</code></td>
+                  <td>Narrow dialogs, mobile accordion content, small explanatory cards.</td>
+                  <td>Common in medical diagrams and detailed article illustrations.</td>
+                </tr>
+                <tr>
+                  <td><code>*-vertical--pNN</code></td>
+                  <td>Mobile-specific vertical diagram layouts.</td>
+                  <td>Use for therapy timing on narrow screens.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="warning">
+              <h3>Asset handling rules</h3>
+              <p>
+                Do not crop full-screen references from
+                <code>redesign/screens/</code> into component assets. Do not
+                import directly from <code>redesign/assets/</code> in
+                production code unless the team explicitly wants design handoff
+                files in the runtime bundle. Keep alt text semantic: decorative
+                task-card art can use <code>alt=""</code> and
+                <code>aria-hidden="true"</code>; medical diagrams need useful
+                alt text or adjacent explanatory text.
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
