@@ -78,7 +78,7 @@ Data-entry follow-up: PocketBase records still need FAQ category image assignmen
 - [x] Copy medical/help diagram assets needed by questionnaire dialogs from `redesign/assets/medical/`.
 - [x] Copy supplemental questionnaire/help assets from `redesign/assets/questionnaire/` if used.
 - [x] Prefer SVG imports; use PNG only when SVG rendering is wrong.
-- [ ] Keep decorative card art `alt=""` and `aria-hidden="true"`.
+- [x] Keep decorative card art `alt=""` and `aria-hidden="true"`.
 - [ ] Provide useful alt text or adjacent explanation for medical diagrams.
 
 ## Phase 3 - Visual Tokens and Shared UI Foundations
@@ -123,51 +123,51 @@ Data-entry follow-up: PocketBase records still need FAQ category image assignmen
 
 ## Phase 5 - Routing
 
-- [ ] Add route `/check-in`.
-- [ ] Keep route `/forms/:id`.
-- [ ] Keep route `/forms/:id/history`.
-- [ ] Add route `/form/success`.
-- [ ] Keep route `/about`.
-- [ ] Add route `/faq`.
-- [ ] Add route `/faq/mer`.
-- [ ] Add route `/faq/:collectionId`.
-- [ ] Register `/faq/mer` before `/faq/:collectionId` if route matching could treat `mer` as a collection ID.
-- [ ] Keep route `/profile`.
-- [ ] Decide what `/forms` should do after redesign:
-  - [ ] Remove from navigation.
-  - [ ] Redirect to `/check-in`, or keep as an unlinked compatibility page if needed.
-- [ ] Verify direct links from SMS/reminders to `/forms/:id?date=...` still work.
+- [x] Add route `/check-in`.
+- [x] Keep route `/forms/:id`.
+- [x] Keep route `/forms/:id/history`.
+- [x] Add route `/form/success`.
+- [x] Keep route `/about`.
+- [x] Add route `/faq`.
+- [x] Add route `/faq/mer`.
+- [x] Add route `/faq/:collectionId`.
+- [x] Register `/faq/mer` before `/faq/:collectionId` if route matching could treat `mer` as a collection ID.
+- [x] Keep route `/profile`.
+- [x] Decide what `/forms` should do after redesign:
+  - [x] Remove from navigation.
+  - [x] Redirect to `/check-in`, or keep as an unlinked compatibility page if needed.
+- [x] Verify direct links from SMS/reminders to `/forms/:id?date=...` still work.
 
 ## Phase 6 - Home Dashboard
 
-- [ ] Replace `HomeTodoItem` with `StudyTaskCard`.
-- [ ] Implement `StudyTaskCard` support for:
-  - [ ] Title
-  - [ ] Illustration
-  - [ ] Background color
-  - [ ] Completion state
-  - [ ] Disabled state
-  - [ ] Short status text
-  - [ ] Link action
-  - [ ] Button action
-  - [ ] Top-right checkmark
-- [ ] Redesign `/` using `home-study-overview-mobile.png` and `home-study-overview-desktop.png`.
-- [ ] Show "Valkommen till studien!" and a short thank-you/introduction.
-- [ ] Render home cards:
-  - [ ] Registration date
-  - [ ] Initial questionnaire
-  - [ ] Read study information
-  - [ ] Q&A
-  - [ ] Daily form
-  - [ ] After radiation treatment
-- [ ] Drive state from `userDataAtom`, `readAboutPageAtom`, and `useAnswers`.
-- [ ] Show completed checkmarks only on:
-  - [ ] Registration date card
-  - [ ] Baseline/initial questionnaire card
-- [ ] Link study information card to `/about`.
-- [ ] Link Q&A card to `/faq`.
-- [ ] Link daily form/check-in card to `/check-in`.
-- [ ] Keep after-radiation/follow-up card visually present only as required by the dashboard, without implementing future follow-up flows.
+- [x] Replace `HomeTodoItem` with `StudyTaskCard`.
+- [x] Implement `StudyTaskCard` support for:
+  - [x] Title
+  - [x] Illustration
+  - [x] Background color
+  - [x] Completion state
+  - [x] Disabled state
+  - [x] Short status text
+  - [x] Link action
+  - [x] Button action
+  - [x] Top-right checkmark
+- [x] Redesign `/` using `home-study-overview-mobile.png` and `home-study-overview-desktop.png`.
+- [x] Show "Valkommen till studien!" and a short thank-you/introduction.
+- [x] Render home cards:
+  - [x] Registration date
+  - [x] Initial questionnaire
+  - [x] Read study information
+  - [x] Q&A
+  - [x] Daily form
+  - [x] After radiation treatment
+- [x] Drive state from `userDataAtom`, `readAboutPageAtom`, and `useAnswers`.
+- [x] Show completed checkmarks only on:
+  - [x] Registration date card
+  - [x] Baseline/initial questionnaire card
+- [x] Link study information card to `/about`.
+- [x] Link Q&A card to `/faq`.
+- [x] Link daily form/check-in card to `/check-in`.
+- [x] Keep after-radiation/follow-up card visually present only as required by the dashboard, without implementing future follow-up flows.
 
 ## Phase 7 - Daily Check-In Dashboard
 

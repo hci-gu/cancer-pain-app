@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
+import { ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import './index.css'
 import HomePage from './pages/home/index.tsx'
-import FormsPage from './pages/form/forms.tsx'
 import LoginPage from './pages/login/index.tsx'
 import RootPage from './root.tsx'
 import { useAtomValue } from 'jotai'
@@ -15,8 +15,13 @@ import FormPage from './pages/form/index.tsx'
 import ProfilePage from './pages/profile/index.tsx'
 import FormHistoryPage from './pages/form/history/index.tsx'
 import AboutPage from './pages/about/index.tsx'
+import CheckInPage from './pages/check-in/index.tsx'
+import FormSuccessPage from './pages/form/success.tsx'
+import FaqPage from './pages/faq/index.tsx'
+import FaqMorePage from './pages/faq/more.tsx'
+import FaqResourcePage from './pages/faq/resource.tsx'
 
-const WithAuthLayout = ({ children }: { children: any }) => {
+const WithAuthLayout = ({ children }: { children: ReactNode }) => {
   const auth = useAtomValue(authAtom)
 
   if (!auth) {
@@ -42,7 +47,15 @@ const router = createBrowserRouter([
         path: 'forms',
         element: (
           <WithAuthLayout>
-            <FormsPage />
+            <Navigate to="/check-in" replace />
+          </WithAuthLayout>
+        ),
+      },
+      {
+        path: 'check-in',
+        element: (
+          <WithAuthLayout>
+            <CheckInPage />
           </WithAuthLayout>
         ),
       },
@@ -63,10 +76,42 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'form/success',
+        element: (
+          <WithAuthLayout>
+            <FormSuccessPage />
+          </WithAuthLayout>
+        ),
+      },
+      {
         path: 'profile',
         element: (
           <WithAuthLayout>
             <ProfilePage />
+          </WithAuthLayout>
+        ),
+      },
+      {
+        path: 'faq',
+        element: (
+          <WithAuthLayout>
+            <FaqPage />
+          </WithAuthLayout>
+        ),
+      },
+      {
+        path: 'faq/mer',
+        element: (
+          <WithAuthLayout>
+            <FaqMorePage />
+          </WithAuthLayout>
+        ),
+      },
+      {
+        path: 'faq/:collectionId',
+        element: (
+          <WithAuthLayout>
+            <FaqResourcePage />
           </WithAuthLayout>
         ),
       },

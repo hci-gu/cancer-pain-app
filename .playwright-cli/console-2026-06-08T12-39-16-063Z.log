@@ -1,0 +1,16 @@
+[     138ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=b51fe7e0:17994
+[  100100ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=b51fe7e0:17994
+[  100162ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8090/api/collections/users/records/visual-smoke:0
+[  100165ms] [ERROR] ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:66:22) @ http://127.0.0.1:5173/src/state.tsx:69
+[  100190ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8090/api/collections/users/records/visual-smoke:0
+[  100190ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8090/api/collections/users/records/visual-smoke:0
+[  100194ms] [ERROR] ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:66:22) @ http://127.0.0.1:5173/src/state.tsx:69
+[  100194ms] [LOG] {items: Array(3), page: 1, perPage: 100, totalItems: 3, totalPages: 1} @ http://127.0.0.1:5173/src/state.tsx:225
+[  100196ms] [ERROR] ClientResponseError 404: The requested resource wasn't found.
+    at http://127.0.0.1:5173/node_modules/.vite/deps/pocketbase.js?v=b51fe7e0:948:13
+    at async Object.read (http://127.0.0.1:5173/src/state.tsx:66:22) @ http://127.0.0.1:5173/src/state.tsx:69
+[  100202ms] [LOG] {items: Array(3), page: 1, perPage: 100, totalItems: 3, totalPages: 1} @ http://127.0.0.1:5173/src/state.tsx:225

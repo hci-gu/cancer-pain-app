@@ -1,81 +1,89 @@
-import { Separator } from '@/components/ui/separator'
-import InitialForm from './components/InitialForm'
-import HomeTodoItem from './components/HomeTodoItem'
-import { CalendarIcon, InfoCircledIcon } from '@radix-ui/react-icons'
-import { useNavigate } from 'react-router-dom'
+import { StudyTaskCard } from '@/components/study-task-card'
+import { useAnswers, userDataAtom } from '@/state'
 import { useAtomValue } from 'jotai'
-import { readAboutPageAtom, userDataAtom } from '@/state'
-import BaselineForm from './components/BaselineForm'
-import { startTransition } from 'react'
-import { Button } from '@/components/ui/button'
+import registrationArtSquare from '@/assets/redesign/dashboard-cards/registration-card-square--p64.svg'
+import registrationArtWide from '@/assets/redesign/dashboard-cards/registration-card-wide--p58.svg'
+import initialQuestionnaireArtSquare from '@/assets/redesign/dashboard-cards/initial-questionnaire-card-square--p65.svg'
+import initialQuestionnaireArtWide from '@/assets/redesign/dashboard-cards/initial-questionnaire-card-wide--p59.svg'
+import studyInfoArtSquare from '@/assets/redesign/dashboard-cards/study-info-card-square--p66.svg'
+import studyInfoArtWide from '@/assets/redesign/dashboard-cards/study-info-card-wide--p60.svg'
+import faqArtSquare from '@/assets/redesign/dashboard-cards/faq-card-square--p67.svg'
+import faqArtWide from '@/assets/redesign/dashboard-cards/faq-card-wide--p61.svg'
+import dailyFormArtSquare from '@/assets/redesign/dashboard-cards/daily-form-card-square--p68.svg'
+import dailyFormArtWide from '@/assets/redesign/dashboard-cards/daily-form-card-wide--p62.svg'
+import afterTreatmentArtSquare from '@/assets/redesign/dashboard-cards/after-treatment-card-square--p69.svg'
+import afterTreatmentArtWide from '@/assets/redesign/dashboard-cards/after-treatment-card-wide--p63.svg'
+
+const BASELINE_FORM_ID = 'u6917wm639q1d01'
 
 function HomePage() {
-  const navigate = useNavigate()
-  const handleNavigation = (path: string) => {
-    startTransition(() => {
-      navigate(path)
-    })
-  }
-
   const user = useAtomValue(userDataAtom)
-  const hasReadAboutPage = useAtomValue(readAboutPageAtom)
-  const dailyDescription = user?.treatmentStart
-    ? `Med start ${user?.treatmentStart?.toISOString().slice(0, 10)}`
-    : 'Ange'
+  const baselineAnswers = useAnswers(BASELINE_FORM_ID)
+  const baselineAnswered = baselineAnswers.length > 0
+  const treatmentStart = user?.treatmentStart
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="w-full flex flex-col align-center justify-center mb-4">
-        <h1 className="text-3xl font-bold text-center">
-          Välkommen till studien!
+    <div className="space-y-8">
+      <section className="space-y-3">
+        <h1 className="text-4xl font-black leading-tight md:text-5xl">
+          Valkommen till studien!
         </h1>
-        <p className="text-center">Tack för att du är med och deltar.</p>
-      </div>
+        <p className="max-w-2xl text-base font-semibold text-muted-foreground">
+          Tack for att du ar med och deltar. Har ser du en oversikt over vad du
+          behover gora under studiens tid.
+        </p>
+      </section>
 
-      <Separator className="m-4" />
+      <section
+        aria-label="Studieoversikt"
+        className="grid grid-cols-2 gap-3 sm:gap-6"
+      >
+        <StudyTaskCard
+          title="Registrera dig"
+          illustration={registrationArtSquare}
+          desktopIllustration={registrationArtWide}
+          complete={Boolean(treatmentStart)}
+        />
 
-      <p className="mb-2">
-        Nedan kan du se en överblick på vad du behöver göra under studiens tid.
-      </p>
-      <div className="flex flex-col gap-2">
-        <InitialForm />
-        <button
-          onClick={() => handleNavigation('/about')}
-          className="text-left"
-        >
-          <HomeTodoItem
-            index={2}
-            icon={<InfoCircledIcon />}
-            title="Läs på om studien"
-            description="Ta del av information om studien och dess syfte."
-            done={hasReadAboutPage}
-          />
-        </button>
-        <BaselineForm />
-        <HomeTodoItem
-          index={4}
-          icon={<CalendarIcon />}
+        <StudyTaskCard
+          title="Inledande frågeformulär"
+          illustration={initialQuestionnaireArtSquare}
+          desktopIllustration={initialQuestionnaireArtWide}
+          complete={baselineAnswered}
+          href={baselineAnswered ? undefined : `/forms/${BASELINE_FORM_ID}`}
+          titleClassName="max-w-[70%]"
+        />
+
+        <StudyTaskCard
+          title="Läs om studien"
+          illustration={studyInfoArtSquare}
+          desktopIllustration={studyInfoArtWide}
+          href="/about"
+        />
+
+        <StudyTaskCard
+          title="Frågor & svar"
+          illustration={faqArtSquare}
+          desktopIllustration={faqArtWide}
+          href="/faq"
+          titleClassName="max-w-[78%]"
+        />
+
+        <StudyTaskCard
           title="Dagligt formulär"
-          description={dailyDescription}
-          action={
-            <Button
-              onClick={() => {
-                startTransition(() =>
-                  navigate(`/forms/sdzkpd49ndccf5b/history`)
-                )
-              }}
-            >
-              Se schema
-            </Button>
-          }
+          illustration={dailyFormArtSquare}
+          desktopIllustration={dailyFormArtWide}
+          href="/check-in"
         />
-        <HomeTodoItem
-          index={4}
-          icon={<CalendarIcon />}
-          title="Ange slutdatum för strålbehandling"
-          description={'Du kommer få en påminnelse när det är dags'}
+
+        <StudyTaskCard
+          title="Efter strålbehandlingen"
+          illustration={afterTreatmentArtSquare}
+          desktopIllustration={afterTreatmentArtWide}
+          disabled
+          titleClassName="max-w-[76%]"
         />
-      </div>
+      </section>
     </div>
   )
 }

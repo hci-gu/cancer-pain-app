@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "app/migrations"
+	// _ "app/migrations"
 	"archive/zip"
 	"bytes"
 	"encoding/base64"

@@ -100,7 +100,7 @@ export function StudyAppShell({
   variant = 'page',
 }: StudyAppShellProps) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-30 w-full border-b border-foreground/15 bg-study-header">
         <div className="mx-auto flex w-full max-w-[912px] flex-col gap-3 px-4 py-3 sm:px-8 md:flex-row md:items-center md:justify-between">
           <NavLink
@@ -136,7 +136,7 @@ export function StudyAppShell({
 
       <main
         className={cn(
-          'mx-auto w-full max-w-[912px] px-4 sm:px-8',
+          'mx-auto w-full max-w-[912px] flex-1 px-4 sm:px-8',
           variant === 'form' ? 'py-0' : 'py-8 md:py-10'
         )}
       >
