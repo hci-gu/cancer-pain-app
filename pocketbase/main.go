@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "app/migrations"
 	"archive/zip"
 	"bytes"
 	"encoding/base64"
@@ -16,12 +17,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-
-	// _ "app/migrations"
-
-	// _ "github.com/joho/godotenv/autoload"
-	// "github.com/labstack/echo"
-	// "github.com/labstack/echo/v5/middleware"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
