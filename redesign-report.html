@@ -438,6 +438,7 @@
         <nav class="toc" aria-label="Table of contents">
           <strong>Contents</strong>
           <a href="#summary">Summary</a>
+          <a href="#decisions">Decisions</a>
           <a href="#folder-map">Folder map</a>
           <a href="#route-map">Route map</a>
           <a href="#visual-system">Visual system</a>
@@ -473,9 +474,10 @@
               <div class="todo-card">
                 <h3>Biggest product change</h3>
                 <p>
-                  The home and form list become visual workflow dashboards. The
-                  daily form, initial questionnaire, study info, and Q&amp;A are
-                  presented as clear task tiles with completion states.
+                  The home page and new check-in page become visual workflow
+                  dashboards. FAQ moves to its own area. The old generic
+                  <code>/forms</code> questionnaire list is removed from the
+                  primary experience.
                 </p>
               </div>
               <div class="todo-card">
@@ -498,6 +500,110 @@
                 form controls, and footer, but not the OS/browser bars.
               </p>
             </div>
+          </section>
+
+          <section id="decisions">
+            <h2>Clarified Decisions</h2>
+            <p class="lead">
+              These decisions come from the implementation feedback answers in
+              <code>redesign-clarifications.md</code>. Treat them as settled
+              product requirements for this redesign.
+            </p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>FAQ routes</td>
+                  <td>
+                    Add a new <code>/faq</code> page. It links to FAQ category
+                    subpages backed by PocketBase
+                    <code>resourceCollection</code> records.
+                  </td>
+                </tr>
+                <tr>
+                  <td>FAQ data model</td>
+                  <td>
+                    Keep using <code>resourceCollection</code> with
+                    <code>visible_on_questions_and_answers</code>. Add an image
+                    asset field to <code>resourceCollection</code> so each FAQ
+                    category can display the redesign tile artwork.
+                  </td>
+                </tr>
+                <tr>
+                  <td>About vs FAQ</td>
+                  <td>
+                    <code>/about</code> becomes study information only. Move all
+                    FAQ accordions/items out of <code>/about</code> into
+                    <code>/faq</code>. The about page may include hard-coded
+                    links to specific FAQ items.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Home cards</td>
+                  <td>
+                    Most dashboard cards are links. Only the registration date
+                    card and baseline/initial questionnaire card have completed
+                    states with checkmarks on the home dashboard.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Check-in route</td>
+                  <td>
+                    <code>/forms</code> is no longer needed as a generic list.
+                    Add <code>/check-in</code> with four entry cards: daily form
+                    for today, previous-day daily form history, radiation start
+                    date form, and radiation end date form. The two radiation
+                    date cards have finished states.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Progress counts</td>
+                  <td>
+                    Keep current questionnaire progress-count behavior. This
+                    redesign should change the visuals, not the counting logic.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Questionnaire intro copy</td>
+                  <td>
+                    Add a rich text intro field to the questionnaire model.
+                    Intro screens should render this questionnaire
+                    <code>introText</code> rather than hard-coded copy or
+                    section-question text.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Submission flow</td>
+                  <td>
+                    Every questionnaire navigates to a new dedicated success
+                    page after submission. The success page is the defined step
+                    after answering.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Resource media</td>
+                  <td>
+                    PocketBase resource HTML will contain embedded media and
+                    references to any required content. The frontend should
+                    render the resource HTML; it should not inject resource
+                    media through hard-coded React mappings.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Violence escape action</td>
+                  <td>
+                    The scope logic already exists in the app. Keep that logic
+                    and update only the visual treatment.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </section>
 
           <section id="folder-map">
@@ -612,17 +718,21 @@
                   </td>
                 </tr>
                 <tr>
-                  <td class="route"><code>/forms</code></td>
-                  <td><code>web/src/pages/form/forms.tsx</code></td>
+                  <td class="route"><code>/check-in</code></td>
+                  <td>
+                    New page; can repurpose logic from
+                    <code>web/src/pages/form/forms.tsx</code>
+                  </td>
                   <td>
                     <code>daily-check-in-overview-mobile.png</code><br />
                     <code>daily-check-in-overview-desktop.png</code>
                   </td>
                   <td>
-                    This route currently lists questionnaires. In the redesign
-                    it is the "Har checkar du in!" dashboard for daily check-in,
-                    filling today's form, another date, and treatment start
-                    status.
+                    Replace the old generic <code>/forms</code> list with this
+                    check-in dashboard. It links to: today's daily form,
+                    previous-day daily form history, radiation start date form,
+                    and radiation end date form. The two radiation date cards
+                    have finished states.
                   </td>
                 </tr>
                 <tr>
@@ -639,41 +749,55 @@
                   <td>
                     Keep the existing PocketBase-driven question data, but
                     redesign the shell, progress bar, question card, option
-                    chips, question drawer, help modal, and submit confirmation.
+                    chips, question drawer, and help modal. After submit,
+                    navigate to the new success page.
                   </td>
                 </tr>
                 <tr>
-                  <td class="route"><code>/forms/:id/history</code></td>
+                  <td class="route"><code>/form/history</code></td>
                   <td><code>web/src/pages/form/history/index.tsx</code></td>
                   <td>
-                    No exact screen. The daily check-in dashboard references
-                    selecting another date and calendar/schedule states.
+                    Daily check-in dashboard previous-day entry.
                   </td>
                   <td>
-                    Use the same shell and tile language. Calendar/date picking
-                    should connect to existing daily schedule behavior from
-                    <code>dailyQuestionnaireScheduleAtom</code>.
+                    New route for filling the daily form for a previous day.
+                    It can reuse the current history/date-selection behavior,
+                    but should be reachable from <code>/check-in</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/form/success</code></td>
+                  <td>New page</td>
+                  <td>
+                    <code>daily-form-submitted-mobile.png</code><br />
+                    <code>daily-form-submitted-desktop.png</code>
+                  </td>
+                  <td>
+                    All questionnaires navigate here after completion. The
+                    success page owns the green check, confirmation copy, and
+                    close/continue CTA. Do not branch to different post-submit
+                    routes inside the questionnaire submit handler.
                   </td>
                 </tr>
                 <tr>
                   <td class="route"><code>/about</code></td>
                   <td>
                     <code>web/src/pages/about/index.tsx</code><br />
-                    <code>ResourceAccordion</code>,
-                    <code>Resource</code>
+                    Remove <code>ResourceAccordion</code> usage from this page.
                   </td>
                   <td>
                     <code>about-study-information-mobile.png</code><br />
                     <code>about-study-information-desktop.png</code>
                   </td>
                   <td>
-                    Replace the current long text and section bands with a
-                    compact "Information om studien" page containing accordion
-                    questions and a contact block.
+                    Replace the current combined study-info-plus-FAQ page with
+                    study information only. Remove FAQ accordions from this
+                    route. Hard-coded links from about to specific FAQ items are
+                    allowed.
                   </td>
                 </tr>
                 <tr>
-                  <td class="route">Q&amp;A / resources</td>
+                  <td class="route"><code>/faq</code></td>
                   <td>
                     Current data comes from PocketBase
                     <code>resourceCollection</code> and <code>resources</code>.
@@ -685,10 +809,28 @@
                     <code>faq-sexual-health-desktop.png</code>
                   </td>
                   <td>
-                    The design expects a category landing page before resource
-                    accordions. Add a route or route state for
-                    <code>Start &gt; Fragor och svar</code> and category detail
-                    pages.
+                    New FAQ category landing page. Load
+                    <code>resourceCollection</code> records where
+                    <code>visible_on_questions_and_answers</code> is true, and
+                    display each as an illustrated category tile using the new
+                    image asset field.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="route"><code>/faq/:collectionId</code></td>
+                  <td>
+                    <code>ResourceAccordion</code>,
+                    <code>Resource</code>, PocketBase resources
+                  </td>
+                  <td>
+                    <code>faq-vaginal-dilator-*.png</code><br />
+                    <code>faq-intimate-care-*.png</code><br />
+                    <code>faq-sexual-health-desktop.png</code>
+                  </td>
+                  <td>
+                    FAQ category detail page. Render the selected resource
+                    collection with redesigned accordions. Resource HTML from
+                    PocketBase contains embedded media and content references.
                   </td>
                 </tr>
                 <tr>
@@ -817,7 +959,21 @@
                   Replacement for <code>HomeTodoItem</code>. Supports title,
                   illustration, background color, completion state, disabled
                   state, short status text, and link/button action. Use it for
-                  home and daily check-in dashboards.
+                  home and daily check-in dashboards. On the home dashboard,
+                  completion checkmarks are only for the registration date card
+                  and baseline/initial questionnaire card. On the check-in page,
+                  completion states apply to the radiation start/end date cards.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>CheckInPage</code></h3>
+                <p>
+                  New page for <code>/check-in</code>. It replaces the current
+                  generic questionnaire list at <code>/forms</code>. It contains
+                  exactly four entry cards: daily form for today,
+                  previous-day/history daily form, radiation start date form,
+                  and radiation end date form.
                 </p>
               </article>
 
@@ -829,7 +985,9 @@
                   floating previous/next/jump controls, and full-screen page
                   scroller. This should replace ad hoc fixed elements in
                   <code>ProgressBar</code>, <code>NavigationButtons</code>, and
-                  <code>QuestionNavigationList</code>.
+                  <code>QuestionNavigationList</code>. Keep the current
+                  progress-count behavior; the redesign changes visual chrome,
+                  not the count rules.
                 </p>
               </article>
 
@@ -839,7 +997,9 @@
                   Replacement for the layout inside <code>QuestionSelector</code>.
                   Handles section intro screens, normal question screens, long
                   instruction text, info icons, question numbers, required
-                  markers, and answer controls.
+                  markers, and answer controls. Questionnaire intro screens
+                  should render the new questionnaire rich text
+                  <code>introText</code> field.
                 </p>
               </article>
 
@@ -865,12 +1025,25 @@
               </article>
 
               <article class="component">
-                <h3><code>ResourceCategoryGrid</code> and <code>ResourcePage</code></h3>
+                <h3><code>FaqPage</code> and <code>ResourcePage</code></h3>
                 <p>
-                  Adds the Q&amp;A category landing screen shown in the redesign
-                  before the existing accordions. Detail pages should reuse
-                  PocketBase resource collections but adopt the new card,
-                  accordion, image/video, and breadcrumb layout.
+                  Adds the <code>/faq</code> category landing screen and
+                  <code>/faq/:collectionId</code> detail pages. Category tiles
+                  come from PocketBase <code>resourceCollection</code> records
+                  with <code>visible_on_questions_and_answers</code> and a new
+                  image asset field. Detail pages reuse PocketBase resource
+                  HTML and adopt the redesigned accordion layout.
+                </p>
+              </article>
+
+              <article class="component">
+                <h3><code>FormSuccessPage</code></h3>
+                <p>
+                  New page for <code>/form/success</code>. All questionnaire
+                  submissions navigate here after completion. This page owns the
+                  submitted-state visual, success icon, confirmation text, and
+                  close/continue behavior. The submit handler should not decide
+                  separate per-form post-submit destinations.
                 </p>
               </article>
             </div>
@@ -885,7 +1058,8 @@
                 <li>Route: <code>/</code>.</li>
                 <li>Show "Valkommen till studien!" and a short thank-you/introduction.</li>
                 <li>Cards: registration date, initial questionnaire, read study info, Q&amp;A, daily form, after radiation treatment.</li>
-                <li>Completed cards show a circular checkmark in the top-right.</li>
+                <li>Most cards are links to subpages.</li>
+                <li>Only the registration date card and baseline/initial questionnaire card show completed states with top-right checkmarks.</li>
                 <li>Use <code>userDataAtom</code>, <code>readAboutPageAtom</code>, and <code>useAnswers</code> to drive states.</li>
               </ul>
             </details>
@@ -893,9 +1067,10 @@
             <details>
               <summary>Daily check-in dashboard</summary>
               <ul>
-                <li>Likely route: <code>/forms</code> or a dedicated daily route if the product owner wants to keep all questionnaires visible elsewhere.</li>
-                <li>Cards include "Fyll i formular - idag", "Fyll i formular - annan dag", treatment start date, and treatment start answer/status.</li>
-                <li>The current <code>FormsPage</code> introduction copy already roughly matches this flow; preserve intent but replace the generic questionnaire cards.</li>
+                <li>Route: <code>/check-in</code>.</li>
+                <li>The old generic <code>/forms</code> questionnaire list is removed from the redesigned navigation.</li>
+                <li>Cards: "Fyll i formular - idag", previous-day daily form via <code>/form/history</code>, radiation start date form, radiation end date form.</li>
+                <li>The radiation start/end date cards have finished states.</li>
               </ul>
             </details>
 
@@ -904,7 +1079,8 @@
               <ul>
                 <li>Initial questionnaire intro states: 37 questions, about 20 minutes.</li>
                 <li>Daily vaginal dilator intro states: 6-8 questions, about 1-2 minutes, depending on follow-ups.</li>
-                <li>Current <code>section</code> questions can render these intro screens, but they need new copy/layout handling and clear CTA buttons.</li>
+                <li>Add <code>introText</code> as a rich text field on the questionnaire model.</li>
+                <li>Render intro pages from <code>questionnaire.introText</code>. Do not hard-code intro copy per questionnaire ID and do not depend on section-question text for the intro.</li>
               </ul>
             </details>
 
@@ -915,26 +1091,30 @@
                 <li>Question body is centered in a white panel on desktop, and nearly full-width on mobile.</li>
                 <li>Option chips auto-advance after selection, matching current <code>onAnswer</code> behavior.</li>
                 <li>Info buttons open resource/help dialogs for questions with resource metadata.</li>
-                <li>Long safety/violence questions need compact text and an always-visible "Lamna genast" escape action.</li>
+                <li>Keep existing progress-count behavior unchanged.</li>
+                <li>Keep existing violence/escape-action scope logic unchanged; update only its visual treatment.</li>
               </ul>
             </details>
 
             <details>
               <summary>Submitted state</summary>
               <ul>
-                <li>Display a dedicated success panel after submission instead of immediately navigating away.</li>
-                <li>Show a large green checkmark and a button to close the form.</li>
-                <li>After closing, navigate to the daily history/dashboard or questionnaire list as appropriate.</li>
+                <li>Every questionnaire navigates to <code>/form/success</code> after successful submission.</li>
+                <li>The success page displays the large green checkmark, confirmation copy, and close/continue CTA.</li>
+                <li>The form page should no longer immediately navigate to <code>/forms</code> or history after submission.</li>
               </ul>
             </details>
 
             <details>
               <summary>Q&amp;A and study information</summary>
               <ul>
-                <li>Category overview has six colored illustrated tiles.</li>
+                <li><code>/about</code> contains study information only.</li>
+                <li><code>/faq</code> contains the category overview with six colored illustrated tiles.</li>
+                <li><code>/faq/:collectionId</code> renders category detail pages backed by PocketBase resource collections.</li>
+                <li>Add an image asset field to <code>resourceCollection</code> for category tile art.</li>
                 <li>Detail pages use breadcrumb path <code>Start &gt; Fragor och svar &gt; Category</code>.</li>
                 <li>Accordions are teal bars with chevrons. Expanded content lives in a white content card.</li>
-                <li>Media examples include diagrams, a video placeholder/player, and step-by-step illustrated instructions.</li>
+                <li>Resource media, videos, diagrams, and embedded content come from PocketBase resource HTML.</li>
               </ul>
             </details>
           </section>
@@ -950,19 +1130,36 @@
                 not enough.
               </li>
               <li>
+                <strong>Update PocketBase schema.</strong> Add a rich text
+                <code>introText</code> field to questionnaires and an image
+                asset field to <code>resourceCollection</code>. Keep using
+                <code>visible_on_questions_and_answers</code> for FAQ category
+                inclusion.
+              </li>
+              <li>
                 <strong>Build the app shell.</strong> Refactor
                 <code>RootPage</code> into reusable shell components. Keep
                 auth-gating in <code>main.tsx</code> unchanged initially.
               </li>
               <li>
                 <strong>Replace dashboard cards.</strong> Implement
-                <code>StudyTaskCard</code> and update home plus daily check-in
-                screens. Drive card completion from existing atoms/hooks.
+                <code>StudyTaskCard</code> and update home plus
+                <code>/check-in</code>. Home completion applies only to
+                registration date and baseline/initial questionnaire. Check-in
+                completion applies to radiation start/end date forms.
+              </li>
+              <li>
+                <strong>Replace the generic forms list.</strong> Remove
+                <code>/forms</code> as the questionnaire list page in the
+                redesigned navigation. Use <code>/check-in</code> for daily and
+                treatment-date entry points, while keeping questionnaire answer
+                routes such as <code>/forms/:id</code>.
               </li>
               <li>
                 <strong>Refactor questionnaire chrome.</strong> Move progress,
                 list dialog, floating navigation, and section intro rendering
-                into a coherent <code>QuestionnaireShell</code>.
+                into a coherent <code>QuestionnaireShell</code>. Keep current
+                progress-count behavior.
               </li>
               <li>
                 <strong>Update question controls.</strong> Rework
@@ -971,8 +1168,16 @@
                 state, validation, dependencies, and auto-scroll behavior.
               </li>
               <li>
-                <strong>Add resource category pages.</strong> Keep PocketBase
-                resource data, but add a category overview and redesign
+                <strong>Add success flow.</strong> Add
+                <code>/form/success</code> and navigate all successful
+                questionnaire submissions there before any close/continue
+                action.
+              </li>
+              <li>
+                <strong>Add FAQ pages.</strong> Move FAQ resources out of
+                <code>/about</code>. Add <code>/faq</code> and
+                <code>/faq/:collectionId</code>. Keep PocketBase resource HTML
+                as the source for embedded media/content, and redesign
                 <code>ResourceAccordion</code> to match the screen references.
               </li>
               <li>
@@ -1011,6 +1216,8 @@
                   <li>Follow-up questions appear only when dependency values match.</li>
                   <li>Question drawer jumps to the selected accessible question.</li>
                   <li>Cached form state still restores after reload.</li>
+                  <li>Progress count behavior matches the current app behavior.</li>
+                  <li>Every successful questionnaire submission lands on <code>/form/success</code>.</li>
                 </ul>
               </div>
               <div class="note">
@@ -1018,8 +1225,20 @@
                 <ul>
                   <li>Existing questionnaire IDs continue to work, including daily form <code>sdzkpd49ndccf5b</code>.</li>
                   <li>Baseline form <code>u6917wm639q1d01</code> completion state remains correct.</li>
-                  <li>Resources still render sanitized/expected HTML from PocketBase.</li>
+                  <li>Questionnaire <code>introText</code> rich text renders on intro screens.</li>
+                  <li>FAQ category tiles render from <code>resourceCollection</code> records with <code>visible_on_questions_and_answers</code> and the new image asset field.</li>
+                  <li>Resources still render sanitized/expected HTML from PocketBase, including embedded media.</li>
                   <li><code>&lt;pre&gt;</code> and <code>&lt;post&gt;</code> resource filtering still works by user type.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Routing checks</h3>
+                <ul>
+                  <li><code>/check-in</code> replaces the old generic <code>/forms</code> list in navigation.</li>
+                  <li><code>/about</code> no longer renders FAQ accordions.</li>
+                  <li><code>/faq</code> renders FAQ category tiles.</li>
+                  <li><code>/faq/:collectionId</code> renders one resource collection detail page.</li>
+                  <li><code>/form/history</code> is reachable from the previous-day daily form card.</li>
                 </ul>
               </div>
               <div class="note">
@@ -1400,6 +1619,11 @@
                 <code>web/src/assets/redesign/</code>. This keeps implementation
                 imports stable and prevents the design handoff folder from
                 becoming runtime application state.
+              </li>
+              <li>
+                For FAQ/resource article content, place media references inside
+                PocketBase resource HTML. The frontend should render that HTML
+                rather than hard-coding media selection by resource ID.
               </li>
             </ol>
 
