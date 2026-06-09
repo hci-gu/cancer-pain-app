@@ -9,6 +9,10 @@ import (
 
 func init() {
 	m.Register(func(app core.App) error {
+		if _, err := app.FindCollectionByNameOrId("pbc_2105371562"); err == nil {
+			return nil
+		}
+
 		jsonData := `{
 			"createRule": null,
 			"deleteRule": null,

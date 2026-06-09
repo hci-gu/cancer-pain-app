@@ -1,28 +1,14 @@
-import { readAboutPageAtom, resourcesAtom } from '@/state'
-import { useAtomValue, useSetAtom } from 'jotai'
+import { readAboutPageAtom } from '@/state'
+import { useSetAtom } from 'jotai'
 import { useEffect } from 'react'
-import { Separator } from '@/components/ui/separator'
-import ResourceAccordion from '@/components/resourceCollection'
-
-const Resources = () => {
-  const collections = useAtomValue(resourcesAtom)
-
-  return (
-    <div className="mt-8 border-b border-black">
-      {collections.map((collection) => (
-        <ResourceAccordion collection={collection} />
-      ))}
-    </div>
-  )
-}
-
-const HeaderSection = ({ text }: { text: string }) => {
-  return (
-    <div className="mb-8 bg-primary text-center py-4">
-      <h2 className="text-2xl font-black text-white">{text.toUpperCase()}</h2>
-    </div>
-  )
-}
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
+import { Link } from 'react-router-dom'
 
 function AboutPage() {
   const setRead = useSetAtom(readAboutPageAtom)
@@ -31,54 +17,76 @@ function AboutPage() {
   }, [])
 
   return (
-    <div className="[&>p]:mx-4 [&>h2]:mx-4">
-      <HeaderSection text="Om studien" />
-      <p>
-        <strong>
-          Syftet med studien är att undersöka vid vilken tidpunkt som det är
-          mest optimalt att påbörja vaginalstavsanvändning för att begränsa
-          vaginala förändringar som beror på strålbehandlingens effekter. Vi
-          vill förstå hur vården kan utveckla information och uppföljning till
-          kvinnor om metoder för att bibehålla vävnadens elasticitet och
-          förhindra att sammanlänkning av slidlemhinnan sker.
-        </strong>
-      </p>
-      <br></br>
-      <h2 className="font-bold">Hur går studien till?</h2>
-      <p>
-        Undersökningen är en så kallad obervationsstudie. Du som studiedeltagare
-        startar vaginalstavsterapin före strålstart istället för efter avslutad
-        strålbehandling vilket är praxis idag.{' '}
-      </p>
-      <br></br>
-      <p>
-        Du kommer få svara på ett större frågeformulär vid två tillfällen, ett
-        före strålbehandlingsstart och ett tre månader efter avslutad
-        strålbehandling. Frågorna handlar om kvinnohälsa, sexuell hälsa,
-        förlossning, menstruation och allmän hälsa. Under strålbehandlingstiden
-        fyller du i ett dagligt formulär med korta frågor om du har använt
-        vaginalstaven och om mätning av vaginal längd. Med hjälp av dina svar
-        kan vi få mer kunskap och förfina metoden för att förebygga vaginala
-        förändringar och påverkan sexuell hälsa i samband med cancerbehandling.
-        Dina svar hjälper oss att förstå förändring och symtom över tid.
-      </p>
-      <br></br>
-      <HeaderSection text="Frågor & Svar" />
-      <p>
-        Sexuell hälsa är ett grundbehov och en viktig del i många människors
-        liv. Det kan vara oroande att få en påverkan på den sexuella hälsan. Vi
-        ser på sexuell hälsa ur både ett fysiskt, psykiskt och psykosocialt
-        perspektiv och vet att sexuell praktik (hur, när och med vem man har
-        sex) formas av normer, genus och kultur.
-      </p>
-      <p>
-        Inom ramen för forskningsprojektet utvecklar vi även digitala verktyg,
-        det vill säga digitaliserad information via webbsida och mobilapp för
-        att förbättra informationsvägarna för egenvårdsråd.
-      </p>
-      <Separator className="mt-4" />
-      <Resources />
-      <div style={{ height: '25vh' }}></div>
+    <div className="space-y-7">
+      <section className="space-y-5">
+        <h1 className="text-4xl font-black leading-tight md:text-5xl">
+          Information om studien
+        </h1>
+        <div className="space-y-5 text-lg font-bold leading-snug">
+          <p>
+            Syftet med studien är att undersöka vid vilken tidpunkt som det är
+            mest optimalt att påbörja vaginalstavsanvändning för att begränsa
+            vaginala förändringar som beror på strålbehandlingens effekter.
+          </p>
+          <p>
+            Vi vill förstå hur vården kan utveckla information och uppföljning
+            till kvinnor om metoder för att bibehålla vävnadens elasticitet och
+            förhindra att sammanlänkning av slidlemhinnan sker.
+          </p>
+        </div>
+      </section>
+
+      <Accordion type="multiple" className="space-y-4">
+        <AccordionItem value="how" className="border-0">
+          <AccordionTrigger className="rounded-xl bg-primary px-5 py-4 text-left text-xl font-black text-foreground hover:no-underline">
+            Hur går studien till?
+          </AccordionTrigger>
+          <AccordionContent className="bg-white px-5 py-5 text-base font-bold leading-relaxed">
+            Undersökningen är en så kallad observationsstudie. Du som
+            studiedeltagare startar vaginalstavsterapin före strålstart istället
+            för efter avslutad strålbehandling, vilket är praxis idag.
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="why" className="border-0">
+          <AccordionTrigger className="rounded-xl bg-primary px-5 py-4 text-left text-xl font-black text-foreground hover:no-underline">
+            Varför ska jag svara på frågorna?
+          </AccordionTrigger>
+          <AccordionContent className="bg-white px-5 py-5 text-base font-bold leading-relaxed">
+            Dina svar hjälper oss att få mer kunskap och förfina metoden för att
+            förebygga vaginala förändringar och påverkan på sexuell hälsa i
+            samband med cancerbehandling.
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <section className="bg-[#f8e6b8] px-5 py-6 text-foreground">
+        <h2 className="mb-5 text-2xl font-black">Kontakt (vardagar 08-16)</h2>
+        <div className="grid gap-5 text-base font-bold leading-snug sm:grid-cols-2">
+          <div>
+            <p>Forskningssjuksköterska</p>
+            <p>Therese Alm</p>
+            <p>Specialistsjuksköterska i onkologi</p>
+            <p>Tel: 031-343 98 56 (telefonsvarare)</p>
+            <p>E-post: therese.alm@vgregion.se</p>
+          </div>
+          <div>
+            <p>Studieansvarig forskare</p>
+            <p>Linda Åkeflo</p>
+            <p>Med.dr och legitimerad sjuksköterska</p>
+            <p>Tel: 031-786 61 59</p>
+            <p>E-post: linda.akeflo@gu.se</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <Link to="/faq">Frågor och svar</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link to="/faq/mer">Visa all information</Link>
+        </Button>
+      </div>
     </div>
   )
 }

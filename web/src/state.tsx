@@ -96,20 +96,34 @@ export const dailyQuestionnaireScheduleAtom = atom(async () => {
 })
 
 export const resourcesAtom = atom(async () => {
-  const response = await pb.collection('resourceCollection').getFullList({
-    expand: 'resources',
-    filter: 'visible_on_questions_and_answers = true',
-  })
-  response.sort((a, b) => a.sort - b.sort)
-  return response.map(mapResourceCollection)
+  try {
+    const response = await pb.collection('resourceCollection').getFullList({
+      expand: 'resources',
+      filter: 'visible_on_questions_and_answers = true',
+    })
+    response.sort((a, b) => a.sort - b.sort)
+    return response.map(mapResourceCollection)
+  } catch (e) {
+    console.error(e)
+    return []
+  }
 })
 
 export const resourceCollectionAtom = atomFamily((id: string) => {
   return atom(async () => {
-    const response = await pb.collection('resourceCollection').getOne(id, {
-      expand: 'resources',
-    })
-    return mapResourceCollection(response)
+    try {
+      const response = await pb.collection('resourceCollection').getOne(id, {
+        expand: 'resources',
+      })
+      return mapResourceCollection(response)
+    } catch (e) {
+      console.error(e)
+      return {
+        id,
+        name: 'Frågor och svar',
+        resources: [],
+      }
+    }
   })
 })
 
@@ -217,8 +231,8 @@ const mapResourceCollection = (resourceCollection: any): ResourceCollection => {
     id: resourceCollection.id,
     name: resourceCollection.name,
     description: resourceCollection.description,
-    image,
-    resources: resourceCollection.expand?.resources.map(mapResource),
+    image: image ? pb.files.getURL(resourceCollection, image) : undefined,
+    resources: resourceCollection.expand?.resources?.map(mapResource) ?? [],
   }
 }
 

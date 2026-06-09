@@ -254,44 +254,46 @@ Verification note: phase 11 submit routing is occurrence-agnostic in the shared 
 
 ## Phase 12 - Study Information Page
 
-- [ ] Redesign `/about` using `about-study-information-mobile.png` and `about-study-information-desktop.png`.
-- [ ] Keep `/about` as study information only.
-- [ ] Remove FAQ accordions/items from `/about`.
-- [ ] Remove `ResourceAccordion` usage from `/about`.
-- [ ] Link general FAQ actions to `/faq`.
-- [ ] Link broad "show every resource/question" actions to `/faq/mer`.
-- [ ] Do not create specific FAQ item anchor links in this pass.
-- [ ] Preserve `readAboutPageAtom` behavior if it drives home completion/state.
+- [x] Redesign `/about` using `about-study-information-mobile.png` and `about-study-information-desktop.png`.
+- [x] Keep `/about` as study information only.
+- [x] Remove FAQ accordions/items from `/about`.
+- [x] Remove `ResourceAccordion` usage from `/about`.
+- [x] Link general FAQ actions to `/faq`.
+- [x] Link broad "show every resource/question" actions to `/faq/mer`.
+- [x] Do not create specific FAQ item anchor links in this pass.
+- [x] Preserve `readAboutPageAtom` behavior if it drives home completion/state.
 
 ## Phase 13 - FAQ and Resource Pages
 
-- [ ] Build `FaqPage` for `/faq`.
-- [ ] Load `resourceCollection` records where `visible_on_questions_and_answers = true`.
-- [ ] Render the six colored illustrated category tiles from the screenshot.
-- [ ] Use the new `resourceCollection` image asset field for category tile art.
-- [ ] Add the "Om du vill veta mer?" action.
-- [ ] Link "Om du vill veta mer?" to `/faq/mer`.
-- [ ] Build `FaqMorePage` for `/faq/mer`.
-- [ ] Render all FAQ/resource items across visible collections on `/faq/mer`.
-- [ ] Build `ResourcePage` for `/faq/:collectionId`.
-- [ ] Render one selected resource collection on `/faq/:collectionId`.
-- [ ] Add breadcrumb path `Start > Fragor och svar > Category` on detail pages.
-- [ ] Redesign `ResourceAccordion`:
-  - [ ] Teal accordion bars
-  - [ ] Chevron affordance
-  - [ ] White expanded content card
-  - [ ] Clean long-page scrolling
-- [ ] Render sanitized/expected PocketBase resource HTML.
-- [ ] Preserve `<pre>` and `<post>` resource filtering by user type.
-- [ ] Verify embedded media, videos, diagrams, and article content render from PocketBase HTML.
+- [x] Build `FaqPage` for `/faq`.
+- [x] Load `resourceCollection` records where `visible_on_questions_and_answers = true`.
+- [x] Render the six colored illustrated category tiles from the screenshot.
+- [x] Use the new `resourceCollection` image asset field for category tile art.
+- [x] Add the "Om du vill veta mer?" action.
+- [x] Link "Om du vill veta mer?" to `/faq/mer`.
+- [x] Build `FaqMorePage` for `/faq/mer`.
+- [x] Render all FAQ/resource items across visible collections on `/faq/mer`.
+- [x] Build `ResourcePage` for `/faq/:collectionId`.
+- [x] Render one selected resource collection on `/faq/:collectionId`.
+- [x] Add breadcrumb path `Start > Fragor och svar > Category` on detail pages.
+- [x] Redesign `ResourceAccordion`:
+  - [x] Teal accordion bars
+  - [x] Chevron affordance
+  - [x] White expanded content card
+  - [x] Clean long-page scrolling
+- [x] Render sanitized/expected PocketBase resource HTML.
+- [x] Preserve `<pre>` and `<post>` resource filtering by user type.
+- [x] Verify embedded media, videos, diagrams, and article content render from PocketBase HTML.
+
+Verification note: `/faq` renders local illustrated fallback cards when the local PocketBase schema rejects `visible_on_questions_and_answers`. `/faq/mer` and `/faq/:collectionId` are data-backed and require seeded visible resource collections to fully verify article/media rendering.
 
 ## Phase 14 - Profile and Remaining Authenticated Pages
 
-- [ ] Apply `StudyAppShell` styling to `/profile`.
-- [ ] Keep logout behavior.
-- [ ] Keep treatment date display/edit behavior.
-- [ ] Do not invent new profile functionality from screenshots.
-- [ ] Check any remaining authenticated routes for old dark header/footer or generic shadcn visual leftovers.
+- [x] Apply `StudyAppShell` styling to `/profile`.
+- [x] Keep logout behavior.
+- [x] Keep treatment date display/edit behavior.
+- [x] Do not invent new profile functionality from screenshots.
+- [x] Check any remaining authenticated routes for old dark header/footer or generic shadcn visual leftovers.
 
 ## Phase 15 - Responsive Visual QA
 

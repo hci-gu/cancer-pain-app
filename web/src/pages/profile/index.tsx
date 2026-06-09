@@ -2,9 +2,11 @@ import { useAtom, useAtomValue } from 'jotai'
 import { authAtom, pb, userDataAtom } from '../../state'
 import { Card } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
+import { Button } from '@/components/ui/button'
+import { LogOut } from 'lucide-react'
 
 function ProfilePage() {
-  const [_, setAuth] = useAtom(authAtom)
+  const [, setAuth] = useAtom(authAtom)
   const userData = useAtomValue(userDataAtom)
 
   const handleLogout = () => {
@@ -17,31 +19,42 @@ function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto mt-8 p-4">
-      <h1 className="text-3xl font-bold mb-4">Profil</h1>
-      <Card className="p-4">
-        <div className="flex flex-col space-y-4">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-black md:text-5xl">Profil</h1>
+      </div>
+      <Card className="border-0 bg-white p-6 shadow-none">
+        <div className="grid gap-6 sm:grid-cols-2">
           <div>
-            <h2 className="text-xl font-bold">Telefonnummer</h2>
-            <p>{userData.phoneNumber}</p>
+            <h2 className="text-xl font-black">Telefonnummer</h2>
+            <p className="mt-2 text-lg font-bold">{userData.phoneNumber}</p>
           </div>
           <div>
-            <h2 className="text-xl font-bold">Behandlingsstart</h2>
-            <DatePicker
-              date={
-                userData?.treatmentStart ?? new Date(userData.treatmentStart!)
-              }
-              onChange={() => {}}
-            />
+            <h2 className="text-xl font-black">Behandlingsstart</h2>
+            <div className="mt-2">
+              <DatePicker
+                date={userData.treatmentStart}
+                onChange={() => {}}
+              />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-black">Behandlingsslut</h2>
+            <div className="mt-2">
+              <DatePicker date={userData.treatmentEnd} onChange={() => {}} />
+            </div>
           </div>
         </div>
       </Card>
-      <button
+      <Button
+        type="button"
         onClick={handleLogout}
-        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4"
+        variant="destructive"
+        className="h-12 rounded-xl px-5 font-black text-white"
       >
+        <LogOut className="mr-2 h-4 w-4" />
         Logga ut
-      </button>
+      </Button>
     </div>
   )
 }

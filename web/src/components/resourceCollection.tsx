@@ -16,7 +16,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import Resource from './resource'
 import { Button } from './ui/button'
-import { Cross1Icon } from '@radix-ui/react-icons'
+import { ChevronDownIcon, Cross1Icon } from '@radix-ui/react-icons'
 import AbortButton from './ui/AbortButton'
 
 export function ResourceCollectionDrawer({
@@ -62,8 +62,8 @@ const titleToSlug = (title: string) =>
 
 const ResourceSection = ({ text }: { text: string }) => {
   return (
-    <div className="mb-4 bg-primary text-center py-2">
-      <h2 className="text-md font-bold text-white">{text.toUpperCase()}</h2>
+    <div className="mb-4">
+      <h2 className="text-3xl font-black leading-tight">{text}</h2>
     </div>
   )
 }
@@ -186,25 +186,34 @@ export default function ResourceAccordion({
         collapsible
         value={openResource}
         onValueChange={resourceClicked}
+        className="space-y-4"
       >
-        <div
-          className="resource-content [&_a]:text-primary [&_a]:hover:underline [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2 [&_p]:font-light [&_p]:text-base p-4"
-          dangerouslySetInnerHTML={{
-            __html: collection.description ?? '',
-          }}
-        ></div>
-        {collection.resources.map((resource, index) => (
+        {collection.description && (
+          <div
+            className="resource-content rounded-xl bg-white px-5 py-4 text-base font-bold leading-relaxed [&_a]:text-study-teal-dark [&_a]:underline [&_li]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
+            dangerouslySetInnerHTML={{
+              __html: collection.description ?? '',
+            }}
+          />
+        )}
+        {(collection.resources ?? []).map((resource, index) => (
           <AccordionItem
             value={titleToSlug(resource.title)}
             key={`Resource_${index}`}
             id={titleToSlug(resource.title)}
-            className="scroll-mt-24"
+            className="scroll-mt-24 border-0"
           >
-            <AccordionTrigger className="text-lg mx-4">
-              {resource.title}
+            <AccordionTrigger className="group rounded-xl bg-primary px-5 py-4 text-left text-lg font-black text-foreground hover:no-underline [&>svg]:hidden">
+              <span>{resource.title}</span>
+              <ChevronDownIcon
+                className="ml-4 h-6 w-6 shrink-0 transition-transform group-data-[state=open]:rotate-180"
+                aria-hidden="true"
+              />
             </AccordionTrigger>
-            <AccordionContent className="shadow-inner px-4 py-8 bg-card">
-              <Resource resource={resource} />
+            <AccordionContent className="mt-2 rounded-xl bg-white px-5 py-6">
+              <div className="max-w-none">
+                <Resource resource={resource} />
+              </div>
             </AccordionContent>
           </AccordionItem>
         ))}
