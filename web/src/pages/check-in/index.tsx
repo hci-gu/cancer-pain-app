@@ -35,6 +35,8 @@ function CheckInCard({
   buttonLabel,
   titleClassName,
 }: CheckInCardProps) {
+  const hasBadge = Boolean(badge || buttonLabel)
+
   const content = (
     <article
       className={cn(
@@ -51,7 +53,12 @@ function CheckInCard({
           className="absolute inset-0 h-full w-full object-cover"
         />
       </picture>
-      <div className="relative z-10 flex h-full flex-col items-center p-4">
+      <div
+        className={cn(
+          'relative z-10 flex h-full flex-col items-center p-4',
+          hasBadge && 'justify-center gap-2 sm:gap-3'
+        )}
+      >
         <h2
           className={cn(
             'max-w-[82%] text-xl font-black leading-none text-foreground',
@@ -61,7 +68,12 @@ function CheckInCard({
           {title}
         </h2>
         {(badge || buttonLabel) && (
-          <span className="mt-auto rounded-full bg-card/85 px-6 py-2 text-base font-bold text-foreground">
+          <span
+            className={cn(
+              'rounded-full px-6 py-2 text-base font-bold text-foreground',
+              buttonLabel ? 'bg-study-header' : 'bg-card/85'
+            )}
+          >
             {buttonLabel ?? badge}
           </span>
         )}
@@ -96,34 +108,26 @@ export default function CheckInPage() {
   const treatmentEndComplete = treatmentEndAnswers.length > 0
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="space-y-4">
-        <p className="text-lg font-bold">
-          <Link to="/" className="hover:underline">
-            Start
-          </Link>{' '}
-          <span aria-hidden="true">&gt;</span> Dagligt formulär
-        </p>
-        <div className="space-y-5">
-          <h1 className="text-4xl font-black leading-tight md:text-5xl">
-            Här checkar du in!
-          </h1>
-          <div className="max-w-2xl space-y-4 text-lg font-semibold leading-snug">
-            <p>
-              Här kan både du och vi följa hur du mår under behandlingen. Det
-              bästa är om du checkar in varje gång du använder staven.
-            </p>
-            <p>
-              Här ser du också din startpunkt - den svarar du på i början av
-              din behandling.
-            </p>
-          </div>
+        <h1 className="text-4xl font-black leading-tight md:text-5xl">
+          Här checkar du in!
+        </h1>
+        <div className="max-w-2xl space-y-4 text-lg font-semibold leading-snug">
+          <p>
+            Här kan både du och vi följa hur du mår under behandlingen. Det
+            bästa är om du checkar in varje gång du använder staven.
+          </p>
+          <p>
+            Här ser du också din startpunkt - den svarar du på i början av din
+            behandling.
+          </p>
         </div>
       </div>
 
       <section
         aria-label="Daglig check-in"
-        className="grid grid-cols-2 gap-3 sm:gap-6"
+        className="grid grid-cols-2 gap-3 sm:gap-x-7 sm:gap-y-5"
       >
         <CheckInCard
           title="Fyll i formulär - idag"

@@ -4,7 +4,7 @@ import { buttonVariants } from '@/components/ui/button'
 
 function WelcomePage() {
   return (
-    <div className="mx-auto flex w-full flex-col justify-center space-y-4 sm:w-[440px]">
+    <div className="mx-auto flex w-full flex-col justify-center space-y-4 sm:w-[27.5rem]">
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
           Välkommen till studien

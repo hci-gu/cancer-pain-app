@@ -127,6 +127,16 @@
 }
 
 @layer base {
+  html {
+    font-size: 16px;
+  }
+
+  @media (min-width: 1200px) {
+    html {
+      font-size: clamp(16px, 1.111vw, 24px);
+    }
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

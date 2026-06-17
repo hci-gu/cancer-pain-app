@@ -23,20 +23,19 @@ function HomePage() {
   const treatmentStart = user?.treatmentStart
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-3">
-        <h1 className="text-4xl font-black leading-tight md:text-5xl">
-          Valkommen till studien!
-        </h1>
-        <p className="max-w-2xl text-base font-semibold text-muted-foreground">
-          Tack for att du ar med och deltar. Har ser du en oversikt over vad du
-          behover gora under studiens tid.
+    <div className="space-y-5">
+      <section className="space-y-3 text-center">
+        <p className="mx-auto max-w-xl text-base font-semibold leading-snug text-foreground">
+          Tack för att du är med och deltar.
+          <br />
+          Nedan kan du se en överblick på vad du behöver göra under studiens
+          tid.
         </p>
       </section>
 
       <section
-        aria-label="Studieoversikt"
-        className="grid grid-cols-2 gap-3 sm:gap-6"
+        aria-label="Studieöversikt"
+        className="grid grid-cols-2 gap-3 sm:gap-x-7 sm:gap-y-5"
       >
         <StudyTaskCard
           title="Registrera dig"
@@ -81,7 +80,7 @@ function HomePage() {
           illustration={afterTreatmentArtSquare}
           desktopIllustration={afterTreatmentArtWide}
           disabled
-          titleClassName="max-w-[76%]"
+          titleClassName="max-w-[76%] text-foreground"
         />
       </section>
     </div>

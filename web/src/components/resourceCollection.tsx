@@ -16,7 +16,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import Resource from './resource'
 import { Button } from './ui/button'
-import { ChevronDownIcon, Cross1Icon } from '@radix-ui/react-icons'
+import { Cross1Icon } from '@radix-ui/react-icons'
 import AbortButton from './ui/AbortButton'
 
 export function ResourceCollectionDrawer({
@@ -203,12 +203,8 @@ export default function ResourceAccordion({
             id={titleToSlug(resource.title)}
             className="scroll-mt-24 border-0"
           >
-            <AccordionTrigger className="group rounded-xl bg-primary px-5 py-4 text-left text-lg font-black text-foreground hover:no-underline [&>svg]:hidden">
+            <AccordionTrigger className="group rounded-xl bg-primary px-5 py-4 text-left text-lg font-black text-foreground hover:no-underline">
               <span>{resource.title}</span>
-              <ChevronDownIcon
-                className="ml-4 h-6 w-6 shrink-0 transition-transform group-data-[state=open]:rotate-180"
-                aria-hidden="true"
-              />
             </AccordionTrigger>
             <AccordionContent className="mt-2 rounded-xl bg-white px-5 py-6">
               <div className="max-w-none">

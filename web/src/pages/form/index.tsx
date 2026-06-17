@@ -37,26 +37,33 @@ import { QUESTIONNAIRE_FOV_ID, QUESTIONNAIRE_PCL5_ID } from '@/constants'
 const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const questions = useQuestions(questionnaire)
   const page = useAtomValue(formPageAtom)
-  const scaleX = interpolate([0, questions.length - 1], [0.01, 1])
+  const totalQuestions = questions.filter(
+    (q) => q.type !== 'section' && q.type !== 'text'
+  ).length
+  const currentQuestion = questions[page]
+  const currentQuestionNumber =
+    currentQuestion?.type === 'section' ? 0 : (currentQuestion?.number ?? 0)
+  const scaleX = interpolate([0, Math.max(totalQuestions - 1, 1)], [0.01, 1])
   const showProgress = page >= 0
 
   return (
     <>
-      <div className="fixed left-0 top-0 z-40 h-20 w-screen bg-study-header" />
+      <div className="fixed left-0 top-0 z-40 h-20 w-screen bg-study-header md:h-[2.8125rem]" />
       {showProgress && (
         <>
           <motion.div
-            className="fixed left-1/2 top-28 z-40 h-4 w-64 -translate-x-1/2 overflow-hidden rounded-full bg-primary"
+            className="fixed left-1/2 top-28 z-40 h-4 w-64 -translate-x-1/2 overflow-hidden rounded-full bg-primary md:top-[3.5625rem] md:h-2 md:w-32"
           >
             <motion.div
               className="h-full rounded-full bg-study-teal-dark"
-              animate={{ scaleX: scaleX(page) }}
+              animate={{ scaleX: scaleX(Math.max(currentQuestionNumber - 1, 0)) }}
               transition={{ type: 'spring', duration: 0.4 }}
               style={{ originX: 0 }}
             />
           </motion.div>
-          <motion.span className="fixed right-7 top-6 z-50 text-lg font-black text-foreground">
-            {Math.min(page + 1, questions.length)}/{questions.length}
+          <motion.span className="fixed right-7 top-6 z-50 text-lg font-black text-foreground md:top-4 md:text-sm">
+            {Math.min(Math.max(currentQuestionNumber, 1), totalQuestions)}/
+            {totalQuestions}
           </motion.span>
         </>
       )}
@@ -88,7 +95,7 @@ const NavigationButtons = ({
   return (
     <div className="fixed bottom-4 right-4 z-50 flex space-x-2">
       <Button
-        className="h-12 w-12 rounded-lg bg-study-coral p-0 text-white shadow-md hover:bg-study-coral/90"
+        className="h-9 w-9 rounded-lg bg-study-coral p-0 text-white shadow-md hover:bg-study-coral/90"
         disabled={page === 0}
         onClick={(e) => {
           e.preventDefault()
@@ -98,7 +105,7 @@ const NavigationButtons = ({
         <ChevronUpIcon />
       </Button>
       <Button
-        className="h-12 w-12 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
+        className="h-9 w-9 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
         disabled={canProceed}
         onClick={(e) => {
           e.preventDefault()
@@ -108,7 +115,7 @@ const NavigationButtons = ({
         <ChevronDownIcon />
       </Button>
       <Button
-        className="h-12 w-12 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
+        className="h-9 w-9 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
         disabled={canProceed}
         onClick={(e) => {
           e.preventDefault()

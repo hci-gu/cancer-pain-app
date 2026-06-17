@@ -31,6 +31,29 @@ const fallbackNames = [
   'Om våld',
 ]
 
+const designCollectionOrder = [
+  '85071a5innq3o43',
+  '1ei3zjui10q8q91',
+  '94ze51rc8dz5oh6',
+  '23s6oyiql5gc9qi',
+  '7d5griw67n84z36',
+]
+
+const sortCollectionsForDesign = (collections: ResourceCollection[]) =>
+  [...collections].sort((a, b) => {
+    const aIndex = designCollectionOrder.indexOf(a.id)
+    const bIndex = designCollectionOrder.indexOf(b.id)
+
+    if (aIndex !== -1 || bIndex !== -1) {
+      return (
+        (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) -
+        (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex)
+      )
+    }
+
+    return (a.sort ?? 999) - (b.sort ?? 999)
+  })
+
 const FaqTile = ({
   collection,
   index,
@@ -69,7 +92,7 @@ export default function FaqPage() {
   const collections = useAtomValue(resourcesAtom)
   const visibleCollections =
     collections.length > 0
-      ? collections.slice(0, 5)
+      ? sortCollectionsForDesign(collections).slice(0, 5)
       : Array.from({ length: 5 }, () => undefined)
 
   return (

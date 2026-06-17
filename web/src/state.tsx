@@ -101,7 +101,7 @@ export const resourcesAtom = atom(async () => {
       expand: 'resources',
       filter: 'visible_on_questions_and_answers = true',
     })
-    response.sort((a, b) => a.sort - b.sort)
+    response.sort((a, b) => (a.sort ?? 999) - (b.sort ?? 999))
     return response.map(mapResourceCollection)
   } catch (e) {
     console.error(e)
@@ -146,6 +146,7 @@ export type ResourceCollection = {
   resources: Resource[]
   description?: string
   image?: string
+  sort?: number
 }
 
 export type Resource = {
@@ -232,6 +233,7 @@ const mapResourceCollection = (resourceCollection: any): ResourceCollection => {
     name: resourceCollection.name,
     description: resourceCollection.description,
     image: image ? pb.files.getURL(resourceCollection, image) : undefined,
+    sort: resourceCollection.sort,
     resources: resourceCollection.expand?.resources?.map(mapResource) ?? [],
   }
 }

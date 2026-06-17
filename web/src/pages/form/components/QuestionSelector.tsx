@@ -24,6 +24,19 @@ import { ResourceDrawer } from '@/components/resource'
 const answerChipClassName =
   'flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 py-3 text-base font-bold text-foreground transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-card peer-data-[state=checked]:bg-study-teal-dark peer-data-[state=checked]:text-white sm:min-w-16'
 
+const isLengthMeasurementHelp = (question: Question) => {
+  const text = `${question.text} ${question.resource?.title ?? ''} ${
+    question.resource?.description ?? ''
+  } ${question.resourceCollection?.name ?? ''}`.toLowerCase()
+
+  return (
+    text.includes('vilken längd') ||
+    text.includes('längd på stav') ||
+    text.includes('längden') ||
+    text.includes('length measurement')
+  )
+}
+
 const renderQuestionType = (
   question: Question,
   field: ControllerRenderProps<FieldValues, any>,
@@ -142,12 +155,12 @@ const QuestionSelector = ({ question }: { question: Question }) => {
   }
 
   return (
-    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 md:px-16 md:pt-40">
+    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 md:px-16 md:pt-[4.875rem]">
       <FormField
         control={control}
         name={question.id}
         render={({ field }) => (
-          <FormItem className="min-h-[24rem] w-full bg-white px-6 py-10 text-center sm:px-12 md:max-w-3xl md:px-16">
+          <FormItem className="min-h-[24rem] w-full bg-white px-6 py-10 text-center sm:px-12 md:min-h-[13.75rem] md:max-w-[38.125rem] md:px-8 md:py-7">
             <div className="flex flex-col items-center gap-4">
               <div className="relative flex w-full items-start justify-center gap-2">
                 <FormLabel className="text-3xl font-black leading-none text-foreground">
@@ -155,14 +168,13 @@ const QuestionSelector = ({ question }: { question: Question }) => {
                     ? 'Information'
                     : `Fråga ${question.number}`}
                 </FormLabel>
-                {question.required && (
-                  <span className="text-xl font-black text-destructive">*</span>
-                )}
                 <div className="absolute right-0 top-0">
-                  {question.resource && (
+                  {question.resource && isLengthMeasurementHelp(question) && (
                     <ResourceDrawer resource={question.resource} />
                   )}
-                  {!question.resource && question.resourceCollection && (
+                  {!question.resource &&
+                    question.resourceCollection &&
+                    isLengthMeasurementHelp(question) && (
                     <ResourceDrawer
                       resourceCollection={question.resourceCollection}
                     />
