@@ -166,7 +166,7 @@ const Questions = ({
           <Button
             type="submit"
             disabled={loading}
-            onClick={(_) => onSubmit(answers)}
+            onClick={() => onSubmit(answers)}
           >
             {loading && <UpdateIcon className="animate-spin mr-2" />}
             Skicka in
@@ -189,8 +189,8 @@ const QuestionnaireIntro = ({
       : questionnaire.description
 
   return (
-    <section className="flex min-h-screen w-screen items-center justify-center bg-background px-4 pt-20">
-      <div className="w-full max-w-3xl bg-card px-6 py-10 text-center shadow-sm sm:px-16">
+    <section className="flex min-h-screen w-screen items-start justify-center bg-background px-4 pt-[12.5rem] md:pt-[10.5rem]">
+      <div className="flex min-h-[21.875rem] w-full flex-col justify-center bg-card px-6 py-10 text-center shadow-sm sm:px-16 md:max-w-[38.75rem]">
         <h1 className="text-3xl font-black text-foreground">
           {questionnaire.name}
         </h1>
@@ -323,7 +323,7 @@ const LoadedForm = ({
             onSubmit={onSubmit}
           />
         )}
-        <NavigationButtons questionnaire={questionnaire} />
+        {page >= 0 && <NavigationButtons questionnaire={questionnaire} />}
       </form>
     </Form>
   )

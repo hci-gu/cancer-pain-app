@@ -268,7 +268,6 @@ const mapQuestion = (question: any): Question => {
 }
 
 const mapQuestionnaire = (questionnaire: any): Questionnaire => {
-  console.log('Mapping questionnaire:', questionnaire)
   return {
     id: questionnaire.id,
     name: questionnaire.name,
@@ -307,11 +306,10 @@ export const questionnaireAtom = atomFamily((id: string) =>
   atom(async () => {
     const response = await pb.collection('questionnaires').getOne(id, {
       expand:
-        'questions,questions.options,questions.resource,questions.resourceCollection.resources,followup,followup.questions,followup.questions.options,followup.questions.resource,followup.questions.resourceCollection.resources',
+        'questions,questions.options,questions.resource,questions.resourceCollection.resources',
     })
 
-    let q = mapQuestionnaire(response)
-    console.log('Mapped questionnaire:', q)
+    const q = mapQuestionnaire(response)
     return q
   })
 )
@@ -356,7 +354,6 @@ export const answersForQuestionnaireAtom = atomFamily((id: string) => {
       const response = await pb.collection('answers').getList(0, 100, {
         filter: `questionnaire = "${id}"`,
       })
-      console.log(response)
       set(dataAtom, response.items.map(mapAnswer))
     } catch (e) {
       console.error(e)

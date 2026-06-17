@@ -40,7 +40,7 @@ function CheckInCard({
   const content = (
     <article
       className={cn(
-        'relative aspect-[350/268] overflow-hidden rounded-xl text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:aspect-[462/214]',
+        'relative aspect-[350/268] overflow-hidden rounded-xl text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:aspect-[462/214] sm:text-center',
         !href && 'hover:translate-y-0'
       )}
     >
@@ -55,13 +55,13 @@ function CheckInCard({
       </picture>
       <div
         className={cn(
-          'relative z-10 flex h-full flex-col items-center p-4',
-          hasBadge && 'justify-center gap-2 sm:gap-3'
+          'relative z-10 flex h-full flex-col items-start p-3 sm:items-center sm:p-4',
+          hasBadge && 'justify-start gap-2 sm:justify-center sm:gap-3'
         )}
       >
         <h2
           className={cn(
-            'max-w-[82%] text-xl font-black leading-none text-foreground',
+            'max-w-[82%] text-lg font-black leading-none text-foreground sm:text-xl',
             titleClassName
           )}
         >
@@ -70,7 +70,7 @@ function CheckInCard({
         {(badge || buttonLabel) && (
           <span
             className={cn(
-              'rounded-full px-6 py-2 text-base font-bold text-foreground',
+              'self-center rounded-full px-6 py-2 text-base font-bold text-foreground',
               buttonLabel ? 'bg-study-header' : 'bg-card/85'
             )}
           >

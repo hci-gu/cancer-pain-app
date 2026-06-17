@@ -7,22 +7,20 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Button } from '@/components/ui/button'
-import { Link } from 'react-router-dom'
 
 function AboutPage() {
   const setRead = useSetAtom(readAboutPageAtom)
   useEffect(() => {
     setRead(true)
-  }, [])
+  }, [setRead])
 
   return (
     <div className="space-y-7">
       <section className="space-y-5">
-        <h1 className="text-4xl font-black leading-tight md:text-5xl">
+        <h1 className="text-2xl font-black leading-tight md:text-4xl">
           Information om studien
         </h1>
-        <div className="space-y-5 text-lg font-bold leading-snug">
+        <div className="space-y-5 text-base font-semibold leading-snug md:text-lg md:font-bold">
           <p>
             Syftet med studien är att undersöka vid vilken tidpunkt som det är
             mest optimalt att påbörja vaginalstavsanvändning för att begränsa
@@ -78,15 +76,6 @@ function AboutPage() {
           </div>
         </div>
       </section>
-
-      <div className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link to="/faq">Frågor och svar</Link>
-        </Button>
-        <Button asChild variant="secondary">
-          <Link to="/faq/mer">Visa all information</Link>
-        </Button>
-      </div>
     </div>
   )
 }

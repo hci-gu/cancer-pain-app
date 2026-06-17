@@ -68,7 +68,7 @@ const FaqTile = ({
   return (
     <Link
       to={collection ? `/faq/${collection.id}` : '/faq/mer'}
-      className="study-focus relative block aspect-[2.18/1] overflow-hidden rounded-xl bg-primary transition-transform hover:-translate-y-0.5"
+      className="study-focus relative block aspect-[183/140] overflow-hidden rounded-xl bg-primary transition-transform hover:-translate-y-0.5 sm:aspect-[2.18/1]"
     >
       <picture>
         {!collection?.image && (
@@ -81,7 +81,7 @@ const FaqTile = ({
           className="absolute inset-0 h-full w-full object-cover"
         />
       </picture>
-      <span className="absolute inset-x-4 top-4 text-center text-xl font-black leading-tight text-foreground">
+      <span className="absolute inset-x-3 top-3 text-left text-base font-black leading-tight text-foreground sm:inset-x-4 sm:top-4 sm:text-center sm:text-xl">
         {label}
       </span>
     </Link>
@@ -104,7 +104,7 @@ export default function FaqPage() {
           kopplat till cancer och strålbehandling.
         </p>
       </div>
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5">
         {visibleCollections.map((collection, index) => (
           <FaqTile
             key={collection?.id ?? `fallback-${index}`}
@@ -114,7 +114,7 @@ export default function FaqPage() {
         ))}
         <Link
           to="/faq/mer"
-          className="study-focus relative block aspect-[2.18/1] overflow-hidden rounded-xl bg-study-pink transition-transform hover:-translate-y-0.5"
+          className="study-focus relative block aspect-[183/140] overflow-hidden rounded-xl bg-study-pink transition-transform hover:-translate-y-0.5 sm:aspect-[2.18/1]"
         >
           <picture>
             <source media="(max-width: 640px)" srcSet={learnMoreSquare} />
@@ -125,7 +125,7 @@ export default function FaqPage() {
               className="absolute inset-0 h-full w-full object-cover"
             />
           </picture>
-          <span className="absolute inset-x-4 top-4 text-center text-xl font-black leading-tight text-foreground">
+          <span className="absolute inset-x-3 top-3 text-left text-base font-black leading-tight text-foreground sm:inset-x-4 sm:top-4 sm:text-center sm:text-xl">
             Om du vill veta mer
           </span>
         </Link>

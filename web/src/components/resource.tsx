@@ -77,7 +77,7 @@ export function ResourceDrawer({
         </DialogHeader>
         <div className="flex max-h-[74vh] flex-col items-center overflow-y-auto pt-4">
           {resource && <Resource resource={resource} />}
-          {showLengthMeasurement && (
+          {showLengthMeasurement && !resource && (
             <picture className="mt-5 block w-full">
               <source media="(min-width: 640px)" srcSet={lengthMeasurementWide} />
               <img
@@ -138,6 +138,29 @@ export default function Resource({ resource }: { resource: ResourceType }) {
     resource.description,
     userData?.type ?? ''
   )
+
+  if (isLengthMeasurementHelp(resource.title, description)) {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <div className="resource-content space-y-5 text-base font-semibold leading-snug text-foreground">
+          <p>När du ska göra mätningen:</p>
+          <p>
+            Håll staven med din hand/fingrar invid slidans mynning. Titta på
+            stavens längdmarkering och notera längden. Om du är osäker eller
+            om greppet hamnar mitt emellan två markeringar - avrunda uppåt.
+          </p>
+          <picture className="block w-full">
+            <source media="(min-width: 640px)" srcSet={lengthMeasurementWide} />
+            <img
+              src={lengthMeasurementCompact}
+              alt="Illustration som visar vaginalstavens längdmarkeringar från 2 cm till 10 cm eller längre."
+              className="w-full"
+            />
+          </picture>
+        </div>
+      </Suspense>
+    )
+  }
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

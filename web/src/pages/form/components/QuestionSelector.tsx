@@ -155,7 +155,7 @@ const QuestionSelector = ({ question }: { question: Question }) => {
   }
 
   return (
-    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 md:px-16 md:pt-[4.875rem]">
+    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 md:px-16 md:pt-[9.875rem]">
       <FormField
         control={control}
         name={question.id}

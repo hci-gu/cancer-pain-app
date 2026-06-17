@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Fragment } from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -51,14 +52,18 @@ const LoginLayout = ({ children }: { children: any }) => {
       <Breadcrumb>
         <BreadcrumbList>
           {breadCrumbs.map((item, index) => (
-            <BreadcrumbItem key={index}>
-              {item.href ? (
-                <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
-              ) : (
-                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+            <Fragment key={`${item.label}-${index}`}>
+              <BreadcrumbItem>
+                {item.href ? (
+                  <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                ) : (
+                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                )}
+              </BreadcrumbItem>
+              {index < breadCrumbs.length - 1 && (
+                <BreadcrumbSeparator />
               )}
-              {index < breadCrumbs.length - 1 && <BreadcrumbSeparator />}
-            </BreadcrumbItem>
+            </Fragment>
           ))}
         </BreadcrumbList>
       </Breadcrumb>

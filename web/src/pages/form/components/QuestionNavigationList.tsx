@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -64,9 +65,9 @@ const QuestionNavigationList = ({
             Frågor
           </DialogTitle>
           <div className="h-px w-full bg-foreground" />
-          <span className="text-md font-medium">
+          <DialogDescription className="text-md font-medium text-foreground">
             Klicka på en fråga för att hoppa till den.
-          </span>
+          </DialogDescription>
         </DialogHeader>
         <div className="h-full">
           <ScrollArea className="h-[60vh]">
