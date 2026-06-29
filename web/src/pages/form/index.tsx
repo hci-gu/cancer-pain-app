@@ -48,11 +48,11 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
 
   return (
     <>
-      <div className="fixed left-0 top-0 z-40 h-20 w-screen bg-study-header md:h-[2.8125rem]" />
+      <div className="fixed left-0 top-0 z-40 h-20 w-screen bg-study-header" />
       {showProgress && (
         <>
           <motion.div
-            className="fixed left-1/2 top-28 z-40 h-4 w-64 -translate-x-1/2 overflow-hidden rounded-full bg-primary md:top-[3.5625rem] md:h-2 md:w-32"
+            className="fixed left-1/2 top-28 z-40 h-4 w-64 -translate-x-1/2 overflow-hidden rounded-full bg-primary"
           >
             <motion.div
               className="h-full rounded-full bg-study-teal-dark"
@@ -61,7 +61,7 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
               style={{ originX: 0 }}
             />
           </motion.div>
-          <motion.span className="fixed right-7 top-6 z-50 text-lg font-black text-foreground md:top-4 md:text-sm">
+          <motion.span className="fixed right-7 top-6 z-50 text-lg font-black text-foreground">
             {Math.min(Math.max(currentQuestionNumber, 1), totalQuestions)}/
             {totalQuestions}
           </motion.span>
@@ -189,7 +189,7 @@ const QuestionnaireIntro = ({
       : questionnaire.description
 
   return (
-    <section className="flex min-h-screen w-screen items-start justify-center bg-background px-4 pt-[12.5rem] md:pt-[10.5rem]">
+    <section className="flex min-h-screen w-screen items-start justify-center bg-background px-4 pt-[12.5rem]">
       <div className="flex min-h-[21.875rem] w-full flex-col justify-center bg-card px-6 py-10 text-center shadow-sm sm:px-16 md:max-w-[38.75rem]">
         <h1 className="text-3xl font-black text-foreground">
           {questionnaire.name}
@@ -201,7 +201,7 @@ const QuestionnaireIntro = ({
         />
         <Button
           type="button"
-          className="mt-4"
+          className="mx-auto mt-4 w-fit px-7"
           onClick={(event) => {
             event.preventDefault()
             setPage(0)
@@ -294,10 +294,6 @@ const LoadedForm = ({
       return
     }
     navigate('/form/success')
-    toast({
-      title: 'Inskickat',
-      description: 'Ditt svar har skickats in.',
-    })
     localStorage.removeItem(keyForQuestionnaire(questionnaire))
 
     setLoading(false)

@@ -155,12 +155,12 @@ const QuestionSelector = ({ question }: { question: Question }) => {
   }
 
   return (
-    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 md:px-16 md:pt-[9.875rem]">
+    <section className="flex h-full w-full items-start justify-center bg-background px-0 pt-44 sm:px-8 lg:px-16 lg:pt-[9.875rem]">
       <FormField
         control={control}
         name={question.id}
         render={({ field }) => (
-          <FormItem className="min-h-[24rem] w-full bg-white px-6 py-10 text-center sm:px-12 md:min-h-[13.75rem] md:max-w-[38.125rem] md:px-8 md:py-7">
+          <FormItem className="min-h-[24rem] w-full max-w-[38.75rem] bg-white px-6 py-10 text-center shadow-sm sm:px-12">
             <div className="flex flex-col items-center gap-4">
               <div className="relative flex w-full items-start justify-center gap-2">
                 <FormLabel className="text-3xl font-black leading-none text-foreground">

@@ -11,17 +11,17 @@ import { PinBottomIcon } from '@radix-ui/react-icons'
 export default function FormSuccessPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="fixed left-0 top-0 z-40 flex h-20 w-screen items-center justify-between bg-study-header px-6 md:h-[2.8125rem] md:px-4">
-        <div className="flex items-center gap-4 text-base font-bold md:gap-2 md:text-sm">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-study-teal-dark text-white md:h-8 md:w-8">
-            <ListBulletIcon className="h-7 w-7 md:h-5 md:w-5" />
+      <div className="fixed left-0 top-0 z-40 flex h-20 w-screen items-center justify-between bg-study-header px-6 lg:h-[2.8125rem] lg:px-4">
+        <div className="flex items-center gap-4 text-base font-bold lg:gap-2 lg:text-sm">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-study-teal-dark text-white lg:h-8 lg:w-8">
+            <ListBulletIcon className="h-7 w-7 lg:h-5 lg:w-5" />
           </span>
           Se alla frågor
         </div>
       </div>
 
-      <section className="flex min-h-screen w-full items-start justify-center px-0 pt-44 sm:px-8 md:px-16 md:pt-[10.5rem]">
-        <div className="min-h-[24rem] w-full bg-white px-6 py-10 text-center sm:px-12 md:min-h-[13.75rem] md:max-w-[38.125rem] md:px-8 md:py-7">
+      <section className="flex min-h-screen w-full items-start justify-center px-0 pt-44 sm:px-8 lg:px-16 lg:pt-[10.5rem]">
+        <div className="min-h-[24rem] w-full max-w-[38.75rem] bg-white px-6 py-10 text-center sm:px-12">
           <h1 className="text-3xl font-black leading-tight text-foreground">
             Tack för ditt svar!
           </h1>

@@ -133,7 +133,7 @@
 
   @media (min-width: 1200px) {
     html {
-      font-size: clamp(16px, 1.111vw, 24px);
+      font-size: clamp(16px, 1.111vw, 32px);
     }
   }
 
