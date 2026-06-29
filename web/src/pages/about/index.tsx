@@ -39,7 +39,7 @@ function AboutPage() {
           <AccordionTrigger className="rounded-xl bg-primary px-5 py-4 text-left text-xl font-black text-foreground hover:no-underline">
             Hur går studien till?
           </AccordionTrigger>
-          <AccordionContent className="bg-white px-5 py-5 text-base font-bold leading-relaxed">
+          <AccordionContent className="mt-2 rounded-xl bg-white px-5 py-5 text-base font-bold leading-relaxed">
             Undersökningen är en så kallad observationsstudie. Du som
             studiedeltagare startar vaginalstavsterapin före strålstart istället
             för efter avslutad strålbehandling, vilket är praxis idag.
@@ -49,7 +49,7 @@ function AboutPage() {
           <AccordionTrigger className="rounded-xl bg-primary px-5 py-4 text-left text-xl font-black text-foreground hover:no-underline">
             Varför ska jag svara på frågorna?
           </AccordionTrigger>
-          <AccordionContent className="bg-white px-5 py-5 text-base font-bold leading-relaxed">
+          <AccordionContent className="mt-2 rounded-xl bg-white px-5 py-5 text-base font-bold leading-relaxed">
             Dina svar hjälper oss att få mer kunskap och förfina metoden för att
             förebygga vaginala förändringar och påverkan på sexuell hälsa i
             samband med cancerbehandling.

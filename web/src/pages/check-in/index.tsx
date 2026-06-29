@@ -61,7 +61,8 @@ function CheckInCard({
       >
         <h2
           className={cn(
-            'max-w-[82%] text-lg font-black leading-none text-foreground sm:text-xl',
+            'max-w-[82%] text-sm font-black leading-tight text-foreground sm:text-xl sm:leading-none',
+            complete && 'pr-8 sm:pr-0',
             titleClassName
           )}
         >
@@ -70,7 +71,7 @@ function CheckInCard({
         {(badge || buttonLabel) && (
           <span
             className={cn(
-              'self-center rounded-full px-6 py-2 text-base font-bold text-foreground',
+              'self-center rounded-full px-5 py-2 text-sm font-bold text-foreground sm:px-6 sm:text-base',
               buttonLabel ? 'bg-study-header' : 'bg-card/85'
             )}
           >
@@ -83,7 +84,7 @@ function CheckInCard({
           src={successIcon}
           alt=""
           aria-hidden="true"
-          className="absolute right-4 top-4 z-20 h-10 w-10"
+          className="absolute right-3 top-3 z-20 h-7 w-7 sm:right-4 sm:top-4 sm:h-8 sm:w-8"
         />
       )}
     </article>

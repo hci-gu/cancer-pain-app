@@ -50,8 +50,13 @@ export function StudyTaskCard({
       </picture>
 
       {complete && (
-        <span className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full">
-          <img src={successIcon} alt="" aria-hidden="true" className="h-9 w-9" />
+        <span className="absolute right-3 top-3 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full sm:h-8 sm:w-8">
+          <img
+            src={successIcon}
+            alt=""
+            aria-hidden="true"
+            className="h-7 w-7 sm:h-8 sm:w-8"
+          />
           <span className="sr-only">Klar</span>
         </span>
       )}

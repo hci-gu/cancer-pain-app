@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "myapp/migrations"
 	"archive/zip"
 	"bytes"
 	"encoding/base64"
@@ -10,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	_ "myapp/migrations"
 	"net/http"
 	"net/url"
 	"os"

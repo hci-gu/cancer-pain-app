@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: pre-rt-web-test
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: pre-rt-web-test
+    template:
+        metadata:
+            labels:
+                app: pre-rt-web-test
+        spec:
+            containers:
+                - name: pre-rt-web-test
+                  image: 'registry.k8s.gu.se/appademin/pre-rt-web:1.0.0'
+                  ports:
+                      - containerPort: 8080
+                        name: web
+                        protocol: TCP
+                  imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: pre-rt-web-service-test
+spec:
+    selector:
+        app: pre-rt-web-test
+    ports:
+        - protocol: TCP
+          port: 8080
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+    name: pre-rt-web-route-test
+    annotations:
+        kubernetes.io/tls-acme: 'true'
+spec:
+    host: pre-rt.test.appadem.in
+    to:
+        kind: Service
+        name: pre-rt-web-service-test
+        weight: 100
+    port:
+        targetPort: 8080
+    tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
+    wildcardPolicy: None

@@ -1,6 +1,9 @@
 package migrations
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 )
@@ -83,6 +86,9 @@ func init() {
 
 		for _, data := range records {
 			record, err := app.FindRecordById("resourceCollection", data.id)
+			if errors.Is(err, sql.ErrNoRows) {
+				continue
+			}
 			if err != nil {
 				return err
 			}

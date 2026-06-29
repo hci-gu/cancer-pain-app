@@ -274,7 +274,7 @@ export default function Resource({ resource }: { resource: ResourceType }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div
-        className="resource-content [&_a]:text-primary [&_a]:hover:underline [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2 [&_p]:font-light [&_p]:text-base"
+        className="resource-content [&_a]:text-study-link-blue [&_a]:underline [&_a]:decoration-study-link-blue/60 [&_a]:underline-offset-2 [&_a]:hover:decoration-study-link-blue [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-2 [&_p]:font-light [&_p]:text-base"
         dangerouslySetInnerHTML={{
           __html: description,
         }}

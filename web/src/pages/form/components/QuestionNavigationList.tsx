@@ -67,7 +67,7 @@ const QuestionNavigationList = ({
         <Button
           type="button"
           variant="ghost"
-          className="fixed left-6 top-0 z-50 h-20 gap-3 bg-transparent px-0 text-base font-bold leading-none text-foreground hover:bg-white/30 lg:left-4 lg:top-2 lg:h-9 lg:gap-2 lg:px-4 lg:text-sm"
+          className="fixed left-6 top-0 z-50 h-20 gap-3 bg-transparent px-0 text-base font-bold leading-none text-foreground hover:bg-white/30 lg:left-4 lg:gap-2 lg:px-4 lg:text-sm"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-study-teal-dark text-white lg:h-8 lg:w-8">
             <ListBulletIcon className="h-7 w-7 lg:h-5 lg:w-5" />

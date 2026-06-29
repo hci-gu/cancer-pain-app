@@ -89,8 +89,8 @@ function StudyBreadcrumbs({ items }: { items: BreadcrumbItemType[] }) {
   if (items.length === 0) return null
 
   return (
-    <Breadcrumb className="translate-y-3.5">
-      <BreadcrumbList className="gap-2 text-base font-bold text-foreground sm:gap-2">
+    <Breadcrumb className="sm:translate-y-3.5">
+      <BreadcrumbList className="gap-2 text-base font-semibold leading-tight text-foreground sm:gap-2">
         {items.map((item, index) => {
           const isLast = index === items.length - 1
 
@@ -101,19 +101,19 @@ function StudyBreadcrumbs({ items }: { items: BreadcrumbItemType[] }) {
                   <BreadcrumbLink asChild>
                     <NavLink
                       to={item.href}
-                      className="font-bold text-foreground hover:text-foreground"
+                      className="font-semibold text-foreground/65 hover:text-foreground"
                     >
                       {item.label}
                     </NavLink>
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage className="font-bold text-foreground">
+                  <BreadcrumbPage className="font-black text-foreground">
                     {item.label}
                   </BreadcrumbPage>
                 )}
               </BreadcrumbItem>
               {!isLast && (
-                <BreadcrumbSeparator className="font-bold text-foreground">
+                <BreadcrumbSeparator className="flex items-center font-semibold text-foreground/45">
                   {'>'}
                 </BreadcrumbSeparator>
               )}

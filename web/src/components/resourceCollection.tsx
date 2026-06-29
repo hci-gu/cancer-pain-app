@@ -190,7 +190,7 @@ export default function ResourceAccordion({
       >
         {collection.description && (
           <div
-            className="resource-content rounded-xl bg-white px-5 py-4 text-base font-bold leading-relaxed [&_a]:text-study-teal-dark [&_a]:underline [&_li]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
+            className="resource-content rounded-xl bg-white px-5 py-4 text-base font-bold leading-relaxed [&_a]:text-study-link-blue [&_a]:underline [&_a]:decoration-study-link-blue/60 [&_a]:underline-offset-2 [&_a]:hover:decoration-study-link-blue [&_li]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
             dangerouslySetInnerHTML={{
               __html: collection.description ?? '',
             }}
