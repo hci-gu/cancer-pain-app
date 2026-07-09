@@ -1,4 +1,4 @@
-import { Answer, Questionnaire } from './state'
+import type { Answer, Questionnaire } from './state'
 
 export const isSameDay = (a: Date | null, b: Date | null) => {
   if (!a || !b) return false
@@ -13,6 +13,25 @@ export const isSameDay = (a: Date | null, b: Date | null) => {
 export const isWithinPeriod = (date: Date, startDate: Date, endDate: Date) => {
   if (isSameDay(date, startDate) || isSameDay(date, endDate)) return true
   return date >= startDate && date <= endDate
+}
+
+export const isSameWeek = (a: Date | null, b: Date | null) => {
+  if (!a || !b) return false
+
+  const startOfWeek = (date: Date) => {
+    const value = new Date(date)
+    value.setHours(12, 0, 0, 0)
+    value.setDate(value.getDate() - value.getDay())
+    return value
+  }
+
+  return isSameDay(startOfWeek(a), startOfWeek(b))
+}
+
+export const isSameMonth = (a: Date | null, b: Date | null) => {
+  if (!a || !b) return false
+
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()
 }
 
 export const dayStringFromDate = (date: Date) => {
@@ -36,7 +55,15 @@ export const questionnaireAnswered = (
       return answers.some((answer) =>
         isSameDay(new Date(answer.date), date ?? new Date())
       )
+    case 'weekly':
+      return answers.some((answer) =>
+        isSameWeek(new Date(answer.date), date ?? new Date())
+      )
+    case 'monthly':
+      return answers.some((answer) =>
+        isSameMonth(new Date(answer.date), date ?? new Date())
+      )
     default:
-      break
+      return false
   }
 }

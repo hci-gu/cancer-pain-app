@@ -1,8 +1,9 @@
 import { FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
+import { cn } from '@/lib/utils'
 import { Question } from '@/state'
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import {
   ControllerRenderProps,
   FieldValues,
@@ -25,13 +26,12 @@ const SelectFollowup = ({
   question,
   index,
   disabled,
+  dense = false,
 }: {
   question: Question
   index: number
-  field: ControllerRenderProps<FieldValues, any>
   disabled: boolean
-  onAnswer: (value: any) => void
-  optionInputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>
+  dense?: boolean
 }) => {
   const { control } = useFormContext()
   const id = `${question.id}_${index}`
@@ -47,9 +47,11 @@ const SelectFollowup = ({
           name={id}
           value={field.value}
           defaultValue={field.value}
-          className={`flex flex-wrap justify-end gap-2 leading-tight sm:gap-3 sm:leading-normal ${
-            disabled && `opacity-25`
-          }`}
+          className={cn(
+            'flex flex-wrap justify-end leading-tight sm:leading-normal',
+            dense ? 'gap-1.5 sm:gap-2' : 'gap-2 sm:gap-3',
+            disabled && 'opacity-25'
+          )}
         >
           {options.map((option, index) => {
             return (
@@ -73,7 +75,11 @@ const SelectFollowup = ({
                 </FormControl>
                 <label
                   htmlFor={`${id}_${option}_${index}`}
-                  className={chipClassName}
+                  className={cn(
+                    chipClassName,
+                    dense &&
+                      'min-h-10 min-w-14 rounded-lg px-4 py-2 text-sm leading-snug sm:min-h-11 sm:min-w-16 sm:px-5 sm:py-2.5 sm:text-base'
+                  )}
                 >
                   {option}
                 </label>
@@ -97,10 +103,15 @@ const SelectNumericalInput = forwardRef<
   SelectNumericalInputProps
 >(({ initialValue, disabled, updateValue }, ref) => {
   const [value, setValue] = useState(initialValue ?? '')
+  const updateValueRef = useRef(updateValue)
+
+  useEffect(() => {
+    updateValueRef.current = updateValue
+  }, [updateValue])
 
   useEffect(() => {
     if (value.length > 0 && !isNaN(Number(value))) {
-      updateValue(value)
+      updateValueRef.current(value)
     }
   }, [value])
 
@@ -134,45 +145,60 @@ export default function Select({
   field,
   onAnswer,
   optionInputRefs,
+  dense = false,
 }: {
   question: Question
-  field: ControllerRenderProps<FieldValues, any>
-  onAnswer: (value: any) => void
+  field: ControllerRenderProps<FieldValues, string>
+  onAnswer: (value: unknown) => void
   optionInputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>
+  dense?: boolean
 }) {
   const { control } = useFormContext()
   const options = question.options?.value ?? []
+  const hasFollowupOptions = Boolean(question.options?.followup?.length)
+  const stackOptions = options.length > 2
+  const stackRows = stackOptions || hasFollowupOptions
 
   return (
     <RadioGroup
       name={question.id}
       value={field.value}
       defaultValue={field.value}
-      className={`flex max-w-full flex-wrap justify-center gap-3 leading-tight sm:gap-4 sm:leading-normal ${
-        question.options?.followup?.length && 'flex-col items-start'
-      }`}
+      className={cn(
+        'flex max-w-full leading-tight sm:leading-normal',
+        dense && stackRows ? 'gap-2.5 sm:gap-3' : 'gap-3 sm:gap-4',
+        stackRows
+          ? 'w-full flex-col items-stretch'
+          : 'flex-wrap justify-center',
+        hasFollowupOptions && 'items-start'
+      )}
     >
       {options.map((option, index) => {
         const updateValue = (value: string, checked: boolean) => {
+          const selectedValues = Array.isArray(field.value)
+            ? field.value.filter(
+                (selectedValue): selectedValue is string =>
+                  typeof selectedValue === 'string'
+              )
+            : []
+
           if (!checked) {
-            // reset optionInpurRef value
+            // reset optionInputRef value
             if (optionInputRefs.current[index]) {
               optionInputRefs.current[index].value = ''
             }
           }
 
           if (question.type === 'multipleChoice') {
-            field.value = field.value || []
-
             const newValue = checked
               ? [
-                  ...field.value.filter(
-                    (val: any) => !compareOptionValues(val, value)
+                  ...selectedValues.filter(
+                    (val) => !compareOptionValues(val, value)
                   ),
                   value,
                 ]
-              : field.value.filter(
-                  (val: any) => !compareOptionValues(val, value)
+              : selectedValues.filter(
+                  (val) => !compareOptionValues(val, value)
                 )
             if (question.options?.followup && !checked) {
               control.unregister(`${question.id}_${index}`)
@@ -194,15 +220,18 @@ export default function Select({
         const isChecked =
           question.type === 'singleChoice'
             ? compareOptionValues(field.value, option)
-            : field.value?.some((val: string) =>
-                compareOptionValues(val, option)
+            : Array.isArray(field.value) &&
+              field.value.some(
+                (val) =>
+                  typeof val === 'string' && compareOptionValues(val, option)
               )
 
         let optionNumericValue = ''
         if (option.includes('{AMOUNT}') && field.value) {
-          const optionValue = field.value.find
-            ? field.value?.find((val: string) =>
-                compareOptionValues(val, option)
+          const optionValue = Array.isArray(field.value)
+            ? field.value.find(
+                (val) =>
+                  typeof val === 'string' && compareOptionValues(val, option)
               )
             : field.value
           if (optionValue) {
@@ -214,12 +243,18 @@ export default function Select({
         return (
           <div
             key={`${question.id}_${option}_${index}`}
-            className={`flex max-w-full items-center gap-4 ${
-              question.options?.followup && `justify-between w-full`
-            }`}
+            className={cn(
+              'flex max-w-full items-center',
+              dense ? 'gap-3 sm:gap-4' : 'gap-4',
+              stackRows && 'w-full',
+              hasFollowupOptions ? 'justify-between' : 'justify-center'
+            )}
           >
             <FormItem
-              className="flex items-center"
+              className={cn(
+                'flex items-center',
+                stackOptions && !hasFollowupOptions && 'w-full'
+              )}
               key={`${question.id}_${option}_${index}`}
             >
               <FormControl>
@@ -237,7 +272,13 @@ export default function Select({
               </FormControl>
               <label
                 htmlFor={`${question.id}-option-${index}`}
-                className={chipClassName}
+                className={cn(
+                  chipClassName,
+                  stackOptions && !hasFollowupOptions && 'w-full',
+                  dense &&
+                    stackOptions &&
+                    'min-h-10 rounded-lg px-4 py-2 text-sm leading-snug sm:min-h-11 sm:px-5 sm:py-2.5 sm:text-base'
+                )}
               >
                 {option.includes('{AMOUNT}') ? (
                   <>
@@ -258,9 +299,11 @@ export default function Select({
                         disabled={
                           question.type === 'singleChoice'
                             ? !compareOptionValues(field.value, option)
-                            : !field.value ||
-                              !field.value.some((val: any) =>
-                                compareOptionValues(val, option)
+                            : !Array.isArray(field.value) ||
+                              !field.value.some(
+                                (val) =>
+                                  typeof val === 'string' &&
+                                  compareOptionValues(val, option)
                               )
                         }
                       />
@@ -279,14 +322,12 @@ export default function Select({
                 )}
               </label>
             </FormItem>
-            {question.options?.followup && (
+            {hasFollowupOptions && (
               <SelectFollowup
                 question={question}
                 index={index}
                 disabled={!isChecked}
-                field={field}
-                onAnswer={onAnswer}
-                optionInputRefs={optionInputRefs}
+                dense={dense}
               />
             )}
           </div>

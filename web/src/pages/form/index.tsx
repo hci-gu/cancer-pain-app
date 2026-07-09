@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { motion, interpolate } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -12,7 +12,7 @@ import {
 } from '@/state'
 import QuestionSelector from './components/QuestionSelector'
 import { Form } from '@/components/ui/form'
-import { useWatch } from 'react-hook-form'
+import { type FieldValues, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import {
   ChevronDownIcon,
@@ -27,6 +27,7 @@ import { answeredUpTo, canProceedAtom, formPageAtom } from './state'
 import { questionnaireAnswered } from '@/utils'
 import useFormStateWithCache, {
   keyForQuestionnaire,
+  type QuestionnaireFormSchema,
   SyncFormStateToLocalStorage,
   useScrollToLastAnsweredQuestion,
 } from './hooks/useFormState'
@@ -40,9 +41,9 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
   const totalQuestions = questions.filter(
     (q) => q.type !== 'section' && q.type !== 'text'
   ).length
-  const currentQuestion = questions[page]
-  const currentQuestionNumber =
-    currentQuestion?.type === 'section' ? 0 : (currentQuestion?.number ?? 0)
+  const currentQuestionNumber = questions
+    .slice(0, Math.max(page + 1, 0))
+    .filter((q) => q.type !== 'section' && q.type !== 'text').length
   const scaleX = interpolate([0, Math.max(totalQuestions - 1, 1)], [0.01, 1])
   const showProgress = page >= 0
 
@@ -53,6 +54,15 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
         <>
           <motion.div
             className="fixed left-1/2 top-28 z-40 h-4 w-64 -translate-x-1/2 overflow-hidden rounded-full bg-primary"
+            data-testid="questionnaire-progress-bar"
+            role="progressbar"
+            aria-label="Framsteg"
+            aria-valuemin={1}
+            aria-valuemax={totalQuestions}
+            aria-valuenow={Math.min(
+              Math.max(currentQuestionNumber, 1),
+              totalQuestions
+            )}
           >
             <motion.div
               className="h-full rounded-full bg-study-teal-dark"
@@ -61,7 +71,11 @@ const ProgressBar = ({ questionnaire }: { questionnaire: Questionnaire }) => {
               style={{ originX: 0 }}
             />
           </motion.div>
-          <motion.span className="fixed right-7 top-6 z-50 text-lg font-black text-foreground">
+          <motion.span
+            className="fixed right-7 top-6 z-50 text-lg font-black text-foreground"
+            data-testid="questionnaire-progress"
+            aria-label="Framsteg"
+          >
             {Math.min(Math.max(currentQuestionNumber, 1), totalQuestions)}/
             {totalQuestions}
           </motion.span>
@@ -97,6 +111,8 @@ const NavigationButtons = ({
       <Button
         className="h-9 w-9 rounded-lg bg-study-coral p-0 text-white shadow-md hover:bg-study-coral/90"
         disabled={page === 0}
+        aria-label="Föregående fråga"
+        data-testid="questionnaire-previous"
         onClick={(e) => {
           e.preventDefault()
           setPage(page - 1)
@@ -106,7 +122,9 @@ const NavigationButtons = ({
       </Button>
       <Button
         className="h-9 w-9 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
-        disabled={canProceed}
+        disabled={!canProceed}
+        aria-label="Nästa fråga"
+        data-testid="questionnaire-next"
         onClick={(e) => {
           e.preventDefault()
           setPage(page + 1)
@@ -116,7 +134,9 @@ const NavigationButtons = ({
       </Button>
       <Button
         className="h-9 w-9 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
-        disabled={canProceed}
+        disabled={!canProceed}
+        aria-label="Sista obesvarade frågan"
+        data-testid="questionnaire-last"
         onClick={(e) => {
           e.preventDefault()
           setPage(canScrollUpTo)
@@ -135,7 +155,7 @@ const Questions = ({
 }: {
   questionnaire: Questionnaire
   loading: boolean
-  onSubmit: (data: any) => void
+  onSubmit: (data: FieldValues) => void
 }) => {
   const [currentPage, setCurrentPage] = useAtom(formPageAtom)
   const questions = useQuestions(questionnaire)
@@ -150,6 +170,9 @@ const Questions = ({
     <div
       className="h-screen w-screen bg-background"
       style={{ position: 'absolute', overflow: 'hidden' }}
+      data-testid="questionnaire-pages"
+      data-current-page={currentPage}
+      data-question-count={questions.length}
     >
       <ReactPageScroller
         containerHeight={'100vh'}
@@ -166,6 +189,7 @@ const Questions = ({
           <Button
             type="submit"
             disabled={loading}
+            data-testid="questionnaire-submit"
             onClick={() => onSubmit(answers)}
           >
             {loading && <UpdateIcon className="animate-spin mr-2" />}
@@ -261,7 +285,7 @@ const LoadedForm = ({
   formSchema,
 }: {
   questionnaire: Questionnaire
-  formSchema: any
+  formSchema: QuestionnaireFormSchema
 }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -273,7 +297,7 @@ const LoadedForm = ({
     formSchema,
   })
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FieldValues) => {
     setLoading(true)
     try {
       // get date from query params
@@ -293,10 +317,8 @@ const LoadedForm = ({
       setLoading(false)
       return
     }
-    navigate('/form/success')
     localStorage.removeItem(keyForQuestionnaire(questionnaire))
-
-    setLoading(false)
+    navigate('/form/success')
   }
 
   return (
@@ -330,9 +352,17 @@ const FormPage = () => {
   const schema = useAtomValue(formStateAtom(id ?? ''))
   const questionnaire = useAtomValue(questionnaireAtom(id ?? ''))
 
-  const answers = useAtomValue(answersForQuestionnaireAtom(questionnaire.id))
+  const [answers, refreshAnswers] = useAtom(
+    answersForQuestionnaireAtom(questionnaire.id)
+  )
   const queryDate = new URLSearchParams(window.location.search).get('date')
   const date = queryDate ? new Date(queryDate) : new Date()
+
+  useEffect(() => {
+    if (questionnaire.id) {
+      refreshAnswers()
+    }
+  }, [questionnaire.id, refreshAnswers])
 
   const answered = questionnaireAnswered(questionnaire, answers, date)
 

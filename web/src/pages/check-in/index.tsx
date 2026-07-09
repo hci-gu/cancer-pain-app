@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAtomValue } from 'jotai'
 import { useAnswers, userDataAtom } from '@/state'
 import { cn } from '@/lib/utils'
+import { isSameDay } from '@/utils'
 import registrationArtMobile from '@/assets/redesign/dashboard-cards/registration-card-square--p64.svg'
 import registrationArt from '@/assets/redesign/dashboard-cards/registration-card-large-wide--p70.svg'
 import calendarArtMobile from '@/assets/redesign/dashboard-cards/calendar-card-yellow-alt-wide--p75.svg'
@@ -101,11 +102,15 @@ function CheckInCard({
 
 export default function CheckInPage() {
   const user = useAtomValue(userDataAtom)
+  const dailyAnswers = useAnswers(DAILY_FORM_ID)
   const treatmentEndAnswers = useAnswers(TREATMENT_END_FORM_ID)
   const treatmentStart = user?.treatmentStart
   const treatmentStartLabel = treatmentStart
     ? treatmentStart.toLocaleDateString('sv-SE')
     : 'Saknas'
+  const dailyComplete = dailyAnswers.some((answer) =>
+    isSameDay(new Date(answer.date), new Date())
+  )
   const treatmentEndComplete = treatmentEndAnswers.length > 0
 
   return (
@@ -135,6 +140,7 @@ export default function CheckInPage() {
           href={`/forms/${DAILY_FORM_ID}`}
           mobileArt={registrationArtMobile}
           art={registrationArt}
+          complete={dailyComplete}
           titleClassName="max-w-[78%]"
         />
         <CheckInCard

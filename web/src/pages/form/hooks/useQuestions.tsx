@@ -1,20 +1,23 @@
-import { Questionnaire } from '@/state'
+import type { Questionnaire } from '@/state'
 import { useAtomValue } from 'jotai'
 import { useWatch } from 'react-hook-form'
 import { formPageAtom } from '../state'
 
-const compare = (answer: any, dependencyValue: any) => {
+type AnswerValues = Record<string, unknown>
+
+export const compareAnswer = (answer: unknown, dependencyValue: unknown) => {
   if (Array.isArray(answer)) {
     return answer.includes(dependencyValue)
   }
   return answer === dependencyValue
 }
 
-const useQuestions = (questionnaire: Questionnaire) => {
-  const values = useWatch()
-
+export const buildQuestions = (
+  questionnaire: Questionnaire,
+  values: AnswerValues = {}
+) => {
   let questionNumber = 1
-  const followupQuestions = new Set()
+  const followupQuestions = new Set<string>()
   for (const question of questionnaire.questions) {
     for (const followup of question.followup) {
       followupQuestions.add(followup)
@@ -28,20 +31,27 @@ const useQuestions = (questionnaire: Questionnaire) => {
         if (Array.isArray(question.dependencyValue)) {
           const [method, dependencyValue] = question.dependencyValue
 
-          if (method == 'NOT') {
-            return !compare(values[question.dependency], dependencyValue)
+          if (method === 'NOT') {
+            return !compareAnswer(values[question.dependency], dependencyValue)
           }
         }
 
-        return compare(values[question.dependency], question.dependencyValue)
+        return compareAnswer(
+          values[question.dependency],
+          question.dependencyValue
+        )
       }
       return true
     })
+    .map((question) => ({ ...question }))
 
-  let questionsToInsert = []
+  const questionsToInsert: Questionnaire['questions'] = []
   for (const question of questions) {
     if (question.followup.length) {
-      const shouldAdd = compare(values[question.id], question.dependencyValue)
+      const shouldAdd = compareAnswer(
+        values[question.id],
+        question.dependencyValue
+      )
       if (shouldAdd) {
         for (const followup of question.followup) {
           const followupQuestion = questionnaire.questions.find(
@@ -72,7 +82,7 @@ const useQuestions = (questionnaire: Questionnaire) => {
   for (const fQuestionnaire of questionnaire.followup ?? []) {
     let anyMatched = false
     for (const questionId of fQuestionnaire.dependency) {
-      if (compare(values[questionId], fQuestionnaire.dependencyValue)) {
+      if (compareAnswer(values[questionId], fQuestionnaire.dependencyValue)) {
         anyMatched = true
       }
     }
@@ -83,7 +93,7 @@ const useQuestions = (questionnaire: Questionnaire) => {
           cloned.id = `followup_${fQuestionnaire.id}_${question.id}`
           questions.push(cloned)
         } else if (
-          compare(
+          compareAnswer(
             values[`followup_${fQuestionnaire.id}_${question.dependency}`],
             question.dependencyValue
           )
@@ -98,11 +108,17 @@ const useQuestions = (questionnaire: Questionnaire) => {
 
   return questions.map((question) => {
     if (question.type !== 'section') {
-      question.number = questionNumber
+      question = { ...question, number: questionNumber }
       questionNumber++
     }
     return question
   })
+}
+
+const useQuestions = (questionnaire: Questionnaire) => {
+  const values = useWatch()
+
+  return buildQuestions(questionnaire, values)
 }
 
 export const useCurrentSection = (questionnaire: Questionnaire) => {

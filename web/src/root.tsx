@@ -85,7 +85,12 @@ const RootPage = () => {
       !location.pathname.includes('history')) ||
     location.pathname === '/form/success'
   ) {
-    return <Outlet />
+    return (
+      <>
+        <Outlet />
+        <Toaster />
+      </>
+    )
   }
 
   return (

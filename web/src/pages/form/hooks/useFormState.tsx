@@ -1,23 +1,28 @@
-import { Questionnaire } from '@/state'
+import type { Questionnaire } from '@/state'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useForm, useFormContext, useWatch } from 'react-hook-form'
 import { useLayoutEffect, useRef } from 'react'
 import { useSetAtom } from 'jotai'
 import { formPageAtom } from '../state'
 import useQuestions from './useQuestions'
 
-export const keyForQuestionnaire = (questionnaire: Questionnaire) => {
-  const date = new Date()
+export type QuestionnaireFormSchema = Parameters<typeof zodResolver>[0]
+
+export const keyForQuestionnaire = (
+  questionnaire: Questionnaire,
+  date = new Date()
+) => {
   switch (questionnaire.occurrence) {
-    case 'daily':
+    case 'daily': {
       const day = date.toISOString().split('T')[0]
       return `${questionnaire.id}-${day}`
-    case 'weekly':
+    }
+    case 'weekly': {
       // get the first day of the week
       const week = new Date(date)
       week.setDate(date.getDate() - date.getDay())
       return `${questionnaire.id}-${week.toISOString().split('T')[0]}`
+    }
     case 'monthly':
       return `${questionnaire.id}-${date
         .toISOString()
@@ -40,12 +45,12 @@ const useFormStateWithCache = ({
   formSchema,
 }: {
   questionnaire: Questionnaire
-  formSchema: any
+  formSchema: QuestionnaireFormSchema
 }) => {
   const key = keyForQuestionnaire(questionnaire)
   const answers = getAnswersFromLocalStorage(key)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: answers,
   })
