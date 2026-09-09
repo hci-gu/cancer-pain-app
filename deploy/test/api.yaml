@@ -18,13 +18,17 @@ spec:
                       claimName: pre-rt-pv-claim-test
             containers:
                 - name: pre-rt-api-test
-                  image: 'registry.k8s.gu.se/appademin/pre-rt-api:1.0.1'
+                  image: 'registry.k8s.gu.se/appademin/pre-rt-api:1.0.3'
                   imagePullPolicy: Always
                   ports:
                       - containerPort: 8080
                         name: web
                         protocol: TCP
                   env:
+                    - name: APP_ENV
+                      value: test
+                    - name: TEST_LOGIN_USER_ID
+                      value: publictestuser1
                     - name: ELKS_API_USERNAME
                       valueFrom:
                         secretKeyRef:
@@ -38,33 +42,33 @@ spec:
                   volumeMounts:
                       - mountPath: /pb/pb_data
                         name: pre-rt-api-persistent-storage-test
----
-apiVersion: v1
-kind: Service
-metadata:
-    name: pre-rt-api-service-test
-spec:
-    selector:
-        app: pre-rt-api-test
-    ports:
-        - protocol: TCP
-          port: 8080
----
-kind: Route
-apiVersion: route.openshift.io/v1
-metadata:
-    name: pre-rt-api-test
-    annotations:
-        kubernetes.io/tls-acme: 'true'
-spec:
-    host: pre-rt-api.test.appadem.in
-    to:
-        kind: Service
-        name: pre-rt-api-service-test
-        weight: 100
-    port:
-        targetPort: 8080
-    tls:
-        termination: edge
-        insecureEdgeTerminationPolicy: Redirect
-    wildcardPolicy: None
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#     name: pre-rt-api-service-test
+# spec:
+#     selector:
+#         app: pre-rt-api-test
+#     ports:
+#         - protocol: TCP
+#           port: 8080
+# ---
+# kind: Route
+# apiVersion: route.openshift.io/v1
+# metadata:
+#     name: pre-rt-api-test
+#     annotations:
+#         kubernetes.io/tls-acme: 'true'
+# spec:
+#     host: pre-rt-api.test.appadem.in
+#     to:
+#         kind: Service
+#         name: pre-rt-api-service-test
+#         weight: 100
+#     port:
+#         targetPort: 8080
+#     tls:
+#         termination: edge
+#         insecureEdgeTerminationPolicy: Redirect
+#     wildcardPolicy: None

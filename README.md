@@ -29,11 +29,14 @@ Note: SMS links and export links are built from `WEB_URL` and `API_URL` constant
 **Configuration**
 - `VITE_API_URL` (web): Base URL for the PocketBase API.
 - `ELKS_API_USERNAME` and `ELKS_API_PASSWORD` (backend): 46elks SMS credentials. When running via `go run`, SMS messages are logged to the console instead of being sent.
+- `APP_ENV=test` together with `TEST_LOGIN_USER_ID` (backend): Enables the public test-account login. The id must be exactly 15 lowercase letters or digits. Both values are required; without them the test-login routes and UI are absent. Never set these on the production deployment.
 
 **Backend Behavior**
 - OTP auth:
 `POST /otp-create` creates an OTP for a phone number and sends it via SMS.
 `POST /otp-verify` verifies the OTP and returns a PocketBase auth token.
+- Test auth:
+When enabled, `GET /test-login` lets the web client discover the feature and `POST /test-login` signs in to an isolated shared test account without creating an OTP or sending an SMS. The account is created on first use. An authenticated test user can call `POST /test-login/reset` with `treatmentStart`, `diagnosis`, and `type` values to delete its answers and configure a fresh test scenario.
 - Daily schedule:
 `GET /daily-schedule` returns start/end dates for daily questionnaires based on treatment dates and user type (`PRE` starts 14 days before treatment start and ends on treatment end; `POST` starts 14 days after treatment end and ends 56 days after treatment end).
 - Reminders:

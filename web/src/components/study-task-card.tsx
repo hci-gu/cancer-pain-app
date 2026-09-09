@@ -45,7 +45,7 @@ export function StudyTaskCard({
           src={illustration}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute -inset-0.5 h-[calc(100%+0.25rem)] w-[calc(100%+0.25rem)] max-w-none object-cover"
         />
       </picture>
 

@@ -121,7 +121,7 @@ const NavigationButtons = ({
         <ChevronUpIcon />
       </Button>
       <Button
-        className="h-9 w-9 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
+        className="h-9 w-9 rounded-lg bg-study-coral p-0 text-white shadow-md hover:bg-study-coral/90"
         disabled={!canProceed}
         aria-label="Nästa fråga"
         data-testid="questionnaire-next"
@@ -133,7 +133,7 @@ const NavigationButtons = ({
         <ChevronDownIcon />
       </Button>
       <Button
-        className="h-9 w-9 rounded-lg bg-study-header p-0 text-white shadow-md hover:bg-study-header/90"
+        className="h-9 w-9 rounded-lg bg-study-coral p-0 text-white shadow-md hover:bg-study-coral/90"
         disabled={!canProceed}
         aria-label="Sista obesvarade frågan"
         data-testid="questionnaire-last"

@@ -11,6 +11,9 @@ import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useSetAtom } from 'jotai'
+import { authAtom, pb } from '../../state'
 
 import { z } from 'zod'
 
@@ -20,12 +23,28 @@ const resetSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const setAuth = useSetAtom(authAtom)
+  const [testLoginAvailable, setTestLoginAvailable] = useState(false)
+  const [testLoginPending, setTestLoginPending] = useState(false)
+  const [testLoginError, setTestLoginError] = useState(false)
   const form = useForm<z.infer<typeof resetSchema>>({
     resolver: zodResolver(resetSchema),
     defaultValues: {
       phoneNumber: '',
     },
   })
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetch(`${import.meta.env.VITE_API_URL}/test-login`, {
+      signal: controller.signal,
+    })
+      .then((response) => setTestLoginAvailable(response.ok))
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [])
 
   async function onSubmit(values: z.infer<typeof resetSchema>) {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/otp-create`, {
@@ -49,28 +68,79 @@ const LoginPage = () => {
     }
   }
 
+  async function loginWithTestAccount() {
+    setTestLoginPending(true)
+    setTestLoginError(false)
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/test-login`,
+        { method: 'POST' }
+      )
+      if (!response.ok) {
+        throw new Error('Test login failed')
+      }
+
+      const data = await response.json()
+      pb.authStore.save(data.token, data.record)
+      document.cookie = pb.authStore.exportToCookie()
+      setAuth(pb.authStore.model)
+      navigate('/')
+    } catch {
+      setTestLoginError(true)
+      setTestLoginPending(false)
+    }
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="phoneNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Telefonnummer</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Telefonnummer att skicka kod till..."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+    <div className="space-y-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefonnummer</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Telefonnummer att skicka kod till..."
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit">Skicka engångskod</Button>
+        </form>
+      </Form>
+
+      {testLoginAvailable && (
+        <section className="border-t pt-6" aria-labelledby="test-login-title">
+          <h2 id="test-login-title" className="font-semibold">
+            Vill du bara prova appen?
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Logga in direkt med ett gemensamt testkonto. Inget SMS skickas.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-4 w-full"
+            disabled={testLoginPending}
+            onClick={loginWithTestAccount}
+          >
+            {testLoginPending ? 'Loggar in...' : 'Prova med testkonto'}
+          </Button>
+          {testLoginError && (
+            <p className="mt-2 text-sm text-destructive" role="alert">
+              Det gick inte att logga in med testkontot. Försök igen.
+            </p>
           )}
-        />
-        <Button type="submit">Skicka engångskod</Button>
-      </form>
-    </Form>
+        </section>
+      )}
+    </div>
   )
 }
 

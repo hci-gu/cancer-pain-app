@@ -1,6 +1,9 @@
 import { StudyTaskCard } from '@/components/study-task-card'
-import { useAnswers, userDataAtom } from '@/state'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { authAtom, pb, useAnswers, userDataAtom } from '@/state'
 import { useAtomValue } from 'jotai'
+import { useEffect, useState } from 'react'
 import registrationArtSquare from '@/assets/redesign/dashboard-cards/registration-card-square--p64.svg'
 import registrationArtWide from '@/assets/redesign/dashboard-cards/registration-card-wide--p58.svg'
 import initialQuestionnaireArtSquare from '@/assets/redesign/dashboard-cards/initial-questionnaire-card-square--p65.svg'
@@ -18,9 +21,61 @@ const BASELINE_FORM_ID = 'u6917wm639q1d01'
 
 function HomePage() {
   const user = useAtomValue(userDataAtom)
+  const auth = useAtomValue(authAtom)
   const baselineAnswers = useAnswers(BASELINE_FORM_ID)
   const baselineAnswered = baselineAnswers.length > 0
   const treatmentStart = user?.treatmentStart
+  const [isTestAccount, setIsTestAccount] = useState(false)
+  const [newTreatmentStart, setNewTreatmentStart] = useState('')
+  const [newDiagnosis, setNewDiagnosis] = useState('')
+  const [newUserType, setNewUserType] = useState('')
+  const [resetting, setResetting] = useState(false)
+  const [resetError, setResetError] = useState(false)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetch(`${import.meta.env.VITE_API_URL}/test-login`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((status) => setIsTestAccount(status?.userId === auth?.id))
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [auth?.id])
+
+  const resetTestAccount = async () => {
+    const confirmed = window.confirm(
+      `Radera alla svar och återställ testkontot med behandlingsstart ${newTreatmentStart}, diagnos ${newDiagnosis} och typ ${newUserType}?`
+    )
+    if (!confirmed) return
+
+    setResetting(true)
+    setResetError(false)
+
+    try {
+      await pb.send('/test-login/reset', {
+        method: 'POST',
+        body: {
+          treatmentStart: newTreatmentStart,
+          diagnosis: newDiagnosis,
+          type: newUserType,
+        },
+      })
+
+      for (const key of Object.keys(localStorage)) {
+        if (key !== 'auth') {
+          localStorage.removeItem(key)
+        }
+      }
+
+      window.location.reload()
+    } catch {
+      setResetError(true)
+      setResetting(false)
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -83,6 +138,83 @@ function HomePage() {
           titleClassName="max-w-[76%] text-foreground"
         />
       </section>
+
+      {isTestAccount && (
+        <section className="rounded-2xl border border-dashed border-border bg-white p-4 text-center">
+          <h2 className="font-black">Gemensamt testkonto</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Välj testscenario och radera inskickade svar och lokala utkast för
+            att börja om från början.
+          </p>
+          <div className="mx-auto mt-3 grid max-w-64 gap-3 text-left">
+            <label
+              htmlFor="test-treatment-start"
+              className="text-sm font-bold text-foreground"
+            >
+              Ny behandlingsstart
+            </label>
+            <Input
+              id="test-treatment-start"
+              type="date"
+              className="mt-1 bg-white"
+              value={newTreatmentStart}
+              onChange={(event) => setNewTreatmentStart(event.target.value)}
+            />
+            <label
+              htmlFor="test-diagnosis"
+              className="text-sm font-bold text-foreground"
+            >
+              Diagnos
+              <select
+                id="test-diagnosis"
+                className="mt-1 flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={newDiagnosis}
+                onChange={(event) => setNewDiagnosis(event.target.value)}
+              >
+                <option value="">Välj diagnos</option>
+                <option value="anal">Anal</option>
+                <option value="corpus">Corpus</option>
+                <option value="cervix">Cervix</option>
+              </select>
+            </label>
+            <label
+              htmlFor="test-user-type"
+              className="text-sm font-bold text-foreground"
+            >
+              Användartyp
+              <select
+                id="test-user-type"
+                className="mt-1 flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={newUserType}
+                onChange={(event) => setNewUserType(event.target.value)}
+              >
+                <option value="">Välj typ</option>
+                <option value="PRE">PRE</option>
+                <option value="POST">POST</option>
+              </select>
+            </label>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-3"
+            disabled={
+              resetting ||
+              !newTreatmentStart ||
+              !newDiagnosis ||
+              !newUserType
+            }
+            onClick={resetTestAccount}
+          >
+            {resetting ? 'Återställer...' : 'Återställ testkonto'}
+          </Button>
+          {resetError && (
+            <p className="mt-2 text-sm text-destructive" role="alert">
+              Det gick inte att återställa testkontot. Försök igen.
+            </p>
+          )}
+        </section>
+      )}
     </div>
   )
 }

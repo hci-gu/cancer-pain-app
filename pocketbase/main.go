@@ -37,13 +37,120 @@ func isDevEnv() bool {
 var unauthorizedErr = apis.NewUnauthorizedError("Invalid or expired OTP token", nil)
 var notFoundErr = apis.NewNotFoundError("User not found", nil)
 var badRequestErr = apis.NewBadRequestError("Invalid request", nil)
+var testLoginIDPattern = regexp.MustCompile(`^[a-z0-9]{15}$`)
 
-const WEB_URL = "https://pre-rt.prod.appadem.in"
-const API_URL = "https://pre-rt-api.prod.appadem.in"
+const WEB_URL = "https://pre-rt.test.appadem.in"
+const API_URL = "https://pre-rt-api.test.appadem.in"
 
 // const WEB_URL = "http://localhost:5173"
 const TREATMENT_END_FORM_ID = "p8ow7xj8h4uuv43"
 const TREATMENT_END_QUESTION_ID = "242u8ha0yn8m06d"
+
+func testLoginUserID() (string, bool) {
+	if !strings.EqualFold(strings.TrimSpace(os.Getenv("APP_ENV")), "test") {
+		return "", false
+	}
+
+	id := strings.TrimSpace(os.Getenv("TEST_LOGIN_USER_ID"))
+	if !testLoginIDPattern.MatchString(id) {
+		return "", false
+	}
+
+	return id, true
+}
+
+func isTestLoginUser(user *core.Record) bool {
+	id, enabled := testLoginUserID()
+	return enabled && user.Id == id
+}
+
+func getOrCreateTestLoginUser(app *pocketbase.PocketBase) (*core.Record, error) {
+	id, enabled := testLoginUserID()
+	if !enabled {
+		return nil, fmt.Errorf("test login is disabled")
+	}
+
+	user, err := app.FindRecordById("users", id)
+	if err == nil {
+		return user, nil
+	}
+
+	collection, err := app.FindCollectionByNameOrId("users")
+	if err != nil {
+		return nil, err
+	}
+
+	user = core.NewRecord(collection)
+	user.Set("id", id)
+	user.Set("diagnosis", "cervix")
+	user.Set("code", "TEST")
+	user.SetRandomPassword()
+
+	if err := app.Save(user); err != nil {
+		// A simultaneous first login may have created the same account.
+		if existing, findErr := app.FindRecordById("users", id); findErr == nil {
+			return existing, nil
+		}
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func resetTestLoginUser(app core.App, userID string, treatmentStart time.Time, diagnosis string, userType string) (int, error) {
+	deletedAnswers := 0
+	err := app.RunInTransaction(func(txApp core.App) error {
+		answers, err := txApp.FindRecordsByFilter(
+			"answers",
+			"user = {:user}",
+			"",
+			0,
+			0,
+			dbx.Params{"user": userID},
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, answer := range answers {
+			if err := txApp.Delete(answer); err != nil {
+				return err
+			}
+			deletedAnswers++
+		}
+
+		otps, err := txApp.FindRecordsByFilter(
+			"otp",
+			"user = {:user}",
+			"",
+			0,
+			0,
+			dbx.Params{"user": userID},
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, otp := range otps {
+			if err := txApp.Delete(otp); err != nil {
+				return err
+			}
+		}
+
+		user, err := txApp.FindRecordById("users", userID)
+		if err != nil {
+			return err
+		}
+		user.Set("treatmentStart", treatmentStart)
+		user.Set("treatmentEnd", "")
+		user.Set("diagnosis", diagnosis)
+		user.Set("type", userType)
+
+		return txApp.Save(user)
+	})
+
+	return deletedAnswers, err
+}
 
 func stripHTML(input string) string {
 	doc, err := html.Parse(strings.NewReader(input))
@@ -613,6 +720,9 @@ func main() {
 			if err != nil {
 				return notFoundErr
 			}
+			if isTestLoginUser(user) {
+				return notFoundErr
+			}
 
 			record, err := createOtp(app, user)
 
@@ -624,6 +734,68 @@ func main() {
 
 			return e.JSON(200, record)
 		})
+
+		if testUserID, enabled := testLoginUserID(); enabled {
+			se.Router.GET("/test-login", func(e *core.RequestEvent) error {
+				return e.JSON(200, map[string]any{
+					"enabled": true,
+					"userId":  testUserID,
+				})
+			})
+
+			se.Router.POST("/test-login", func(e *core.RequestEvent) error {
+				user, err := getOrCreateTestLoginUser(app)
+				if err != nil {
+					log.Println("test login error", err)
+					return apis.NewInternalServerError("Test login failed", nil)
+				}
+
+				return apis.RecordAuthResponse(e, user, "test", nil)
+			})
+
+			se.Router.POST("/test-login/reset", func(e *core.RequestEvent) error {
+				requestInfo, err := e.RequestInfo()
+				if err != nil || requestInfo.Auth == nil || !isTestLoginUser(requestInfo.Auth) {
+					return apis.NewForbiddenError("Test account required", nil)
+				}
+
+				data := struct {
+					TreatmentStart string `json:"treatmentStart"`
+					Diagnosis      string `json:"diagnosis"`
+					UserType       string `json:"type"`
+				}{}
+				if err := e.BindBody(&data); err != nil {
+					return apis.NewBadRequestError("Treatment start date required", nil)
+				}
+
+				treatmentStart, err := time.Parse(time.DateOnly, data.TreatmentStart)
+				if err != nil {
+					return apis.NewBadRequestError("Valid treatment start date required", nil)
+				}
+
+				if data.Diagnosis != "anal" && data.Diagnosis != "corpus" && data.Diagnosis != "cervix" {
+					return apis.NewBadRequestError("Valid diagnosis required", nil)
+				}
+
+				if data.UserType != "PRE" && data.UserType != "POST" {
+					return apis.NewBadRequestError("Valid user type required", nil)
+				}
+
+				deletedAnswers, err := resetTestLoginUser(
+					app,
+					requestInfo.Auth.Id,
+					treatmentStart,
+					data.Diagnosis,
+					data.UserType,
+				)
+				if err != nil {
+					log.Println("test account reset error", err)
+					return apis.NewInternalServerError("Test account reset failed", nil)
+				}
+
+				return e.JSON(200, map[string]int{"deletedAnswers": deletedAnswers})
+			})
+		}
 
 		se.Router.POST("/otp-verify", func(e *core.RequestEvent) error {
 			println("/POST otp-verify")
@@ -767,6 +939,10 @@ func main() {
 	})
 
 	app.OnRecordAfterCreateSuccess("users").BindFunc(func(e *core.RecordEvent) error {
+		if isTestLoginUser(e.Record) {
+			return nil
+		}
+
 		phoneNumber := e.Record.GetString("phoneNumber")
 
 		otp, err := createOtpWithExpiration(app, e.Record, true)
